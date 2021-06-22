@@ -1,0 +1,12 @@
+{
+    "books": [
+        {
+            "id": 1,
+            "title": "How to be Happy and Stay Happy"
+        },
+        {
+            "id": 2,
+            "title": "Becoming a better you"
+        }
+    ]
+}

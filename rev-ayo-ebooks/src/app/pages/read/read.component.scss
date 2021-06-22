@@ -1,0 +1,15 @@
+#reader {
+    button#print,
+    button#print * {
+        display: block !important;
+    }
+
+    button#download,
+    button#download * {
+        display: block !important;
+    }
+
+    #toolbarViewerMiddle {
+        display: none;
+    }
+}

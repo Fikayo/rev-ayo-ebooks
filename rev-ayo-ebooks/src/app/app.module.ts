@@ -6,16 +6,24 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BookSelectorComponent } from './pages/book-selector/book-selector.component';
 import { EbookRoutingModule } from './ebook-routing.module';
 import {MatGridListModule} from '@angular/material/grid-list';
+import { ReadComponent } from './pages/read/read.component';
+import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
     AppComponent,
-    BookSelectorComponent
+    BookSelectorComponent,
+    ReadComponent
   ],
   imports: [
     // Angular Material Modules
     MatGridListModule,
 
+    // PDF Reader
+    NgxExtendedPdfViewerModule,
+
+    HttpClientModule,
     BrowserModule,
     EbookRoutingModule,
     BrowserAnimationsModule

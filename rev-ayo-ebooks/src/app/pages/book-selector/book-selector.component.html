@@ -1,10 +1,10 @@
 <div id="selector">
     <mat-grid-list cols="2" rowHeight="2:1">
-        <mat-grid-tile>
-            How to be happy and stay happy
+        
+        <mat-grid-tile *ngFor="let book of books" (click)="selectBook(book)">
+            <img src="{{book.cover}}" alt="">
+            <span class="title">{{book.title}}</span>
         </mat-grid-tile>
-        <mat-grid-tile>2</mat-grid-tile>
-        <mat-grid-tile>3</mat-grid-tile>
-        <mat-grid-tile>4</mat-grid-tile>
+
     </mat-grid-list>
 </div>
