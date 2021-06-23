@@ -9,8 +9,8 @@ const routes: Routes = [
     { path: 'search', component: BookSelectorComponent},
     { path: 'details/:isbn', component:BookDetailsComponent},
     { path: 'read/:isbn', component:ReaderComponent},
-    { path: 'home', redirectTo: 'search' },
-    { path: '**', redirectTo: 'home' }
+    { path: 'home/', redirectTo: 'search' },
+    { path: '**', redirectTo: 'search' }
 ];
 
 @NgModule({

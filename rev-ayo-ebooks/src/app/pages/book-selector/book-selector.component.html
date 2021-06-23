@@ -1,19 +1,15 @@
 <div id="bookstore">
 
-    <!-- <div>
-        <ebook-search-bar (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
-    </div> -->
-
     <div *ngIf="showFeatures">
         <ebook-bookset [title]="'Most Popular'" [books]="popularBooks" [onSelect]="selectBookBounded"></ebook-bookset>
         <ebook-bookset [title]="'Featured'" [books]="featuredBooks" [onSelect]="selectBookBounded"></ebook-bookset>
         <ebook-bookset [title]="'More titles'" [books]="otherBooks" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
     </div>
 
-    <ebook-bookset *ngIf="searching" [title]="'Search results'" [books]="searchResults" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
+    <ebook-bookset *ngIf="searching" [books]="searchResults" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
 
     <div *ngIf="noResults" id="no-results">
-        <span>We couldn't find any books that match your search.</span>
+        <span>We couldn't find any books that match "{{filter}}"</span>
     </div>
     
 </div>

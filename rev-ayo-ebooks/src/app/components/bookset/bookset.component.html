@@ -1,6 +1,10 @@
 
 <div class="bookset">
-    <span [hidden]="!showTitle" class="set-title">{{title}}</span>
+    <div class="topbar">
+        <span [hidden]="!showTitle" class="set-title">{{title}}</span>
+        <span class="spacer"></span>
+        <mat-icon class="arrow">arrow_forward</mat-icon>
+    </div>
     <div class="set" [ngClass]="{grid: style=='grid'}">
         <mat-card class="book" *ngFor="let book of books" (click)="selectBook(book)">
             <img mat-card-image class="cover" src="{{book.cover}}" alt="{{book.title}}">

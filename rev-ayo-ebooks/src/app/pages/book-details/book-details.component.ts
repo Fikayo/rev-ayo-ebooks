@@ -12,7 +12,8 @@ export class BookDetailsComponent implements OnInit {
     
     public book!: BookTitle;
     public suggestions: BookTitle[] = [];
-    public selectBookBounded = this.selectBook.bind(this);    
+    public selectBookBounded = this.selectBook.bind(this);  
+    public actionText: string = "Read";  
     private routeSub!: Subscription;
 
     constructor(
@@ -27,7 +28,10 @@ export class BookDetailsComponent implements OnInit {
 
             this.bookstore.fetchDetails(bookID)
             .subscribe({
-                next: (b) => this.book = b,
+                next: (b) => {
+                    this.book = b;
+                    this.actionText = `Buy for ${this.book.price}`;
+                },
                 error: () => console.log("failed to fetch book from bookstore")
             });
 

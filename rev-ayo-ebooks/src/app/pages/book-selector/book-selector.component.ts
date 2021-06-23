@@ -14,6 +14,7 @@ export class BookSelectorComponent implements OnInit {
     public otherBooks: BookTitle[] = [];
     public selectBookBounded = this.selectBook.bind(this);
     public searching: boolean = false;
+    public filter!: string;
     public searchResults: BookTitle[] = [];
     
     private allBooks: BookTitle[] = [];
@@ -30,9 +31,9 @@ export class BookSelectorComponent implements OnInit {
     ngOnInit(): void {
         
         this.activatedRoute.queryParams.subscribe(param => {
-            let filter = this.activatedRoute.snapshot.queryParams['filter'];
+            this.filter = param['filter'];
             if (this.allBooks != null) {
-                this.filterList(filter);
+                this.filterList(this.filter);
             }
         });
 
@@ -46,8 +47,8 @@ export class BookSelectorComponent implements OnInit {
                 this.featuredBooks = this.allBooks;
                 this.otherBooks = this.allBooks;
 
-                let filter = this.activatedRoute.snapshot.queryParams['filter'];
-                this.filterList(filter);
+                this.filter = this.activatedRoute.snapshot.queryParams['filter'];
+                this.filterList(this.filter);
             },
             error: () => console.log("failed to fetch titles from bookstore")
         });   
@@ -64,10 +65,6 @@ export class BookSelectorComponent implements OnInit {
     public selectBook(book: BookTitle) {
         this.router.navigate([`/details/${book.ISBN}/`]);
     }
-
-    public onSelectedFilter(e: any) {  
-        this.filterList(e);
-    }
     
     private filterList(filter: string) {
         this.searching = true;
@@ -83,13 +80,4 @@ export class BookSelectorComponent implements OnInit {
             this.selectBook(this.searchResults[0]);
         }
     }
-
-    // private filterList(filter: string): BookTitle[] {
-    //     if (filter === '' || filter === null || filter === undefined) {
-    //         return [];
-    //     }
-
-    //     return filter ? this.allBooks.filter(s => s.title.toLowerCase().indexOf(filter.toLowerCase()) != -1) : [];
-    // }
-
 }

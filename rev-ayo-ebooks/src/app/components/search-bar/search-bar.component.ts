@@ -11,6 +11,8 @@ import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstor
 export class SearchBarComponent implements OnInit {
 
     public searchBox = new FormControl();
+    public placeholder: string = "Search...";
+
     public filteredOptions!: Observable<string[]>;
     public allTitles: BookTitle[] = [];
     public autoCompleteList!: any[]
@@ -40,8 +42,12 @@ export class SearchBarComponent implements OnInit {
         this.onSelectedOption.emit(this.searchBox.value);
     }
 
-    public clearSearch() {
-        this.searchBox.reset();
+    public togglePlaceholder() {
+        if (this.placeholder) {
+            this.placeholder = "";
+        } else if (!this.searchBox.value) {
+            this.placeholder = 'Search...';
+        }
     }
  
     private autoCompleteExpenseList(input: string) {

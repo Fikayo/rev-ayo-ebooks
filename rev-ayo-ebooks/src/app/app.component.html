@@ -1,14 +1,14 @@
 <div id="rev-ayo-ebooks">
-    <mat-toolbar id="toolbar">
+    <mat-toolbar id="toolbar" *ngIf="showToolbar" [ngClass]="{white: !toolbarIsBlack}">
         <button (click)="goBack()" mat-icon-button class="back" aria-label="Back">
             <!-- <mat-icon>menu</mat-icon> -->
             <mat-icon>keyboard_backspace</mat-icon>
         </button>
         <!-- <span class="spacer"></span> -->
         <ebook-search-bar class="spacer" (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
-        <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+        <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
             <mat-icon>search</mat-icon>
-        </button>
+        </button> -->
     </mat-toolbar>
     <router-outlet #o="outlet"></router-outlet>
 </div>

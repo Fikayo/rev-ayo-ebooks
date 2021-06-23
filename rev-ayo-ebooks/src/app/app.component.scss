@@ -3,13 +3,23 @@
     width: 100%;
 
     #toolbar {
+        margin-top: 10px;
         position: absolute;
         /* border: 3px solid red; */
         z-index: 1000;
-        background: #ffffff47;
+        // background: #ffffff47;
+        background: #ffffff00;
 
         .spacer {
             flex: 1 1 auto;
+        }
+
+        &.white {
+            color: white !important;
+        }
+
+        ebook-search-bar {
+            margin: 0 20px;
         }
     }
 }
