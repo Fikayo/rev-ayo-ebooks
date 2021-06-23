@@ -1,0 +1,25 @@
+<div id="details">
+    <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div>
+    <div id="shade"></div>
+    <div class="cover-container">
+        <img class="cover" mat-card-image src="{{book.cover}}" alt="{{book.title}}">        
+        <div class="cover-info">
+            <div class="title">
+                {{book.title}}
+                <span class="author">{{book.author}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="bottom">
+        <p>
+            {{book.description}}
+        </p>
+
+        <ebook-bookset [title]="'You might also like'" [books]="suggestions" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
+    </div>
+
+    <div class="action-container">
+        <button (click)="onActionClick(book)" id="main-action" mat-raised-button color="primary">Read</button>
+    </div>
+</div>

@@ -1,5 +1,10 @@
-#selector {
-    mat-grid-tile {
-        background: lightblue;
+@import "/src/styles/_variables.scss";
+
+#bookstore {
+    padding: 0 $pageSidePadding;
+    padding-top: $pageTopPadding;
+
+    #no-results {
+        text-align: center;
     }
 }

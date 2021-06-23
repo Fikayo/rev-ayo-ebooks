@@ -1,10 +1,19 @@
-<div id="selector">
-    <mat-grid-list cols="2" rowHeight="2:1">
-        
-        <mat-grid-tile *ngFor="let book of books" (click)="selectBook(book)">
-            <img src="{{book.cover}}" alt="">
-            <span class="title">{{book.title}}</span>
-        </mat-grid-tile>
+<div id="bookstore">
 
-    </mat-grid-list>
+    <!-- <div>
+        <ebook-search-bar (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
+    </div> -->
+
+    <div *ngIf="showFeatures">
+        <ebook-bookset [title]="'Most Popular'" [books]="popularBooks" [onSelect]="selectBookBounded"></ebook-bookset>
+        <ebook-bookset [title]="'Featured'" [books]="featuredBooks" [onSelect]="selectBookBounded"></ebook-bookset>
+        <ebook-bookset [title]="'More titles'" [books]="otherBooks" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
+    </div>
+
+    <ebook-bookset *ngIf="searching" [title]="'Search results'" [books]="searchResults" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
+
+    <div *ngIf="noResults" id="no-results">
+        <span>We couldn't find any books that match your search.</span>
+    </div>
+    
 </div>

@@ -1,0 +1,13 @@
+
+<div class="bookset">
+    <span [hidden]="!showTitle" class="set-title">{{title}}</span>
+    <div class="set" [ngClass]="{grid: style=='grid'}">
+        <mat-card class="book" *ngFor="let book of books" (click)="selectBook(book)">
+            <img mat-card-image class="cover" src="{{book.cover}}" alt="{{book.title}}">
+            <mat-card-content class="info">
+                <span class="title">{{book.title}}</span>
+                <span class="price">{{book.price}}</span>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

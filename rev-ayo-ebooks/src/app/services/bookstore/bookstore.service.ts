@@ -3,10 +3,14 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 export interface BookTitle {
-    id: number
+    ISBN: string;
     title: string;
-    cover: string;
-}  
+    author?: string;
+    cover?: string;
+    description?: string;
+    price?: string;
+} 
+
 
 @Injectable({
   providedIn: 'root'
@@ -23,9 +27,7 @@ export class BookstoreService {
             next: (data: any) => {
                 let titles = []
                 for(let b of data["books"]) {
-                    let title = b as BookTitle;
-                    title.cover = `./assets/books/${b.title.toLowerCase()}/cover.jpg`;
-                    titles.push(title);
+                    titles.push(this.parseTitle(b));
                 }
 
                 titlesSub.next(titles);
@@ -35,10 +37,28 @@ export class BookstoreService {
         return titlesSub.asObservable();
     }
 
-    public fetchBook(bookID: number): Observable<Blob> {
+    public fetchDetails(bookID: string): Observable<BookTitle> {
+        const detailsSub = new Subject<BookTitle>();
+
+        this.http.get("./assets/books/list.json", {responseType: "json"})
+        .subscribe({
+            next: (data: any) => {
+                for(let b of data["books"]) {
+                    if (b.ISBN == bookID) {
+                        detailsSub.next(this.parseTitle(b));
+                        break;
+                    }
+                }
+            }
+        });
+
+        return detailsSub.asObservable();
+    }
+
+    public fetchBook(bookID: string): Observable<Blob> {
         const bookSub = new Subject<Blob>();
         let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
-        if (bookID == 2) {
+        if (bookID == "unknown") {
             path =  "./assets/books/becoming a better you/pdf.pdf";
         }
 
@@ -69,5 +89,12 @@ export class BookstoreService {
 
 
         return bookSub.asObservable();
+    }
+
+    private parseTitle(b: any): BookTitle {
+        let title = b as BookTitle;
+        title.cover = `./assets/books/${b.title.toLowerCase()}/cover.jpg`;
+        title.price = `₦${b.naira}`;
+        return title;
     }
 }

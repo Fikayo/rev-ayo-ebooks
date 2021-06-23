@@ -1,0 +1,15 @@
+#rev-ayo-ebooks {
+    position: absolute;
+    width: 100%;
+
+    #toolbar {
+        position: absolute;
+        /* border: 3px solid red; */
+        z-index: 1000;
+        background: #ffffff47;
+
+        .spacer {
+            flex: 1 1 auto;
+        }
+    }
+}

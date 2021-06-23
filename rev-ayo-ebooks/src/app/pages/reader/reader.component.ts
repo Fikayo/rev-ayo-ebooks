@@ -1,16 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
 import { Subscription } from 'rxjs';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 
 @Component({
-  selector: 'app-read',
-  templateUrl: './read.component.html',
-  styleUrls: ['./read.component.scss']
+  selector: 'ebook-reader',
+  templateUrl: './reader.component.html',
+  styleUrls: ['./reader.component.scss']
 })
-export class ReadComponent implements OnInit, OnDestroy {
+export class ReaderComponent implements OnInit, OnDestroy {
     public enablePinchOnMobile = true;
     public mobileFriendlyZoom = "150%"
     public showSecondaryToolbarButton = true;  
@@ -20,11 +19,11 @@ export class ReadComponent implements OnInit, OnDestroy {
     public showBookmarkButton = false;
     public src!: Blob;
 
-    private zoomLevels = ['auto', 'page-actual', 'page-fit', 'page-width',
+    public zoomLevels = ['auto', 'page-actual', 'page-fit', 'page-width',
     0.5, 0.67, 0.75, 0.82, 0.9, 1, 1.1, 1.15, 
     1.25, 1.5];
 
-    private routeSub: Subscription | undefined;
+    private routeSub!: Subscription;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -35,7 +34,7 @@ export class ReadComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.routeSub = this.activatedRoute.params.subscribe(params => {
-            let bookID = +params['bookID'];
+            let bookID = params['isbn'];
 
             this.bookstore.fetchBook(bookID)
             .subscribe({

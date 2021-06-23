@@ -1,0 +1,33 @@
+<div id="searchpage">
+    <form (submit)="searchSubmitted()" >
+        
+        <mat-form-field class="example-full-width" style="width: 100%">
+            <input #autocompleteInput type="text" placeholder="Search..." aria-label="Number" matInput [formControl]="searchBox"
+                [matAutocomplete]="auto">
+            <button *ngIf="searchBox.value" matSuffix mat-icon-button aria-label="Clear" (click)="clearSearch()">
+                <mat-icon>close</mat-icon>
+            </button>
+
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let option of autoCompleteList" [value]="option" (onSelectionChange)="filterBookTitles($event)">
+                    {{option.title}}
+                </mat-option>
+            </mat-autocomplete>   
+        </mat-form-field>
+        
+    </form>
+
+    <!-- <form id="searchbar">
+        <mat-form-field>
+            <input type="text" placeholder="Search bookstore" aria-label="Search" matInput [formControl]="searchBox">
+        </mat-form-field>
+    </form> -->
+
+    <!-- <div  id="options">
+        <mat-selection-list #options [multiple]="false">
+            <mat-list-option *ngFor="let option of autoCompleteList" [value]="option" >
+                {{option.title}}
+            </mat-list-option>
+        </mat-selection-list>
+    </div> -->
+</div>
