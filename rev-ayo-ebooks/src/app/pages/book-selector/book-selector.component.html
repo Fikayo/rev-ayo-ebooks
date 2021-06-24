@@ -1,12 +1,12 @@
 <div id="bookstore">
 
     <div *ngIf="showFeatures">
-        <ebook-bookset [title]="'Most Popular'" [books]="popularBooks" [onSelect]="selectBookBounded"></ebook-bookset>
-        <ebook-bookset [title]="'Featured'" [books]="featuredBooks" [onSelect]="selectBookBounded"></ebook-bookset>
-        <ebook-bookset [title]="'More titles'" [books]="otherBooks" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
+        <ebook-bookset [title]="'Most Popular'" [books]="popularBooks"></ebook-bookset>
+        <ebook-bookset [title]="'Featured'" [books]="featuredBooks"></ebook-bookset>
+        <ebook-bookset [title]="'More titles'" [books]="otherBooks" [style]="'grid'"></ebook-bookset>
     </div>
 
-    <ebook-bookset *ngIf="searching" [books]="searchResults" [onSelect]="selectBookBounded" [style]="'grid'"></ebook-bookset>
+    <ebook-bookset *ngIf="searching" [books]="searchResults" [style]="'grid'"></ebook-bookset>
 
     <div *ngIf="noResults" id="no-results">
         <span>We couldn't find any books that match "{{filter}}"</span>

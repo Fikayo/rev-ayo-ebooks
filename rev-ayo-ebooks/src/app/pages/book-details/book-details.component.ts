@@ -12,7 +12,6 @@ export class BookDetailsComponent implements OnInit {
     
     public book!: BookTitle;
     public suggestions: BookTitle[] = [];
-    public selectBookBounded = this.selectBook.bind(this);  
     public actionText: string = "Read";  
     private routeSub!: Subscription;
 
@@ -49,10 +48,6 @@ export class BookDetailsComponent implements OnInit {
         if(this.routeSub) {
             this.routeSub.unsubscribe();
         }
-    }
-
-    public selectBook(book: BookTitle) {
-        this.router.navigate([`/details/${book.ISBN}/`]);
     }
 
     public onActionClick(book: BookTitle) {

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { BookDetailsComponent } from './pages/book-details/book-details.component';
 import { BookSelectorComponent } from './pages/book-selector/book-selector.component';
+import { PersonalBooksComponent } from './pages/personal-books/personal-books.component';
 import { ReaderComponent } from './pages/reader/reader.component';
 
 const routes: Routes = [
@@ -9,6 +10,7 @@ const routes: Routes = [
     { path: 'search', component: BookSelectorComponent},
     { path: 'details/:isbn', component:BookDetailsComponent},
     { path: 'read/:isbn', component:ReaderComponent},
+    { path: 'personal', component:PersonalBooksComponent},
     { path: 'home/', redirectTo: 'search' },
     { path: '**', redirectTo: 'search' }
 ];

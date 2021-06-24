@@ -12,7 +12,6 @@ export class BookSelectorComponent implements OnInit {
     public popularBooks: BookTitle[] = [];
     public featuredBooks: BookTitle[] = [];
     public otherBooks: BookTitle[] = [];
-    public selectBookBounded = this.selectBook.bind(this);
     public searching: boolean = false;
     public filter!: string;
     public searchResults: BookTitle[] = [];
@@ -50,7 +49,7 @@ export class BookSelectorComponent implements OnInit {
                 this.filter = this.activatedRoute.snapshot.queryParams['filter'];
                 this.filterList(this.filter);
             },
-            error: () => console.log("failed to fetch titles from bookstore")
+            error: () => console.error("failed to fetch titles from bookstore")
         });   
     }
 
@@ -62,7 +61,7 @@ export class BookSelectorComponent implements OnInit {
         return this.searchResults.length == 0 && this.searching;
     }
 
-    public selectBook(book: BookTitle) {
+    private selectBook(book: BookTitle) {
         this.router.navigate([`/details/${book.ISBN}/`]);
     }
     

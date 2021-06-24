@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
 
 @Component({
@@ -9,19 +10,14 @@ import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
 export class BooksetComponent implements OnInit {
     // const styles = ["row", "grid"];
 
-    @Input()
-    public title: string = "";
-
-    @Input()
-    public books: BookTitle[] = [];
-    
-    @Input()
-    public onSelect!: (book: BookTitle) => void;
-
+    @Input() title: string = "";
+    @Input() books: BookTitle[] = [];    
+    @Input() onSelect!: (book: BookTitle) => void;
     @Input() style: string = "row";
     @Input() showTitle: boolean = true;
+    @Input() showPrice: boolean = true;
 
-    constructor() { }
+    constructor(private router: Router) { }
 
     ngOnInit(): void {
         if (this.title.trim() === "" || this.title == null) {
@@ -30,6 +26,10 @@ export class BooksetComponent implements OnInit {
     }
     
     selectBook(book: BookTitle) {
-        this.onSelect(book);
+        if(this.onSelect) {
+            this.onSelect(book);
+        } else {
+            this.router.navigate([`/details/${book.ISBN}/`]);
+        }
     }
 }

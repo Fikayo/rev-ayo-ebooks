@@ -5,10 +5,24 @@
             <mat-icon>keyboard_backspace</mat-icon>
         </button>
         <!-- <span class="spacer"></span> -->
-        <ebook-search-bar class="spacer" (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
+        <ebook-search-bar *ngIf="showSearch" class="spacer" (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
         <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
             <mat-icon>search</mat-icon>
         </button> -->
     </mat-toolbar>
     <router-outlet #o="outlet"></router-outlet>
+    <mat-toolbar *ngIf="showToolbar" id="bottom-nav">
+        <div class="item" [ngClass]="{active: libActive}">
+            <button (click)="openLibrary()" mat-icon-button class="library" aria-label="Library">
+                <mat-icon>library_books</mat-icon>
+            </button>
+            <span class="label">Library</span>
+        </div>
+        <div class="item"  [ngClass]="{active: personalActive}">
+            <button (click)="openPersonal()" mat-icon-button class="personal" aria-label="Personal">
+                <mat-icon>playlist_add_check</mat-icon>
+            </button>
+            <span class="label">Collection</span>
+        </div>
+    </mat-toolbar>
 </div>

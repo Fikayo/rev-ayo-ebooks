@@ -1,3 +1,5 @@
+@import "/src/styles/_variables.scss";
+
 #rev-ayo-ebooks {
     position: absolute;
     width: 100%;
@@ -15,11 +17,40 @@
         }
 
         &.white {
-            color: white !important;
+            color: #ffffff8c !important;
         }
 
         ebook-search-bar {
             margin: 0 20px;
+        }
+    }
+
+    #bottom-nav {
+        position: fixed;
+        bottom: 0px;
+        height: 80px;
+        display: grid;
+        grid-template-columns: auto auto;
+        background-color: white;
+        color: #666;
+
+        .item {
+            display: grid;
+            justify-content: center;
+
+            button {
+                left: 50%;
+                transform: translate(-50%,0%);
+            }
+
+            .label {
+                font-size: small;
+                text-align: center;
+            }
+
+            &.active {
+                color: $my-primary;
+            }
         }
     }
 }

@@ -12,6 +12,9 @@ export class AppComponent {
 
     public showToolbar!: boolean;
     public toolbarIsBlack!: boolean;
+    public showSearch!: boolean;
+    public libActive!: boolean;
+    public personalActive!: boolean;
 
     constructor(
         private router: Router,
@@ -33,9 +36,18 @@ export class AppComponent {
         this.router.navigate([`/search/`], extras);
     }
 
+    public openLibrary() {
+        this.router.navigate([`/search`]);
+    }
+
+    public openPersonal() {
+        this.router.navigate([`/personal`]);
+    }
+
     private defaultUI() {
         this.showToolbar = true;;
         this.toolbarIsBlack = true;
+        this.showSearch = true;
     }
 
     private monitorNavigation() {
@@ -43,13 +55,20 @@ export class AppComponent {
             next: (event) => {
                 if (event instanceof NavigationEnd) {
                     this.defaultUI();
-                    console.log("router url", this.router.url);
-                    if (this.router.url.startsWith("/read")) {
+                    let url = this.router.url;
+                    console.log("router url", url);
+                    if (url.startsWith("/read")) {
                         this.showToolbar = false;
                     }                    
-                    if (this.router.url.startsWith("/details")) {
+                    if (url.startsWith("/details")) {
                         this.toolbarIsBlack = false;
                     }
+                    if (url.startsWith("/personal")) {
+                        this.showSearch = false;
+                    }
+
+                    this.libActive = url.startsWith("/search") || url.startsWith("/details");
+                    this.personalActive = url.startsWith("/personal");
                 }
 
                 if (event instanceof NavigationError) {

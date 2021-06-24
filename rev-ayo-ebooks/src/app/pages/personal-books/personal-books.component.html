@@ -1,0 +1,10 @@
+<div id="personal">
+    <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedIndex" (swipeleft)="swipe($event.type)" (swiperight)="swipe($event.type)" >
+        <mat-tab label="My Books">
+            <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" ></ebook-bookset>
+        </mat-tab>
+        <mat-tab label="Wishlist">
+            <ebook-bookset [books]="wishlist" [style]="'grid'"></ebook-bookset>
+        </mat-tab>
+    </mat-tab-group>
+</div>

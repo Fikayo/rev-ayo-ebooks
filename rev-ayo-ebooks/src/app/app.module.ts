@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule, HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -24,6 +24,9 @@ import {MatListModule} from '@angular/material/list';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BookDetailsComponent } from './pages/book-details/book-details.component';
 import {MatToolbarModule} from '@angular/material/toolbar';
+import { PersonalBooksComponent } from './pages/personal-books/personal-books.component';
+import {MatTabsModule} from '@angular/material/tabs';
+import { UserService } from './services/user/user.service';
 
 @NgModule({
   declarations: [
@@ -33,6 +36,7 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     BooksetComponent,
     SearchBarComponent,
     BookDetailsComponent,
+    PersonalBooksComponent,
   ],
   imports: [
     // Angular Material Modules
@@ -46,6 +50,7 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     MatAutocompleteModule,
     MatListModule,
     MatToolbarModule,
+    MatTabsModule,
 
     // Bootstrap
     NgbModule,
@@ -60,7 +65,11 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     EbookRoutingModule,
     BrowserAnimationsModule
   ],
-  providers: [BookstoreService],
+  providers: [
+    BookstoreService,
+    UserService,
+    {provide: HAMMER_GESTURE_CONFIG, useClass: HammerGestureConfig}
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
