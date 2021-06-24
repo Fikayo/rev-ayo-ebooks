@@ -1,5 +1,5 @@
 <div id="personal">
-    <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedIndex" (swipeleft)="swipe($event.type)" (swiperight)="swipe($event.type)" >
+    <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedIndex" (swipeleft)="swipeLeft()" (swiperight)="swipeRight()" >
         <mat-tab label="My Books">
             <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" ></ebook-bookset>
         </mat-tab>

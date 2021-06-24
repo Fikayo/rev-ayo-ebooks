@@ -41,14 +41,6 @@ export class SearchBarComponent implements OnInit {
         this.autoCompleteList = [];
         this.onSelectedOption.emit(this.searchBox.value);
     }
-
-    public togglePlaceholder() {
-        if (this.placeholder) {
-            this.placeholder = "";
-        } else if (!this.searchBox.value) {
-            this.placeholder = 'Search...';
-        }
-    }
  
     private autoCompleteExpenseList(input: string) {
         this.autoCompleteList = this.filterList(input);;

@@ -64,10 +64,19 @@ export class PersonalBooksComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(){
         this.tab_num = this.tabs.length
-        console.log(this.group)
-      }
+        console.log("after init", this.group);
+    }
+
+    swipeLeft() {
+        console.log('swipe left');
+    }
+
+    swipeRight() {
+        console.log('swipe right');
+    }
 
     public swipe(eType: string){
+        console.log("swiping: ", eType);
         console.log(eType);
         if(eType === this.SWIPE_ACTION.LEFT && this.selectedIndex > 0){
           console.log("movin left")

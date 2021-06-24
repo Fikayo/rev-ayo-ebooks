@@ -30,10 +30,7 @@ export class BookSelectorComponent implements OnInit {
     ngOnInit(): void {
         
         this.activatedRoute.queryParams.subscribe(param => {
-            this.filter = param['filter'];
-            if (this.allBooks != null) {
-                this.filterList(this.filter);
-            }
+            this.filterList(param['filter']);
         });
 
         this.bookstore.fetchTitles().subscribe({    
@@ -46,8 +43,7 @@ export class BookSelectorComponent implements OnInit {
                 this.featuredBooks = this.allBooks;
                 this.otherBooks = this.allBooks;
 
-                this.filter = this.activatedRoute.snapshot.queryParams['filter'];
-                this.filterList(this.filter);
+                this.filterList(this.activatedRoute.snapshot.queryParams['filter']);
             },
             error: () => console.error("failed to fetch titles from bookstore")
         });   
@@ -68,11 +64,15 @@ export class BookSelectorComponent implements OnInit {
     private filterList(filter: string) {
         this.searching = true;
         this.searchResults = [];
-        console.log("search filter", filter);
-        if (filter === '' || filter === null || filter === undefined) {
+        if (filter === '' || filter === null || filter === undefined || this.allBooks == null) {
             this.searching = false;
             return;
         } 
+
+        console.log("search filter", filter);
+        filter = decodeURIComponent(filter);
+        console.log(" decoded search filter", filter);
+        this.filter = filter;
 
         this.searchResults = this.allBooks.filter(s => s.title.toLowerCase().indexOf(filter.toLowerCase()) != -1);
         if (this.searchResults.length == 1) {

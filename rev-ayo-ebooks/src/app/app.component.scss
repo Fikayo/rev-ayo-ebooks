@@ -5,6 +5,7 @@
     width: 100%;
 
     #toolbar {
+        color: $darkMenuColor;
         margin-top: 10px;
         position: absolute;
         /* border: 3px solid red; */
@@ -16,8 +17,9 @@
             flex: 1 1 auto;
         }
 
-        &.white {
-            color: #ffffff8c !important;
+        &.white, &.white * {
+            // color: #ffffff8c !important;
+            color: #ffffffdd !important;
         }
 
         ebook-search-bar {
@@ -26,6 +28,7 @@
     }
 
     #bottom-nav {
+        z-index: 10;
         position: fixed;
         bottom: 0px;
         height: 80px;

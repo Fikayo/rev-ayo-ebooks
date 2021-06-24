@@ -1,0 +1,57 @@
+SIGNING INSTRUCTIONS
+=====================
+
+1. Make release build
+
+cordova build --release android
+
+2. Ensure keystore exists - If not, use the following structure:
+
+keytool -genkey -v -keystore ebooks.keystore -alias ebookskeystore -keyalg RSA -keysize 2048 -validity 10000
+
+keystore password? : ebooks@keystore
+What is your first and last name? :  Fikayo Odunayo
+What is the name of your organizational unit? :  Publications
+What is the name of your organization? :  Chapel of Victory International
+What is the name of your City or Locality? :  Port Harcourt
+What is the name of your State or Province? :  Rivers
+What is the two-letter country code for this unit? :  NG
+
+Verify
+CN=Fikayo Odunayo, OU=Publications, O=Chapel of Victory International, L=Port Harcourt, ST=Rivers, C=NG 
+
+Import keystore to universtal standard
+keytool -importkeystore -srckeystore ebooks.keystore -destkeystore ebooks.keystore -deststoretype pkcs12
+
+3. Place the generated keystore in
+
+old version cordova
+...\platforms\android\ant-build
+
+New version cordova
+...\platforms\android\build\outputs\apk
+
+4. Sign apk
+Go to apk folder (same path as step 3)
+To sign the unsigned APK, run the jarsigner tool which is also included in the JDK:
+
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ebooks.keystore release/app-release-unsigned.apk ebookskeystore
+
+4.5) Verify the signed apk:
+
+jarsigner -verify -verbose -certs release/app-release-unsigned.apk
+
+5. Finally, we need to run the zip align tool to optimize the APK:
+Navigate to apk folder from step 3.
+
+zipalign -v 4 release/app-release-unsigned.apk release/ebooks.apk
+OR
+/Users/fikayo/Library/Android/sdk/build-tools/27.0.3/zipalign -v 4 release/app-release-unsigned.apk release/ebooks.apk
+
+Now we have our final release binary called ebooks.apk and we can release this on the Google Play Store.
+Transfer to phone via 
+adb install <path to apk>
+
+
+For reference see
+https://stackoverflow.com/questions/26449512/how-to-create-a-signed-apk-file-using-cordova-command-line-interface

@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
-import { NavigationEnd, NavigationError, NavigationStart, Router } from '@angular/router';
+import { NavigationEnd, NavigationError, Router } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -15,12 +15,15 @@ export class AppComponent {
     public showSearch!: boolean;
     public libActive!: boolean;
     public personalActive!: boolean;
+    public showMenu!: boolean;
 
     constructor(
         private router: Router,
         private location: Location
     ) {
+        console.log("MADE IT TO THE CITY");
         this.monitorNavigation();
+        this.fixReload();
     }
 
     public goBack() {
@@ -48,6 +51,7 @@ export class AppComponent {
         this.showToolbar = true;;
         this.toolbarIsBlack = true;
         this.showSearch = true;
+        this.showMenu = true;
     }
 
     private monitorNavigation() {
@@ -62,6 +66,7 @@ export class AppComponent {
                     }                    
                     if (url.startsWith("/details")) {
                         this.toolbarIsBlack = false;
+                        this.showMenu = false;
                     }
                     if (url.startsWith("/personal")) {
                         this.showSearch = false;
@@ -69,13 +74,25 @@ export class AppComponent {
 
                     this.libActive = url.startsWith("/search") || url.startsWith("/details");
                     this.personalActive = url.startsWith("/personal");
+                    
+                    // trick the Router into believing it's last link wasn't previously loaded
+                    this.router.navigated = false;
+                    // if you need to scroll back to top, here is the right place
+                    window.scrollTo(0, 0);
                 }
 
                 if (event instanceof NavigationError) {
                     // Present error to user
-                    console.log(event.error);
+                    console.log("navigation error", event.error);
                 }
             },
         });
+    }
+
+    private fixReload(): void {
+        // override the route reuse strategy
+        this.router.routeReuseStrategy.shouldReuseRoute = function(){
+            return false;
+        }
     }
 }

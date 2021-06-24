@@ -1,7 +1,10 @@
 <div id="searchbar">
     <form (submit)="searchSubmitted()" >
         
-        <mat-form-field class="example-full-width" style="width: 100%">
+        <!-- <mat-form-field class="example-full-width" style="width: 100%">
+            <button matPrefix mat-icon-button type="button">
+                <mat-icon>search</mat-icon>
+            </button>
             <input #autocompleteInput matInput
                 type="text" 
                 placeholder="{{placeholder}}" 
@@ -22,7 +25,28 @@
                     {{option.title}}
                 </mat-option>
             </mat-autocomplete>   
-        </mat-form-field>
+        </mat-form-field> -->
+
+        <div class="input-box" style="width: 100%">
+            <button matPrefix mat-icon-button type="button" class="prefix">
+                <mat-icon>search</mat-icon>
+            </button>
+            <input #autocompleteInput
+                type="text" 
+                placeholder="{{placeholder}}" 
+                aria-label="Search" 
+                [formControl]="searchBox"
+                [matAutocomplete]="auto">
+            <button  class="suffix" *ngIf="autocompleteInput.value" matSuffix mat-icon-button aria-label="Clear" type="button" (click)="autocompleteInput.value = ''">
+                <mat-icon>close</mat-icon>
+            </button>
+            
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let option of autoCompleteList" [value]="option" (onSelectionChange)="filterBookTitles($event)">
+                    {{option.title}}
+                </mat-option>
+            </mat-autocomplete> 
+        </div>
         
     </form>
 

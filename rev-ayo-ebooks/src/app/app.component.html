@@ -1,28 +1,43 @@
 <div id="rev-ayo-ebooks">
-    <mat-toolbar id="toolbar" *ngIf="showToolbar" [ngClass]="{white: !toolbarIsBlack}">
-        <button (click)="goBack()" mat-icon-button class="back" aria-label="Back">
-            <!-- <mat-icon>menu</mat-icon> -->
-            <mat-icon>keyboard_backspace</mat-icon>
-        </button>
-        <!-- <span class="spacer"></span> -->
-        <ebook-search-bar *ngIf="showSearch" class="spacer" (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
-        <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
-            <mat-icon>search</mat-icon>
-        </button> -->
-    </mat-toolbar>
-    <router-outlet #o="outlet"></router-outlet>
-    <mat-toolbar *ngIf="showToolbar" id="bottom-nav">
-        <div class="item" [ngClass]="{active: libActive}">
-            <button (click)="openLibrary()" mat-icon-button class="library" aria-label="Library">
-                <mat-icon>library_books</mat-icon>
-            </button>
-            <span class="label">Library</span>
-        </div>
-        <div class="item"  [ngClass]="{active: personalActive}">
-            <button (click)="openPersonal()" mat-icon-button class="personal" aria-label="Personal">
-                <mat-icon>playlist_add_check</mat-icon>
-            </button>
-            <span class="label">Collection</span>
-        </div>
-    </mat-toolbar>
+    <mat-drawer-container class="example-container" [hasBackdrop]="true">
+        <mat-drawer #drawer [mode]="'over'">
+            
+            <mat-divider></mat-divider>
+            <mat-list>
+                <mat-list-item>
+                    <a href="/settings"><mat-icon mat-list-icon>settings</mat-icon> Settings</a>
+                  </mat-list-item>
+            </mat-list>
+        </mat-drawer>
+        <mat-drawer-content>
+            <mat-toolbar id="toolbar" *ngIf="showToolbar" [ngClass]="{white: !toolbarIsBlack}">
+                <button (click)="drawer.toggle()" *ngIf="showMenu" mat-icon-button  aria-label="Menu">
+                    <mat-icon>menu</mat-icon>
+                </button>
+                <button (click)="goBack()" *ngIf="!showMenu" mat-icon-button aria-label="Back">
+                    <mat-icon>keyboard_backspace</mat-icon>
+                </button>
+                <!-- <span class="spacer"></span> -->
+                <ebook-search-bar *ngIf="showSearch" class="spacer" (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
+                <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
+                    <mat-icon>search</mat-icon>
+                </button> -->
+            </mat-toolbar>
+            <router-outlet #o="outlet"></router-outlet>
+            <mat-toolbar *ngIf="showToolbar" id="bottom-nav">
+                <div class="item" [ngClass]="{active: libActive}">
+                    <button (click)="openLibrary()" mat-icon-button class="library" aria-label="Library">
+                        <mat-icon>library_books</mat-icon>
+                    </button>
+                    <span class="label">Library</span>
+                </div>
+                <div class="item"  [ngClass]="{active: personalActive}">
+                    <button (click)="openPersonal()" mat-icon-button class="personal" aria-label="Personal">
+                        <mat-icon>playlist_add_check</mat-icon>
+                    </button>
+                    <span class="label">Collection</span>
+                </div>
+            </mat-toolbar>
+        </mat-drawer-content>
+    </mat-drawer-container>
 </div>

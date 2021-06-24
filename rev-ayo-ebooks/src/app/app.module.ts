@@ -1,5 +1,14 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule, HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
+import * as hammer from 'hammerjs';
+
+export class MyHammerConfig extends HammerGestureConfig {
+  overrides = <any>{
+    swipe: { direction: hammer.DIRECTION_HORIZONTAL },
+    pinch: { enable: false },
+    rotate: { enable: false }
+  };
+}
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -27,6 +36,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
 import { PersonalBooksComponent } from './pages/personal-books/personal-books.component';
 import {MatTabsModule} from '@angular/material/tabs';
 import { UserService } from './services/user/user.service';
+import {MatSidenavModule} from '@angular/material/sidenav';
+import { HammerModule } from '@angular/platform-browser';
 
 @NgModule({
   declarations: [
@@ -51,6 +62,7 @@ import { UserService } from './services/user/user.service';
     MatListModule,
     MatToolbarModule,
     MatTabsModule,
+    MatSidenavModule,
 
     // Bootstrap
     NgbModule,
@@ -63,12 +75,13 @@ import { UserService } from './services/user/user.service';
     FormsModule,
     ReactiveFormsModule,
     EbookRoutingModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    HammerModule
   ],
   providers: [
     BookstoreService,
     UserService,
-    {provide: HAMMER_GESTURE_CONFIG, useClass: HammerGestureConfig}
+    {provide: HAMMER_GESTURE_CONFIG, useClass: MyHammerConfig}
   ],
   bootstrap: [AppComponent]
 })

@@ -1,12 +1,13 @@
 {
-  "name": "rev-ayo-ebooks",
-  "version": "0.0.0",
+  "name": "com.cvi.ebooks",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "android": "ng build & cordova run android"
   },
   "private": true,
   "dependencies": {
@@ -22,7 +23,10 @@
     "@angular/router": "~12.0.5",
     "@ng-bootstrap/ng-bootstrap": "^9.1.3",
     "bootstrap": "^5.0.1",
+    "cordova": "^10.0.0",
+    "hammerjs": "^2.0.8",
     "ngx-extended-pdf-viewer": "^9.0.2",
+    "properties-parser": "^0.3.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.1.0",
     "zone.js": "~0.11.4"
@@ -32,8 +36,11 @@
     "@angular/cli": "~12.0.5",
     "@angular/compiler-cli": "~12.0.5",
     "@angular/localize": "^12.0.5",
+    "@types/hammerjs": "^2.0.39",
     "@types/jasmine": "~3.6.0",
     "@types/node": "^12.11.1",
+    "cordova-android": "^9.1.0",
+    "cordova-plugin-whitelist": "^1.3.4",
     "jasmine-core": "~3.7.0",
     "karma": "~6.3.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -41,5 +48,21 @@
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
     "typescript": "~4.2.3"
+  },
+  "displayName": "Ebooks",
+  "description": "A sample Apache Cordova application that responds to the deviceready event.",
+  "main": "index.js",
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "Apache Cordova Team",
+  "license": "Apache-2.0",
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-whitelist": {}
+    },
+    "platforms": [
+      "android"
+    ]
   }
 }
