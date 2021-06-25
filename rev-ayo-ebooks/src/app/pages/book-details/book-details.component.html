@@ -1,25 +1,38 @@
 <div id="details" *ngIf="book">
-    <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div>
-    <div id="shade"></div>
-    <div class="cover-container">
-        <img class="cover" mat-card-image src="{{book.cover}}" alt="{{book.title}}">        
-        <div class="cover-info">
-            <div class="title">
-                {{book.title}}
-                <span class="author">{{book.author}}</span>
+    <div id="top">
+        <!-- <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div> -->
+        <!-- <div id="shade"></div> -->
+        <div class="cover-container">
+            <img class="cover" mat-card-image src="{{book.cover}}" alt="{{book.title}}">      
+            
+            <button class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
+                <mat-icon *ngIf="bookInWishList" color="primary">bookmark</mat-icon>
+                <mat-icon *ngIf="!bookInWishList">library_add</mat-icon>
+            </button>
+
+            <div class="cover-info">
+                <div class="title">
+                    {{book.title}}
+                    <span class="author">{{book.author}}</span>
+                </div>
             </div>
         </div>
-    </div>
-
-    <div id="bottom">
-        <p>
-            {{book.description}}
-        </p>
-
-        <ebook-bookset [title]="'You might also like'" [books]="suggestions" [style]="'grid'"></ebook-bookset>
+         
     </div>
 
     <div class="action-container">
-        <button (click)="onActionClick(book)" id="main-action" mat-raised-button color="primary">{{actionText}}</button>
+        <button (click)="onActionClick(book)" id="main-action" mat-flat-button color="primary">{{actionText}}</button>
     </div>
+
+    <div id="bottom">
+        <div class="about">
+            <span class="title">About this book</span>
+            <p>
+                {{book.description}}
+            </p>
+        </div>
+
+        <ebook-bookset [title]="'You might also like'" [books]="suggestions"></ebook-bookset>
+    </div>
+
 </div>

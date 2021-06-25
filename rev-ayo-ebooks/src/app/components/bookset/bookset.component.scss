@@ -2,7 +2,7 @@
     .topbar {
         display: flex;
         .set-title {
-            font-weight: 400;
+            font-weight: 500;
             font-size: 17px;
         }
 
@@ -15,6 +15,7 @@
         width: 100%;
         // height: 300px;
         overflow: auto;
+        overflow-y: hidden;
         display: inline-flex;
         align-items: center;
         margin-top: 10px;
@@ -26,26 +27,22 @@
             grid-template-columns: auto auto auto auto;
 
             .book {
-                $bookWidth: 90px;
-                width: $bookWidth;
-                margin-left: 0;
+                // $bookWidth: 90px;
+                // width: $bookWidth;
+                // margin-left: 0;
                 margin-right: 0;
-                .cover {
-                    width: $bookWidth;
-                    height: $bookWidth / $imgRatio;
-                }
-                // display: inline-block;
-                // left: 50%;
-                // transform: translate(-50%, 0);
-                // margin: 0;
+                // .cover {
+                //     width: $bookWidth;
+                //     height: $bookWidth / $imgRatio;
+                // }
             }
         }
       
         .book {
-            $bookWidth: 115px;
+            // $bookWidth: 115px;
             margin: 5px; 
             box-shadow: none;
-            width: $bookWidth;
+            // width: $bookWidth;
             float: left;
             height: 250px;
 
@@ -54,8 +51,8 @@
             }
             
             .cover {
-                width: $bookWidth;
-                height: $bookWidth/$imgRatio;
+                // width: $bookWidth;
+                // height: $bookWidth/$imgRatio;
                 border-radius: 5px;
             }
     
@@ -76,6 +73,50 @@
       
             &.active {
                 font-weight: bold;
+            }
+        }
+
+        &.small {
+            .book {
+                $bookWidth: 90px;
+                width: $bookWidth;
+                .cover {
+                    width: $bookWidth;
+                    height: $bookWidth / $imgRatio;
+                }
+            }
+        }
+
+        &.medium {
+            .book {
+                $bookWidth: 115px;
+                width: $bookWidth;
+                .cover {
+                    width: $bookWidth;
+                    height: $bookWidth / $imgRatio;
+                }
+            }
+        }
+
+        &.large {
+            .book {
+                $bookWidth: 130px;
+                width: $bookWidth;
+                .cover {
+                    width: $bookWidth;
+                    height: $bookWidth / $imgRatio;
+                }
+            }
+        }
+
+        &.xlarge {
+            .book {
+                $bookWidth: 140px;
+                width: $bookWidth;
+                .cover {
+                    width: $bookWidth;
+                    height: $bookWidth / $imgRatio;
+                }
             }
         }
     }

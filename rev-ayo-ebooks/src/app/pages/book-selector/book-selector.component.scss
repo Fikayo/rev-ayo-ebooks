@@ -1,8 +1,9 @@
 @import "/src/styles/_variables.scss";
 
-#bookstore {
+#bookstore {    
     padding: 0 $pageSidePadding;
     padding-top: $pageTopPadding;
+    padding-bottom: $pageBottomPadding;
 
     #no-results {
         // margin-top: 50px;

@@ -38,6 +38,7 @@ import {MatTabsModule} from '@angular/material/tabs';
 import { UserService } from './services/user/user.service';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import { HammerModule } from '@angular/platform-browser';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 @NgModule({
   declarations: [
@@ -63,6 +64,7 @@ import { HammerModule } from '@angular/platform-browser';
     MatToolbarModule,
     MatTabsModule,
     MatSidenavModule,
+    MatSnackBarModule,
 
     // Bootstrap
     NgbModule,

@@ -5,7 +5,7 @@
         <!-- <span class="spacer"></span> -->
         <!-- <mat-icon *ngIf="style == 'row'" class="arrow">arrow_forward</mat-icon> -->
     </div>
-    <div class="set" [ngClass]="{grid: style=='grid'}">
+    <div class="set {{size}}" [ngClass]="{grid: style=='grid'}">
         <mat-card class="book" *ngFor="let book of books" (click)="selectBook(book)">
             <img mat-card-image class="cover" src="{{book.cover}}" alt="{{book.title}}">
             <mat-card-content class="info">

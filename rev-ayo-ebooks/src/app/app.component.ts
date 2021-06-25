@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { NavigationEnd, NavigationError, Router } from '@angular/router';
+import { UserService } from './services/user/user.service';
 
 @Component({
   selector: 'app-root',
@@ -21,13 +22,8 @@ export class AppComponent {
         private router: Router,
         private location: Location
     ) {
-        console.log("MADE IT TO THE CITY");
         this.monitorNavigation();
         this.fixReload();
-    }
-
-    public goBack() {
-        this.location.back();
     }
 
     public onSelectedFilter(filter: any) {  
@@ -39,6 +35,10 @@ export class AppComponent {
         this.router.navigate([`/search/`], extras);
     }
 
+    public goBack() {
+        this.location.back();
+    }
+
     public openLibrary() {
         this.router.navigate([`/search`]);
     }
@@ -46,6 +46,7 @@ export class AppComponent {
     public openPersonal() {
         this.router.navigate([`/personal`]);
     }
+
 
     private defaultUI() {
         this.showToolbar = true;;
@@ -65,7 +66,7 @@ export class AppComponent {
                         this.showToolbar = false;
                     }                    
                     if (url.startsWith("/details")) {
-                        this.toolbarIsBlack = false;
+                        // this.toolbarIsBlack = false;
                         this.showMenu = false;
                     }
                     if (url.startsWith("/personal")) {

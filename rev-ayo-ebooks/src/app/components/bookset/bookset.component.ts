@@ -16,6 +16,7 @@ export class BooksetComponent implements OnInit {
     @Input() style: string = "row";
     @Input() showTitle: boolean = true;
     @Input() showPrice: boolean = true;
+    @Input() size: string = "xlarge";
 
     constructor(private router: Router) { }
 

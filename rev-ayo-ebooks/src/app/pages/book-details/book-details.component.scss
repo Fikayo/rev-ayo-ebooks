@@ -4,11 +4,17 @@
 
     // position: absolute;
     height: 100%;
+    padding: 0 $pageSidePadding;
+    padding-top: $pageTopPadding;
+    padding-bottom: $pageBottomPadding;
 
     .action-container {
-        position: fixed;
+        position: relative;
+        // margin-top: 40px;
+        margin-top: 0px;
+        margin-bottom: 20px;
         width: 85%;
-        bottom: 80px;
+        // bottom: 80px;
         left: 50%;
         transform: translate(-50%, -50%);
 
@@ -19,76 +25,96 @@
     }
    
 
-    .bg-image {      
-        /* Add the blur effect */
-        filter: blur(8px);
-        -webkit-filter: blur(8px);
-      
-        /* Full height */
-        height: 100%;
-      
-        /* Center and scale the image nicely */
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-    }
-
-    #book-info, #shade {
-        height: 300px;
-        width: 100%;
-        // border: 4px solid blue;
-    }
-
-    #shade {
-        position: absolute;
-        top: 0px;
-        background: rgb(0 0 0 / 50%);
-    }
-
-    .cover-container {
-        position: absolute;
-        top: 80px;
-        left: 15px;
-
-        .cover {
-            height: 205px;
-            width: 150px;
-            border: 2px solid white;
-            position: relative;
-            top: 15px;
-            left: inherit;
+    #top {
+        $topHeight: 300px;
+        // height: $topHeight;
+        .bg-image {      
+            /* Add the blur effect */
+            filter: blur(8px);
+            -webkit-filter: blur(8px);
+        
+            /* Full height */
+            height: 100%;
+        
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
         }
 
-        .cover-info {
-            left: 150px;
-            position: relative;
-            /* float: right; */
-            display: flex;
-            top: -150px;
-            width: 150px;
-            margin-left: 10px;
-            // height: 205px;
-            /* border: 1px solid red; */
+        #book-info, #shade {
+            height: $topHeight;
+            width: 100%;
+            // border: 4px solid blue;
+        }
 
-            .title {
-                color: white;
-                font-weight: 400;
-                font-size: 20px;
-                /* text-align: center; */
-                line-height: 1.5;
+        #shade {
+            position: absolute;
+            top: 0px;
+            background: rgb(0 0 0 / 50%);
+        }
+
+        .cover-container {
+            // position: absolute;
+            // top: 80px;
+            position: relative;
+            // left: 15px;
+
+            .cover {
+                height: 205px;
+                width: 150px;
+                border: 2px solid white;
+                position: relative;
+                top: 15px;
+                // left: inherit;
+                left: $pageSidePadding;
             }
 
-            .author {
-                color: white;
-                font-size: small;
-                margin-top: 10px;
-                display: block;
+            .cover-info {
+                left: 150px;
+                position: relative;
+                /* float: right; */
+                display: flex;
+                top: -150px;
+                width: 220px;
+                margin-left: 10px;
+                // height: 205px;
+                /* border: 1px solid red; */
+                // color: white;
+
+                .title {
+                    font-weight: 400;
+                    font-size: 20px;
+                    /* text-align: center; */
+                    line-height: 1.5;
+                }
+
+                .author {
+                    font-size: small;
+                    margin-top: 10px;
+                    display: block;
+                    color: $my-primary;
+                }
+            }
+
+            .icon {
+                float: right;
             }
         }
+
     }
 
     #bottom {
-        margin-top: 20px;
-        padding: 0 $pageSidePadding;
+        // padding: 0 $pageSidePadding;
+
+        .about {
+            margin-bottom: 20px;
+            .title {
+                font-weight: 500;
+                font-size: 17px;
+                margin-bottom: 10px;
+                display: block;
+            }
+        }
     }
 }

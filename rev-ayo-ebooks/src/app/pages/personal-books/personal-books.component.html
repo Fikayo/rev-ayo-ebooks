@@ -1,10 +1,10 @@
 <div id="personal">
     <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedIndex" (swipeleft)="swipeLeft()" (swiperight)="swipeRight()" >
         <mat-tab label="My Books">
-            <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" ></ebook-bookset>
+            <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" [size]="'small'"></ebook-bookset>
         </mat-tab>
         <mat-tab label="Wishlist">
-            <ebook-bookset [books]="wishlist" [style]="'grid'"></ebook-bookset>
+            <ebook-bookset [books]="wishlist" [style]="'grid'" [size]="'small'"></ebook-bookset>
         </mat-tab>
     </mat-tab-group>
 </div>

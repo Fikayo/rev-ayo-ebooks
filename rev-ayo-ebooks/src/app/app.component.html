@@ -11,6 +11,7 @@
         </mat-drawer>
         <mat-drawer-content>
             <mat-toolbar id="toolbar" *ngIf="showToolbar" [ngClass]="{white: !toolbarIsBlack}">
+                
                 <button (click)="drawer.toggle()" *ngIf="showMenu" mat-icon-button  aria-label="Menu">
                     <mat-icon>menu</mat-icon>
                 </button>
@@ -19,9 +20,7 @@
                 </button>
                 <!-- <span class="spacer"></span> -->
                 <ebook-search-bar *ngIf="showSearch" class="spacer" (onSelectedOption)="onSelectedFilter($event)"></ebook-search-bar>
-                <!-- <button mat-icon-button class="example-icon" aria-label="Example icon-button with share icon">
-                    <mat-icon>search</mat-icon>
-                </button> -->
+
             </mat-toolbar>
             <router-outlet #o="outlet"></router-outlet>
             <mat-toolbar *ngIf="showToolbar" id="bottom-nav">
