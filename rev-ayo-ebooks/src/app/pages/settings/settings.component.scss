@@ -1,0 +1,19 @@
+@import "/src/styles/_variables.scss";
+
+#settings {
+
+    height: 100%;
+
+    .title {
+        margin-left: 70px;
+        font-size: 25px;
+        padding-top: 28px;
+    }
+
+    .list {
+        margin-top: 30px;
+        padding: $pageSidePadding;
+        border-top: 1px solid #a0a0a070;
+    }
+
+}

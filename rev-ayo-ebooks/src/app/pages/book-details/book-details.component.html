@@ -6,8 +6,8 @@
             <img class="cover" mat-card-image src="{{book.cover}}" alt="{{book.title}}">      
             
             <button class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
-                <mat-icon *ngIf="bookInWishList" color="primary">bookmark</mat-icon>
-                <mat-icon *ngIf="!bookInWishList">library_add</mat-icon>
+                <mat-icon *ngIf="bookInWishList" color="primary">playlist_add_check</mat-icon>
+                <mat-icon *ngIf="!bookInWishList">playlist_add</mat-icon>
             </button>
 
             <div class="cover-info">

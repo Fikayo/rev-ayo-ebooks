@@ -9,7 +9,7 @@
         margin-top: 10px;
         position: absolute;
         /* border: 3px solid red; */
-        z-index: 1000;
+        // z-index: -1;
         // background: #ffffff47;
         background: #ffffff00;
 
@@ -24,6 +24,27 @@
 
         ebook-search-bar {
             margin: 0 20px;
+        }
+
+        .searchbutton {
+            $background: #ffffff00;
+            display: flex;
+            align-items: center;
+            border: 1px solid #a0a0a069;
+            border-radius: 10px;
+            padding-left: 0.5rem;
+            overflow: hidden;
+            background: $background;
+            color: #555;
+            font-size: 14px;
+            width: 100%;
+            $space: 4px;
+            padding-top: $space;
+            padding-bottom: $space;
+
+            .text {
+                width: 100%;
+            }
         }
     }
 

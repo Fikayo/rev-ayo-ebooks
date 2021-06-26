@@ -1,14 +1,16 @@
-import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterViewInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstore.service';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'ebook-search-bar',
-  templateUrl: './search-bar.component.html',
-  styleUrls: ['./search-bar.component.scss']
-})
-export class SearchBarComponent implements OnInit {
+    selector: 'ebook-searchpage',
+    templateUrl: './searchpage.component.html',
+    styleUrls: ['./searchpage.component.scss']
+  })
+export class SearchpageComponent implements OnInit, AfterViewInit {
 
     public searchBox = new FormControl();
     public placeholder: string = "Search...";
@@ -23,7 +25,10 @@ export class SearchBarComponent implements OnInit {
     @Output()
     public onSelectedOption = new EventEmitter();
 
-    constructor(public bookstore: BookstoreService) { }
+    constructor(
+        private router: Router,
+        private location: Location,
+        public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
         this.bookstore.fetchTitles().subscribe({    
@@ -36,12 +41,24 @@ export class SearchBarComponent implements OnInit {
             this.autoCompleteExpenseList(userInput);
         });
     }
-
-    public searchSubmitted() {
-        this.autoCompleteList = [];
-        this.onSelectedOption.emit(this.searchBox.value);
+    
+    ngAfterViewInit() {
+        this.focusOnPlaceInput();
     }
- 
+    
+    public goBack() {
+        this.location.back();
+    }
+    
+    public search(filter: string) {
+        let extras: any = null;
+        if (filter != null || filter != undefined) {
+            extras = { queryParams: { filter: encodeURIComponent(filter.trim()) } };
+        }
+
+        this.router.navigate([`/search/`], extras);
+    }
+
     private autoCompleteExpenseList(input: string) {
         this.autoCompleteList = this.filterList(input);;
     }
@@ -53,21 +70,6 @@ export class SearchBarComponent implements OnInit {
 
         return val ? this.allTitles.filter(s => s.title.toLowerCase().indexOf(val.toLowerCase()) != -1)
             : this.allTitles;
-    }
-
-    // after you clicked an autosuggest option, this function will show the field you want to show in input
-    public displayFn(book: BookTitle) {
-        let k = book ? book.title : book;
-        return k;
-    }
-
-    public filterBookTitles(event: any) {
-        var selected = event.source.value;
-        if (selected) { 
-            this.onSelectedOption.emit(selected.title);
-        }
-
-        this.focusOnPlaceInput();
     }
 
     // focus the input field and remove any unwanted text.

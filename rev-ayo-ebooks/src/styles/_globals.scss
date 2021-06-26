@@ -1,4 +1,4 @@
-
+@import "_variables";
 html, body { height: 100%; }
 body {
     margin: 0; 
@@ -8,4 +8,25 @@ body {
 
 .mat-drawer-container {
     background-color: white;
+}
+
+.ebook-dialog {
+    width: 90%;
+    .mat-dialog-container  {
+        padding: 0;
+    }
+}
+
+
+.avatar {
+    $size: 40px;
+    width: $size;
+    height: $size;
+    img {
+        border-radius: 50%;
+        width: $size;
+        height: $size;
+        border: 2px dashed #ccc;
+        padding: 1px;
+    }
 }

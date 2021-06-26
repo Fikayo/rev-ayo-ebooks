@@ -17,7 +17,10 @@ import { EbookRoutingModule } from './ebook-routing.module';
 import { MatGridListModule } from '@angular/material/grid-list';
 import {MatIconModule} from '@angular/material/icon';
 import { ReaderComponent } from './pages/reader/reader.component';
+
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
+
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {MatCardModule} from '@angular/material/card';
@@ -39,6 +42,10 @@ import { UserService } from './services/user/user.service';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import { HammerModule } from '@angular/platform-browser';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import { SearchpageComponent } from './pages/searchpage/searchpage.component';
+import {MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS} from '@angular/material/dialog';
+import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
+import { SettingsComponent } from './pages/settings/settings.component';
 
 @NgModule({
   declarations: [
@@ -49,6 +56,9 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     SearchBarComponent,
     BookDetailsComponent,
     PersonalBooksComponent,
+    SearchpageComponent,
+    SettingsDialogComponent,
+    SettingsComponent,
   ],
   imports: [
     // Angular Material Modules
@@ -65,12 +75,14 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
     MatTabsModule,
     MatSidenavModule,
     MatSnackBarModule,
+    MatDialogModule,
 
     // Bootstrap
     NgbModule,
 
     // PDF Reader
     NgxExtendedPdfViewerModule,
+    PdfViewerModule,
 
     HttpClientModule,
     BrowserModule,
@@ -83,7 +95,8 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
   providers: [
     BookstoreService,
     UserService,
-    {provide: HAMMER_GESTURE_CONFIG, useClass: MyHammerConfig}
+    {provide: HAMMER_GESTURE_CONFIG, useClass: MyHammerConfig},
+    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: true}}
   ],
   bootstrap: [AppComponent]
 })

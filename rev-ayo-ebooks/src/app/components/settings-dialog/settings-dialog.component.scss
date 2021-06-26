@@ -1,0 +1,60 @@
+#dialog {
+    padding: 20px 0;
+
+    $sidePadding: 20px;
+
+    .close {
+        padding-left: $sidePadding;
+        display: block;
+    }
+    
+    #account-section {
+
+        padding: 0px $sidePadding;
+        margin-bottom: 30px;
+
+        .user-info {
+            display: flex;
+            margin: 20px 0;
+
+            .name-info {
+                display: inline;
+                margin-left: 10px;
+
+                .name {
+                    color: #555;
+                    display: inline-block;
+
+                    .email {
+                        font-size: small;
+                        color: #999;
+                        display: block;
+                    }
+                }
+            }
+        }
+
+        .account-button {
+            border-radius: 10px;
+            width: 50%;
+            background-color: white;
+            border: 1px solid #a0a0a070;
+            left: 50%;
+            position: relative;
+            transform: translate(-50%);
+        }
+
+    }
+
+    #more {
+
+        padding: 0 $sidePadding;
+        .item {
+            align-items: center;
+            .text {
+                margin-left: 15px;
+                font-size: 15px;
+            }
+        }
+    }
+}

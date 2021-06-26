@@ -1,0 +1,50 @@
+
+@import "/src/styles/_variables.scss";
+
+#searchpage {
+
+    height: 100%;
+    padding-bottom: $pageBottomPadding;
+
+    .search-section {
+        padding-left: 15px;
+        padding-top: 21px;
+        padding-bottom: 20PX;
+        border-bottom: 1px solid #ccc;
+        align-items: center;
+        display: flex;
+
+        .input-box {
+            $background: #ffffff00;
+            display: flex;
+            align-items: center;
+            border-radius: 15px;
+            padding-left: 0.85rem;
+            overflow: hidden;
+            background: $background;
+
+            form {
+                width: 100%;
+                input {
+                    width: 80%;
+                    background: $background;
+                    flex-grow: 1;
+                    font-size: 14px;
+                    border: none;
+                    outline: none;
+                    padding: 0.5rem;
+                    color: inherit;
+                    line-height: initial;
+
+                    &::placeholder {
+                        color: inherit;
+                    }
+                }
+            }
+        }
+    }
+
+    .search-options {        
+        padding: 10px;
+    }
+}

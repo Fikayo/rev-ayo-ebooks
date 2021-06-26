@@ -2,6 +2,8 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { UserService } from './services/user/user.service';
+import { MatDialog } from '@angular/material/dialog';
+import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -11,16 +13,19 @@ import { UserService } from './services/user/user.service';
 export class AppComponent {
     title = 'rev-ayo-ebooks';
 
-    public showToolbar!: boolean;
+    public showTopToolbar!: boolean;
+    public showBottomMenu!: boolean;
     public toolbarIsBlack!: boolean;
     public showSearch!: boolean;
+    public showMiniSearch!: boolean;
     public libActive!: boolean;
     public personalActive!: boolean;
-    public showMenu!: boolean;
+    public showBack!: boolean;
 
     constructor(
         private router: Router,
-        private location: Location
+        private location: Location,
+        private dialog: MatDialog,
     ) {
         this.monitorNavigation();
         this.fixReload();
@@ -43,16 +48,25 @@ export class AppComponent {
         this.router.navigate([`/search`]);
     }
 
+    public openSearch() {
+        this.router.navigate([`/searchpage`]);
+    }
+
     public openPersonal() {
         this.router.navigate([`/personal`]);
     }
 
+    public openDialog() {
+        this.dialog.open(SettingsDialogComponent, { panelClass: "ebook-dialog" });
+    }
 
     private defaultUI() {
-        this.showToolbar = true;;
+        this.showTopToolbar = true;
+        this.showBottomMenu = true;
         this.toolbarIsBlack = true;
         this.showSearch = true;
-        this.showMenu = true;
+        this.showMiniSearch = false;
+        this.showBack = false;
     }
 
     private monitorNavigation() {
@@ -63,14 +77,22 @@ export class AppComponent {
                     let url = this.router.url;
                     console.log("router url", url);
                     if (url.startsWith("/read")) {
-                        this.showToolbar = false;
+                        this.showTopToolbar = false;
+                        this.showBottomMenu = false;
                     }                    
                     if (url.startsWith("/details")) {
-                        // this.toolbarIsBlack = false;
-                        this.showMenu = false;
-                    }
-                    if (url.startsWith("/personal")) {
+                        this.showBack = true;
                         this.showSearch = false;
+                        this.showMiniSearch = true;
+                    }
+                    if (url.startsWith("/searchpage")) {
+                        this.showTopToolbar = false;
+                        this.showBottomMenu = false;
+                    }
+                    if (url.startsWith("/settings")) {
+                        this.showBack = true;
+                        this.showSearch = false;
+                        this.showBottomMenu = false;
                     }
 
                     this.libActive = url.startsWith("/search") || url.startsWith("/details");

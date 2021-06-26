@@ -1,0 +1,27 @@
+<div id="searchpage">
+    <div class="search-section">
+        
+        <button (click)="goBack()" mat-icon-button aria-label="Back">
+            <mat-icon>keyboard_backspace</mat-icon>
+        </button>
+
+        <div class="input-box" style="width: 100%">
+            <form (submit)="search(autocompleteInput.value)" >
+                <input #autocompleteInput
+                    type="text" 
+                    placeholder="Search Bookstore" 
+                    aria-label="Search" 
+                    [formControl]="searchBox"/>
+                <button  class="suffix" *ngIf="autocompleteInput.value" matSuffix mat-icon-button aria-label="Clear" type="button" (click)="autocompleteInput.value = ''">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <mat-list class="search-options">
+        <mat-list-item class="option" *ngFor="let option of autoCompleteList" (click)="search(option.title)">
+            {{option.title}}
+        </mat-list-item>
+    </mat-list>
+</div>
