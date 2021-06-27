@@ -2,9 +2,19 @@
     <mat-tab-group mat-align-tabs="center" [selectedIndex]="selectedIndex" (swipeleft)="swipeLeft()" (swiperight)="swipeRight()" >
         <mat-tab label="My Books">
             <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" [size]="'small'"></ebook-bookset>
+            <div class="empty-list" *ngIf="myBooks == undefined || myBooks.length == 0">
+                <span class="title">Start your collection</span>
+                <span class="text">From personal development to righteous living, we have lots of books to help you grow</span>
+                <button (click)="openShop()" mat-flat-button color="primary">Shop for books</button>
+            </div>
         </mat-tab>
-        <mat-tab label="Wishlist">
+        <mat-tab label="Wish List">
             <ebook-bookset [books]="wishlist" [style]="'grid'" [size]="'small'"></ebook-bookset>
+            <div class="empty-list" *ngIf="wishlist == undefined || wishlist.length == 0">
+                <span class="title">Add to your wish list</span>
+                <span class="text">Add books which you plan to buy to your wish list so you don't forget them </span>
+                <button (click)="openShop()" mat-flat-button color="primary">Shop for books</button>
+            </div>
         </mat-tab>
     </mat-tab-group>
 </div>

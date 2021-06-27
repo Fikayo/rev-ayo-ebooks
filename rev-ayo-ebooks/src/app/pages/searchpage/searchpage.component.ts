@@ -13,8 +13,6 @@ import { Router } from '@angular/router';
 export class SearchpageComponent implements OnInit, AfterViewInit {
 
     public searchBox = new FormControl();
-    public placeholder: string = "Search...";
-
     public filteredOptions!: Observable<string[]>;
     public allTitles: BookTitle[] = [];
     public autoCompleteList!: any[];
@@ -50,15 +48,6 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         this.location.back();
     }
     
-    public search(filter: string) {
-        // let extras: any = null;
-        // if (filter != null || filter != undefined) {
-        //     extras = { queryParams: { filter: encodeURIComponent(filter.trim()) } };
-        // }
-
-        // this.router.navigate([`/search/`], extras);
-    }
-
     private autoCompleteExpenseList(input: string) {
         this.autoCompleteList = this.filterList(input);;
     }

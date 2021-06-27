@@ -59,25 +59,27 @@
             // position: relative;
             // left: 15px;
             height: 100%;
+            display: flex;
 
             .cover {
                 height: 205px;
                 width: 150px;
-                border: 2px solid white;
-                position: relative;
-                top: 15px;
-                // left: inherit;
-                left: $pageSidePadding;
+                // border: 2px solid white;
+                // position: relative;
+                // top: 15px;
+                // // left: inherit;
+                // left: $pageSidePadding;
                 border-radius: 9px;
             }
 
             .cover-info {
-                left: 150px;
+                // left: 150px;
                 position: relative;
                 /* float: right; */
-                display: flex;
-                top: -150px;
-                width: 220px;
+                // display: flex;
+                // top: -150px;
+                // width: 220px;
+                top: 50px;
                 margin-left: 17px;
                 // height: 205px;
                 /* border: 1px solid red; */
@@ -98,9 +100,12 @@
                 }
             }
 
-            .icon {
-                float: right;
-            }
+        }
+        
+        .icon {
+            position: absolute;
+            right: $pageSidePadding;
+            top: $pageTopPadding;
         }
 
     }

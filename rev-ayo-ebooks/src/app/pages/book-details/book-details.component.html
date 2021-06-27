@@ -3,13 +3,8 @@
         <!-- <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div> -->
         <!-- <div id="shade"></div> -->
         <div class="cover-container">
-            <img class="cover" mat-card-image src="{{book.cover}}" alt="{{book.title}}">      
+            <img class="cover" src="{{book.cover}}" alt="{{book.title}}">      
             
-            <button class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
-                <mat-icon *ngIf="bookInWishList" color="primary">playlist_add_check</mat-icon>
-                <mat-icon *ngIf="!bookInWishList">playlist_add</mat-icon>
-            </button>
-
             <div class="cover-info">
                 <div class="title">
                     {{book.displayName}}
@@ -17,6 +12,13 @@
                 </div>
             </div>
         </div>
+
+        
+        <button class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
+            <mat-icon *ngIf="bookInWishList" color="primary">playlist_add_check</mat-icon>
+            <mat-icon *ngIf="!bookInWishList">playlist_add</mat-icon>
+        </button>
+
          
     </div>
 

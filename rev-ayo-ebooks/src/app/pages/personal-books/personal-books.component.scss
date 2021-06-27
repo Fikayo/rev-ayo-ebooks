@@ -4,4 +4,21 @@
     padding: 0 $pageSidePadding;
     padding-top: $pageTopPadding;
 
+    .empty-list {
+        text-align: center;
+        .title {
+            font-weight: bold;
+            display: block;
+            font-size: 17px;
+        }
+        
+        .text {
+            display: block;
+        }
+
+        * {
+            margin: 25px 0;
+        }
+    }
+
 }

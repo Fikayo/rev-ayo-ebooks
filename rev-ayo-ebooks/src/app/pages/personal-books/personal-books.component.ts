@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit, ViewChildren } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
+import { Router } from '@angular/router';
 import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -12,13 +13,15 @@ export class PersonalBooksComponent implements OnInit, AfterViewInit {
     @ViewChild(MatTabGroup) group!: any;
     @ViewChildren(MatTab) tabs!: any;
 
-    public myBooks: BookTitle[] = [];
-    public wishlist: BookTitle[] = [];
+    public myBooks!: BookTitle[];
+    public wishlist!: BookTitle[];
 
     public tab_num: number = 0;
     public selectedIndex: number = 0;
 
-    constructor(private user: UserService) { }
+    constructor(
+        private router: Router,
+        private user: UserService) { }
 
     ngOnInit(): void {
         this.user.fetchMyBooks().subscribe({
@@ -27,9 +30,13 @@ export class PersonalBooksComponent implements OnInit, AfterViewInit {
         });
 
         this.user.fetchWishlist().subscribe({
-            next: (b) => this.wishlist = b,
+            // next: (b) => this.wishlist = b,
             error: () => console.error("Failed to fetch wishlist!")
         });
+    }
+
+    openShop() {
+        this.router.navigate([`/store`]);
     }
 
 

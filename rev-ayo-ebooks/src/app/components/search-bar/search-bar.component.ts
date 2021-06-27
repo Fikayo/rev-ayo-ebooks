@@ -11,8 +11,6 @@ import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstor
 export class SearchBarComponent implements OnInit {
 
     public searchBox = new FormControl();
-    public placeholder: string = "Search...";
-
     public filteredOptions!: Observable<string[]>;
     public allTitles: BookTitle[] = [];
     public autoCompleteList!: any[];

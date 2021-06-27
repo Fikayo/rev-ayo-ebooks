@@ -18,7 +18,7 @@ export class AppComponent {
     public toolbarIsBlack!: boolean;
     public showSearch!: boolean;
     public showMiniSearch!: boolean;
-    public libActive!: boolean;
+    public storeActive!: boolean;
     public personalActive!: boolean;
     public showBack!: boolean;
 
@@ -28,24 +28,15 @@ export class AppComponent {
         private dialog: MatDialog,
     ) {
         this.monitorNavigation();
-        this.fixReload();
-    }
-
-    public onSelectedFilter(filter: any) {  
-        let extras: any = null;
-        if (filter != null || filter != undefined) {
-            extras = { queryParams: { filter: encodeURIComponent(filter.trim()) } };
-        }
-
-        this.router.navigate([`/search/`], extras);
+        // this.fixReload();
     }
 
     public goBack() {
         this.location.back();
     }
 
-    public openLibrary() {
-        this.router.navigate([`/search`]);
+    public openStore() {
+        this.router.navigate([`/store`]);
     }
 
     public openSearch() {
@@ -95,13 +86,13 @@ export class AppComponent {
                         this.showBottomMenu = false;
                     }
 
-                    this.libActive = url.startsWith("/search") || url.startsWith("/details");
+                    this.storeActive = url.startsWith("/store");
                     this.personalActive = url.startsWith("/personal");
                     
                     // trick the Router into believing it's last link wasn't previously loaded
-                    this.router.navigated = false;
+                    // this.router.navigated = false;
                     // if you need to scroll back to top, here is the right place
-                    window.scrollTo(0, 0);
+                    // window.scrollTo(0, 0);
                 }
 
                 if (event instanceof NavigationError) {
