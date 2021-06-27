@@ -24,7 +24,7 @@ export class SearchBarComponent implements OnInit {
     constructor(public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
-        this.bookstore.fetchTitles().subscribe({    
+        this.bookstore.fetchAllTitles().subscribe({    
             next: (b) => this.allTitles = b,
             error: () => console.log("failed to fetch titles from bookstore")
         });   

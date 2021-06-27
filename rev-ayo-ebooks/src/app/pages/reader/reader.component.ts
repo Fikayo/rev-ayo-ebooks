@@ -36,7 +36,7 @@ export class ReaderComponent implements OnInit, OnDestroy {
         this.routeSub = this.activatedRoute.params.subscribe(params => {
             let bookID = params['isbn'];
 
-            this.bookstore.fetchBook(bookID)
+            this.bookstore.fetchBookPDF(bookID)
             .subscribe({
                 next: (b) => this.src = b,
                 error: () => console.log("failed to fetch book from bookstore")

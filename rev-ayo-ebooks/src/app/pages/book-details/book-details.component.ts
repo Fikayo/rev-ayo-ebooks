@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -17,14 +17,15 @@ export class BookDetailsComponent implements OnInit {
     public actionText: string = "Read";  
     private routeSub!: Subscription;
 
-    public bookInWishList: boolean = false;
+    public bookInWishList!: boolean;
 
     constructor(
         private router: Router,
         private activatedRoute: ActivatedRoute,
         private bookstore: BookstoreService,
         private user: UserService,
-        private snackbar: MatSnackBar) {
+        private snackbar: MatSnackBar,
+        private zone: NgZone) {
     }
 
     ngOnInit(): void {
@@ -37,13 +38,17 @@ export class BookDetailsComponent implements OnInit {
                     this.book = b;
                     this.actionText = `Buy ${this.book.price}`;
                     this.user.hasBookInWishList(this.book.ISBN).subscribe({
-                        next: (i) => this.bookInWishList = i,
+                        next: (i) => {
+                            this.zone.run(() => {
+                                this.bookInWishList = i; console.log("book in wishlist", this.book.title, this.bookInWishList, i)
+                            });
+                        },
                     })
                 },
                 error: () => console.log("failed to fetch book from bookstore")
             });
 
-            this.bookstore.fetchTitles().subscribe({    
+            this.bookstore.fetchAllTitles().subscribe({    
                 complete: () => {console.log("complete")}, 
                 next: (b) => {
                     this.suggestions = b;
@@ -66,14 +71,17 @@ export class BookDetailsComponent implements OnInit {
     public toggleBookInList() {
         this.user.toggleInWishList(this.book.ISBN).subscribe({
             next: (inList) => {
-                console.log("toggled in list: ", inList);
-                let message = "Added to Wishlist";
-                if (!inList) message = "Remove from Wishlist";
-                this.snackbar.open(message, 'Dismiss', {
-                    duration: 2000
+                
+                this.zone.run(() => {
+                    console.log("toggled in list: ", inList);
+                    let message = "Added to Wishlist";
+                    if (!inList) message = "Remove from Wishlist";
+                    this.snackbar.open(message, 'Dismiss', {
+                        duration: 1500,
+                    });
+                    
+                    this.bookInWishList = inList;
                 });
-
-                this.bookInWishList = inList;
             },
 
             error: () => console.error("failed to toggle in wishlist"),

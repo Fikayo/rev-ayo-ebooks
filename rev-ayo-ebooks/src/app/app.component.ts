@@ -90,9 +90,9 @@ export class AppComponent {
                     this.personalActive = url.startsWith("/personal");
                     
                     // trick the Router into believing it's last link wasn't previously loaded
-                    // this.router.navigated = false;
+                    this.router.navigated = false;
                     // if you need to scroll back to top, here is the right place
-                    // window.scrollTo(0, 0);
+                    window.scrollTo(0, 0);
                 }
 
                 if (event instanceof NavigationError) {

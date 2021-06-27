@@ -33,7 +33,7 @@ export class BookSelectorComponent implements OnInit {
             this.filterList(param['filter']);
         });
 
-        this.bookstore.fetchTitles().subscribe({    
+        this.bookstore.fetchAllTitles().subscribe({    
             complete: () => {console.log("complete")}, 
             next: (b) => {
                 this.allBooks = b; 

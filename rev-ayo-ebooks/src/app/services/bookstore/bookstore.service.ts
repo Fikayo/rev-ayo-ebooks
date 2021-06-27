@@ -20,7 +20,7 @@ export class BookstoreService {
 
     constructor(private http: HttpClient) { }
 
-    public fetchTitles(): Observable<BookTitle[]> {
+    public fetchAllTitles(): Observable<BookTitle[]> {
         const titlesSub = new Subject<BookTitle[]>();
 
         this.http.get("./assets/books/list.json", {responseType: "json"})
@@ -56,7 +56,31 @@ export class BookstoreService {
         return detailsSub.asObservable();
     }
 
-    public fetchBook(bookID: string): Observable<Blob> {
+    public fetchDetailsArray(bookIDs: string[]): Observable<BookTitle[]> {
+        const detailsSub = new Subject<BookTitle[]>();
+
+        this.http.get("./assets/books/list.json", {responseType: "json"})
+        .subscribe({
+            next: (data: any) => {
+                let books: BookTitle[] = [];
+
+                let allBooks: any[] = data["books"];
+                bookIDs.forEach(b => {
+                    let found = allBooks.find(el => el.ISBN == b);
+                    console.debug("found", found);
+                    if (found) {
+                        books.push(this.parseTitle(found));
+                    }
+                });
+
+                detailsSub.next(books);
+            }
+        });
+
+        return detailsSub.asObservable();
+    }
+
+    public fetchBookPDF(bookID: string): Observable<Blob> {
         const bookSub = new Subject<Blob>();
         let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
         if (bookID == "unknown") {

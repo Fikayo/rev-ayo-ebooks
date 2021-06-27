@@ -25,12 +25,15 @@ export class PersonalBooksComponent implements OnInit, AfterViewInit {
 
     ngOnInit(): void {
         this.user.fetchMyBooks().subscribe({
-            next: (b) => this.myBooks = b,
+            next: (b) => {
+                this.myBooks = b;
+                console.log("fetched my books", b);
+            },
             error: () => console.error("Failed to fetch my books!")
         });
 
         this.user.fetchWishlist().subscribe({
-            // next: (b) => this.wishlist = b,
+            next: (b) => this.wishlist = b,
             error: () => console.error("Failed to fetch wishlist!")
         });
     }
