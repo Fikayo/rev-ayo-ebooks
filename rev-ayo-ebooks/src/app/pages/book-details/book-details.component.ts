@@ -14,10 +14,12 @@ export class BookDetailsComponent implements OnInit {
     
     public book!: BookTitle;
     public suggestions: BookTitle[] = [];
-    public actionText: string = "Read";  
+    public actionText!: string;  
+    public bookInWishList!: boolean;
+
+    private bookIsPurchased!: boolean;
     private routeSub!: Subscription;
 
-    public bookInWishList!: boolean;
 
     constructor(
         private router: Router,
@@ -36,14 +38,27 @@ export class BookDetailsComponent implements OnInit {
             .subscribe({
                 next: (b) => {
                     this.book = b;
-                    this.actionText = `Buy ${this.book.price}`;
+
+                    this.user.hasPurchasedBook(this.book.ISBN).subscribe({
+                        next: (i) => {
+                            this.zone.run(() => {
+                                this.bookIsPurchased = i;
+                                if(this.bookIsPurchased) {
+                                    this.actionText = "Read";
+                                } else {                                    
+                                    this.actionText = `Buy ${this.book.price}`;
+                                }
+                            });
+                        },
+                    })
+
                     this.user.hasBookInWishList(this.book.ISBN).subscribe({
                         next: (i) => {
                             this.zone.run(() => {
                                 this.bookInWishList = i; console.log("book in wishlist", this.book.title, this.bookInWishList, i)
                             });
                         },
-                    })
+                    });
                 },
                 error: () => console.log("failed to fetch book from bookstore")
             });
@@ -65,7 +80,11 @@ export class BookDetailsComponent implements OnInit {
     }
 
     public onActionClick(book: BookTitle) {
-        this.router.navigate([`/read/${book.ISBN}/`]);
+        if (this.bookIsPurchased) {
+            this.router.navigate([`/read/${book.ISBN}/`]);
+        } else {
+            
+        }
     }
 
     public toggleBookInList() {
@@ -84,7 +103,14 @@ export class BookDetailsComponent implements OnInit {
                 });
             },
 
-            error: () => console.error("failed to toggle in wishlist"),
+            error: () => {
+                this.zone.run(() => {
+                    console.error("failed to toggle in wishlist");
+                    this.snackbar.open("Unfortunately, an error occured. Please try again", 'Dismiss', {
+                        duration: 2000,
+                    });                    
+                });
+            },
         });
     }
 }

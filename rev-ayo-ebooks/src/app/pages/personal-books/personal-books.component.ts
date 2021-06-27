@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ViewChildren } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ViewChildren, NgZone } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
@@ -21,19 +21,27 @@ export class PersonalBooksComponent implements OnInit, AfterViewInit {
 
     constructor(
         private router: Router,
-        private user: UserService) { }
+        private user: UserService,
+        private zone: NgZone) { }
 
     ngOnInit(): void {
         this.user.fetchMyBooks().subscribe({
             next: (b) => {
-                this.myBooks = b;
-                console.log("fetched my books", b);
+                this.zone.run(() => {
+                    this.myBooks = b;
+                    console.debug("fetched my books", b);
+                });
             },
             error: () => console.error("Failed to fetch my books!")
         });
 
         this.user.fetchWishlist().subscribe({
-            next: (b) => this.wishlist = b,
+            next: (b) => {
+                this.zone.run(() => {
+                    this.wishlist = b;
+                    console.debug("fetched wishlist", b);
+                });
+            },
             error: () => console.error("Failed to fetch wishlist!")
         });
     }
