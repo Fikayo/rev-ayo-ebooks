@@ -5,6 +5,7 @@ import { Observable, Subject } from 'rxjs';
 export interface BookTitle {
     ISBN: string;
     title: string;
+    displayName: string;
     author?: string;
     cover?: string;
     description?: string;

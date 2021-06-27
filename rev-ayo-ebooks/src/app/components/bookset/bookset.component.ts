@@ -8,12 +8,12 @@ import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
   styleUrls: ['./bookset.component.scss']
 })
 export class BooksetComponent implements OnInit {
-    // const styles = ["row", "grid"];
+    // const styles = ["carousel", "grid"];
 
     @Input() title: string = "";
     @Input() books: BookTitle[] = [];    
     @Input() onSelect!: (book: BookTitle) => void;
-    @Input() style: string = "row";
+    @Input() style: string = "carousel";
     @Input() showTitle: boolean = true;
     @Input() showPrice: boolean = true;
     @Input() size: string = "xlarge";

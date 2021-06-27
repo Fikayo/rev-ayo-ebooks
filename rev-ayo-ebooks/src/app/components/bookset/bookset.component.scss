@@ -1,3 +1,5 @@
+@import "/src/styles/_variables.scss";
+
 .bookset {
     .topbar {
         display: flex;
@@ -16,10 +18,13 @@
         // height: 300px;
         overflow: auto;
         overflow-y: hidden;
-        display: inline-flex;
         align-items: center;
         margin-top: 10px;
         margin-bottom: 20px;
+
+        &.carousel {
+            display: inline-flex;
+        }
 
         $imgRatio: 0.72;
         &.grid {
@@ -29,12 +34,39 @@
             .book {
                 // $bookWidth: 90px;
                 // width: $bookWidth;
-                // margin-left: 0;
-                margin-right: 0;
+                margin-left: 0;
+                margin-right: 5px;
                 // .cover {
                 //     width: $bookWidth;
                 //     height: $bookWidth / $imgRatio;
                 // }
+            }
+        }
+
+        &.list {
+            .book {
+                margin: 20px 0;
+                height: initial;
+
+                .cover {
+                    $width: 55px;
+                    width: $width;
+                    height: $width / $imgRatio;
+                    display: inline-flex;
+                    border-radius: 5px;
+                }
+    
+                .info {
+                    display: inline-block;
+                    margin: 0;
+                    margin-left: 15px;
+
+                    .title {
+                        font-size: initial;
+                        position: absolute;
+                        top: 0px;
+                    }
+                }
             }
         }
       
@@ -53,7 +85,7 @@
             .cover {
                 // width: $bookWidth;
                 // height: $bookWidth/$imgRatio;
-                border-radius: 5px;
+                border-radius: $bookCoverRadius;
             }
     
             .info {

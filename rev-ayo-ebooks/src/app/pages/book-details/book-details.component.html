@@ -12,7 +12,7 @@
 
             <div class="cover-info">
                 <div class="title">
-                    {{book.title}}
+                    {{book.displayName}}
                     <span class="author">{{book.author}}</span>
                 </div>
             </div>
@@ -23,6 +23,8 @@
     <div class="action-container">
         <button (click)="onActionClick(book)" id="main-action" mat-flat-button color="primary">{{actionText}}</button>
     </div>
+
+    <mat-divider></mat-divider>
 
     <div id="bottom">
         <div class="about">

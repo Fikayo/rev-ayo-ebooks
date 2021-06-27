@@ -11,10 +11,10 @@
         <button type="button" class="searchbutton" *ngIf="showSearch" (click)="openSearch()" >
             <mat-icon>search</mat-icon>
             <span class="text">Search Bookstore</span>
-            <span class="avatar" (click)="openDialog(); $event.stopPropagation()">
-                <img src="/assets/books/becoming a better you/cover.jpg">
-            </span>
-            <!-- <mat-icon (click)="openDialog(); $event.stopPropagation()">account_circle</mat-icon> -->
+            <!-- <span class="avatar" (click)="openDialog(); $event.stopPropagation()">
+                <img src="./assets/books/becoming a better you/cover.jpg">
+            </span> -->
+            <mat-icon (click)="openDialog(); $event.stopPropagation()">menu</mat-icon>
         </button>
 
         <span *ngIf="showMiniSearch" class="spacer"></span>

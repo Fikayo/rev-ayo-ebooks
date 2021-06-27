@@ -51,12 +51,12 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
     }
     
     public search(filter: string) {
-        let extras: any = null;
-        if (filter != null || filter != undefined) {
-            extras = { queryParams: { filter: encodeURIComponent(filter.trim()) } };
-        }
+        // let extras: any = null;
+        // if (filter != null || filter != undefined) {
+        //     extras = { queryParams: { filter: encodeURIComponent(filter.trim()) } };
+        // }
 
-        this.router.navigate([`/search/`], extras);
+        // this.router.navigate([`/search/`], extras);
     }
 
     private autoCompleteExpenseList(input: string) {

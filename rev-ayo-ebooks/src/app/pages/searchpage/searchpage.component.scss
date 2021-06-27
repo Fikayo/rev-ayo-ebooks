@@ -46,5 +46,22 @@
 
     .search-options {        
         padding: 10px;
+
+        .option {
+            margin: 20px 0;
+            height: initial;
+
+            .cover {
+                $width: 55px;
+                width: 55px;
+                height: $width / 0.72;
+                display: inline-flex;
+                border-radius: 5px;
+            }
+
+            .title {
+                margin-left: 20px;
+            }
+        }
     }
 }
