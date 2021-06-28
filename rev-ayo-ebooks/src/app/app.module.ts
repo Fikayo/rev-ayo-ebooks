@@ -46,6 +46,10 @@ import { SearchpageComponent } from './pages/searchpage/searchpage.component';
 import {MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS} from '@angular/material/dialog';
 import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
 import { SettingsComponent } from './pages/settings/settings.component';
+import { PaymentBottomSheetComponent } from './components/payment-bottom-sheet/payment-bottom-sheet.component';
+import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
+import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+
 
 @NgModule({
   declarations: [
@@ -59,6 +63,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
     SearchpageComponent,
     SettingsDialogComponent,
     SettingsComponent,
+    PaymentBottomSheetComponent,
   ],
   imports: [
     // Angular Material Modules
@@ -76,6 +81,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
     MatSidenavModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatBottomSheetModule,
 
     // Bootstrap
     NgbModule,
@@ -95,6 +101,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
   providers: [
     BookstoreService,
     UserService,
+    InAppPurchase2,
     {provide: HAMMER_GESTURE_CONFIG, useClass: MyHammerConfig},
     {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: true}}
   ],

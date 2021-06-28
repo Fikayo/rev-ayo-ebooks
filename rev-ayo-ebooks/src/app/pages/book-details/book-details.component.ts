@@ -1,7 +1,9 @@
 import { Component, NgZone, OnInit } from '@angular/core';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { PaymentBottomSheetComponent } from 'src/app/components/payment-bottom-sheet/payment-bottom-sheet.component';
 import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -27,6 +29,7 @@ export class BookDetailsComponent implements OnInit {
         private bookstore: BookstoreService,
         private user: UserService,
         private snackbar: MatSnackBar,
+        private bottomSheet: MatBottomSheet,
         private zone: NgZone) {
     }
 
@@ -81,9 +84,11 @@ export class BookDetailsComponent implements OnInit {
 
     public onActionClick(book: BookTitle) {
         if (this.bookIsPurchased) {
+            console.log("reading");
             this.router.navigate([`/read/${book.ISBN}/`]);
         } else {
-            
+            console.log("opening sheet");
+            this.bottomSheet.open(PaymentBottomSheetComponent);
         }
     }
 

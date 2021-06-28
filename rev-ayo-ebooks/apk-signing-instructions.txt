@@ -29,7 +29,7 @@ old version cordova
 ...\platforms\android\ant-build
 
 New version cordova
-...\platforms\android\build\outputs\apk
+.../platforms/android/app/build/outputs/apk
 
 4. Sign apk
 Go to apk folder (same path as step 3)

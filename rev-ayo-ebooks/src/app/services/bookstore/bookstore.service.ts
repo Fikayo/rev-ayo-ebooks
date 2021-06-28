@@ -10,8 +10,13 @@ export interface BookTitle {
     cover?: string;
     description?: string;
     price?: string;
+    productID: string;
 } 
 
+export interface ProductInfo {
+    ISBN: string;
+    productID: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -114,6 +119,25 @@ export class BookstoreService {
 
 
         return bookSub.asObservable();
+    }
+
+    public fetchProdutinfo(): Observable<ProductInfo[]> {
+        const sub = new Subject<ProductInfo[]>();
+
+        this.http.get("./assets/books/list.json", {responseType: "json"})
+        .subscribe({
+            next: (data: any) => {
+                let infos: ProductInfo[] = [];
+                let allBooks: any[] = data["books"];
+                allBooks.forEach(b => {
+                    infos.push({ISBN: b.ISBN, productID: b.producID});
+                });
+
+                sub.next(infos);
+            }
+        });
+
+        return sub.asObservable();
     }
 
     private parseTitle(b: any): BookTitle {

@@ -44,7 +44,8 @@ export class UserService {
         return sub.asObservable();
     }
 
-    public addToMyBooks(bookID: string): void {
+    public addToMyBooks(bookID: string): Observable<void> {
+        const sub = new Subject<void>();
         let query = new SQLQuery(`
             SELECT Books FROM UserLibrary l WHERE l.UserId = ?;
         `, [this.userID]);
@@ -62,10 +63,17 @@ export class UserService {
                         myIDs.push(bookID);                    
                     }
 
-                    this.sql.executeTx(new SQLQuery(`UPDATE UserLibrary SET Books = ? WHERE UserId = ?`, [myIDs, this.userID]));
+                    this.sql.executeTx(
+                        new SQLQuery(`UPDATE UserLibrary SET Books = ? WHERE UserId = ?`, [myIDs, this.userID]),
+                        (_, __) => {
+                            sub.next();
+                        }
+                    );
                 }
             }
         );
+
+        return sub.asObservable();
     }
 
     public fetchWishlist(): Observable<BookTitle[]> {
