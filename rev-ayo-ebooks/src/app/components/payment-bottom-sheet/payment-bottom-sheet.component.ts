@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
+import { MAT_BOTTOM_SHEET_DATA } from '@angular/material/bottom-sheet';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
 
@@ -12,7 +13,12 @@ export class PaymentBottomSheetComponent implements OnInit {
 	public book!: BookTitle;
 
 	constructor(
-        private store: InAppPurchase2) { }
+		@Inject(MAT_BOTTOM_SHEET_DATA)
+		public data: {book: BookTitle},
+        private store: InAppPurchase2) 
+	{
+		this.book = data.book;
+	}
 
 	ngOnInit(): void {
 	}

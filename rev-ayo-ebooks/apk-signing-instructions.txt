@@ -3,6 +3,8 @@ SIGNING INSTRUCTIONS
 
 1. Make release build
 
+ng build --prod
+
 cordova build --release android
 
 2. Ensure keystore exists - If not, use the following structure:
@@ -50,7 +52,7 @@ OR
 
 Now we have our final release binary called ebooks.apk and we can release this on the Google Play Store.
 Transfer to phone via 
-adb install <path to apk>
+adb install ./platforms/android/app/build/outputs/apk/release/ebooks.apk
 
 
 For reference see

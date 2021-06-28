@@ -1,6 +1,19 @@
 <div id="bottomsheet">
-    <div class="app">
-        <p id="locked">FEATURE LOCKED</p>
-        <div id="nonconsumable1-purchase">Please wait...</div>
+    <div class="book">
+        <img src="{{book.cover}}" alt="" class="cover">
+        <div class="title">
+            {{book.displayName}}
+            <span class="id">ISBN: {{book.ISBN}}</span>
+        </div>
+        <span class="price">{{book.price}}</span>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="purchase-container">
+        <span class="terms">
+            
+        </span>
+        <button class="buy" (click)="makeOrder()" mat-flat-button color="primary">Buy eBook</button>
     </div>
 </div>

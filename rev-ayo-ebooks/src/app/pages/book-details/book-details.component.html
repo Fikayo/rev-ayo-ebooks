@@ -14,7 +14,7 @@
         </div>
 
         
-        <button class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
+        <button *ngIf="!bookIsPurchased" class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
             <mat-icon *ngIf="bookInWishList" color="primary">playlist_add_check</mat-icon>
             <mat-icon *ngIf="!bookInWishList">playlist_add</mat-icon>
         </button>

@@ -17,12 +17,16 @@ export class InAppPurchasesService {
         private store: InAppPurchase2) 
     {
         platform.ready().then(() => {
-            this.bookstore.fetchProdutinfo().subscribe({
-                next: (info) => {
-                    this.productIDs = info;
-                    this.prepare();
-                }
-            });
+            this.initStore();
+        });
+    }
+
+    public initStore() {
+        this.bookstore.fetchProdutinfo().subscribe({
+            next: (info) => {
+                this.productIDs = info;
+                this.prepare();
+            }
         });
     }
 
@@ -62,7 +66,7 @@ export class InAppPurchasesService {
             next: () => {
                 product.finish();
             }
-        })
+        });
     }
 
     private productCancelled(product: IAPProduct) {

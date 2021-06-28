@@ -18,8 +18,8 @@ export class BookDetailsComponent implements OnInit {
     public suggestions: BookTitle[] = [];
     public actionText!: string;  
     public bookInWishList!: boolean;
+    public bookIsPurchased!: boolean;
 
-    private bookIsPurchased!: boolean;
     private routeSub!: Subscription;
 
 
@@ -45,12 +45,7 @@ export class BookDetailsComponent implements OnInit {
                     this.user.hasPurchasedBook(this.book.ISBN).subscribe({
                         next: (i) => {
                             this.zone.run(() => {
-                                this.bookIsPurchased = i;
-                                if(this.bookIsPurchased) {
-                                    this.actionText = "Read";
-                                } else {                                    
-                                    this.actionText = `Buy ${this.book.price}`;
-                                }
+                                this.setPurchasedBook(i);
                             });
                         },
                     })
@@ -88,7 +83,31 @@ export class BookDetailsComponent implements OnInit {
             this.router.navigate([`/read/${book.ISBN}/`]);
         } else {
             console.log("opening sheet");
-            this.bottomSheet.open(PaymentBottomSheetComponent);
+            this.bottomSheet.open(PaymentBottomSheetComponent, {
+                data: {book: this.book}
+            });
+
+            // this.user.addToMyBooks(this.book.ISBN).subscribe({
+            //     next: () => {
+                    
+            //         this.zone.run(() => {
+            //             this.snackbar.open("Added to book list", 'Dismiss', {
+            //                 duration: 1500,
+            //             });
+                        
+            //             this.setPurchasedBook(true);
+            //         });
+            //     },
+    
+            //     error: () => {
+            //         this.zone.run(() => {
+            //             console.error("failed to buy book");
+            //             this.snackbar.open("Unfortunately, an error occured. Please try again", 'Dismiss', {
+            //                 duration: 2000,
+            //             });                    
+            //         });
+            //     },
+            // });
         }
     }
 
@@ -110,12 +129,21 @@ export class BookDetailsComponent implements OnInit {
 
             error: () => {
                 this.zone.run(() => {
-                    console.error("failed to toggle in wishlist");
+                    console.error("failed to toggle wishlist");
                     this.snackbar.open("Unfortunately, an error occured. Please try again", 'Dismiss', {
                         duration: 2000,
                     });                    
                 });
             },
         });
+    }
+
+    private setPurchasedBook(purchased: boolean) {
+        this.bookIsPurchased = purchased;
+        if(this.bookIsPurchased) {
+            this.actionText = "Read";
+        } else {                                    
+            this.actionText = `Buy ${this.book.price}`;
+        }
     }
 }

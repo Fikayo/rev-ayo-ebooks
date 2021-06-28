@@ -3,7 +3,7 @@
 .bookset {
     .topbar {
         display: flex;
-        .set-title {
+        .title {
             font-weight: 500;
             font-size: 17px;
         }
@@ -101,7 +101,7 @@
                 .price {
                     font-size: small;
                     display: block;  
-                    color: #bbb;                  
+                    color: #666;                  
                 }
             }            
       
@@ -113,10 +113,12 @@
         &.small {
             .book {
                 $bookWidth: 90px;
-                width: $bookWidth;
+                $bookHeight: $bookWidth / $imgRatio;
+                width: $bookWidth;                
+                height: $bookHeight + 100px;
                 .cover {
                     width: $bookWidth;
-                    height: $bookWidth / $imgRatio;
+                    height: $bookHeight;
                 }
             }
         }
@@ -124,10 +126,12 @@
         &.medium {
             .book {
                 $bookWidth: 115px;
-                width: $bookWidth;
+                $bookHeight: $bookWidth / $imgRatio;
+                width: $bookWidth;                
+                height: $bookHeight + 100px;
                 .cover {
                     width: $bookWidth;
-                    height: $bookWidth / $imgRatio;
+                    height: $bookHeight;
                 }
             }
         }
@@ -135,21 +139,25 @@
         &.large {
             .book {
                 $bookWidth: 130px;
-                width: $bookWidth;
+                $bookHeight: $bookWidth / $imgRatio;
+                width: $bookWidth;                
+                height: $bookHeight + 100px;
                 .cover {
                     width: $bookWidth;
-                    height: $bookWidth / $imgRatio;
+                    height: $bookHeight;
                 }
             }
         }
 
         &.xlarge {
             .book {
-                $bookWidth: 140px;
-                width: $bookWidth;
+                $bookWidth: 170px;
+                $bookHeight: $bookWidth / $imgRatio;
+                width: $bookWidth;                
+                height: $bookHeight + 100px;
                 .cover {
                     width: $bookWidth;
-                    height: $bookWidth / $imgRatio;
+                    height: $bookHeight;
                 }
             }
         }

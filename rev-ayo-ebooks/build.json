@@ -1,0 +1,20 @@
+{
+    "android": {
+        "debug": {
+            "keystore": "./ebooks.keystore",
+            "storePassword": "ebooks@keystore",
+            "alias": "",
+            "password" : "",
+            "keystoreType": "",
+            "packageType": "apk"
+        },
+        "release": {
+            "keystore": "./ebooks.keystore",
+            "storePassword": "ebooks@keystore",
+            "alias": "ebookskeystore",
+            "password" : "ebooks@keystore",
+            "keystoreType": "",
+            "packageType": "bundle"
+        }
+    }
+}

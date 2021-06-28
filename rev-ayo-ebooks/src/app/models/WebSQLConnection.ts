@@ -27,6 +27,10 @@ export class SQLQuery
     }
 }
 
+export interface Transaction {
+    executeSql: (sql: string, params: any[] | undefined, successCB?: (tx: any, result: any) => void, errorCB?: (tx: any, error: any) => void) => void;
+}
+
 abstract class WebSQLConnection
 {
     private readonly name = "ayo.ebooks.database";
@@ -49,28 +53,16 @@ abstract class WebSQLConnection
 
     protected abstract createTables(): void;
 
-    public executeTx(sqlQuery: SQLQuery, successCB?: (tx: any, result: any) => void, errorCB?: (error: any) => void) {
-        this.batchTx([sqlQuery], successCB, errorCB);
+    public executeTx(sqlQuery: SQLQuery, successCB?: (tx: any, result: any) => void, errorCB?: (tx: any, error: any) => void) {
+        // this.batchTx([sqlQuery], successCB, errorCB);
+        this.runTransaction((tx: Transaction) => {
+            tx.executeSql(sqlQuery.sql, sqlQuery.params, successCB, errorCB);
+        });
     }
 
-    public batchTx(sqlQueries: SQLQuery[], successCB?: (tx: any, result: any) => void, errorCB?: (tx: any, error: any) => void) {
-        
-        let noErrorCb = errorCB == null;
+    public runTransaction(func: (tx: Transaction) => void) {
         try {
-            this.db.transaction(function (tx: { executeSql: (arg0: string, arg1: any[] | undefined, arg2: ((tx: any, result: any) => void) | undefined, arg3: ((tx: any, error: any) => void) | undefined) => void; }) {
-
-                for(let sqlQuery of sqlQueries) {
-
-
-                    if (noErrorCb) {
-                        errorCB = (tx, error) => {
-                            console.error(`Error during sql ${sqlQuery.sql}, ${sqlQuery.params}: `, error);
-                        }
-                    }
-
-                    tx.executeSql(sqlQuery.sql, sqlQuery.params, successCB, errorCB);
-                }
-            });
+            this.db.transaction(func);
 
         } catch(e) {
             console.error("Error during db transaction: ", e);
@@ -87,7 +79,7 @@ export class EbooksSQL extends WebSQLConnection {
             new SQLQuery(`DROP TABLE IF EXISTS [UserLibrary]`),
         ];
 
-        this.batchTx(queries);
+        queries.forEach(q => this.executeTx(q));
     }
 
     protected createTables(): void {
@@ -101,12 +93,6 @@ export class EbooksSQL extends WebSQLConnection {
     }
 
     private loadData(): void {
-        // let queries: SQLQuery[] = [
-        //     new SQLQuery(`INSERT INTO [User] (UserId) VALUES ('fikayoid123')`),
-        //     new SQLQuery(`INSERT INTO [UserLibrary] (UserId, Books, Wishlist) VALUES ('fikayoid123', 'unknown', '975-978-57020-4-0')`),
-        // ];
-
-        // this.batchTx(queries);
 
         this.executeTx(new SQLQuery(`INSERT INTO [User] (UserId) VALUES ('fikayoid123')`));
         this.executeTx(new SQLQuery(`INSERT INTO [UserLibrary] (UserId, Books, Wishlist) VALUES ('fikayoid123', 'unknown, unknown', '975-978-57020-4-0, 975-978-57020-4-0')`));

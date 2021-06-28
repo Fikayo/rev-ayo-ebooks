@@ -52,11 +52,13 @@
         z-index: 10;
         position: fixed;
         bottom: 0px;
-        height: 80px;
+        height: $bottomMenuHeight;
         display: grid;
         grid-template-columns: auto auto;
         background-color: white;
-        color: #666;
+        color: #666;        
+        box-shadow: 0 0 10px 0px #dddddde3;
+        border-top: 1px solid #dddddd7a;
 
         .item {
             display: grid;
@@ -70,6 +72,8 @@
             .label {
                 font-size: small;
                 text-align: center;
+                position: relative;
+                top: -12px;
             }
 
             &.active {
