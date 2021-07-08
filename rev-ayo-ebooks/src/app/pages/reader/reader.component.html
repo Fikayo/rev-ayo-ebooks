@@ -1,14 +1,19 @@
 <div id="reader">
     <pdf-viewer 
-        [src]="src"
+        [src]="srcUrl"
         [render-text]="true"
-        style="display: none;">
+        [original-size]="false"
+        [zoom-scale]="'page-fit'"
+        [show-all]="true"
+        [stick-to-page]="true"
+        [(page)]="currentPage"
+        (pageChange)="pageChange($event)"
+    >
     </pdf-viewer>
-
 </div>
-<div id="reader">
+<div id="reader"  style="display: none;">
     <ngx-extended-pdf-viewer
-        [src]="src" 
+        [src]="srcBlob" 
         [useBrowserLocale]="true" 
         [enablePinchOnMobile]="enablePinchOnMobile"
         [minZoom]="0.5"

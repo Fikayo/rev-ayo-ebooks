@@ -47,7 +47,8 @@ export class BookDetailsComponent implements OnInit {
                     this.user.hasPurchasedBook(this.book.ISBN).subscribe({
                         next: (i) => {
                             this.zone.run(() => {
-                                this.setPurchasedBook(i);
+                                // this.setPurchasedBook(i);
+                                this.setPurchasedBook(true);
                             });
                         },
                     })

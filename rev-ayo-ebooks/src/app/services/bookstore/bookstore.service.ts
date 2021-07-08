@@ -84,6 +84,21 @@ export class BookstoreService {
 
         return detailsSub.asObservable();
     }
+    public fetchBookPDFObject(bookID: string): Observable<Object> {
+        const bookSub = new Subject<Object>();
+        let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
+        if (bookID == "unknown") {
+            path =  "./assets/books/becoming a better you/pdf.pdf";
+        }
+
+        this.http.get(path)
+        .subscribe({
+            next: (res) => bookSub.next(res),
+            error: () => console.log(`failed to fetch book "${bookID}"`)
+        });
+
+        return bookSub.asObservable();
+    }
 
     public fetchBookPDF(bookID: string): Observable<Blob> {
         const bookSub = new Subject<Blob>();
