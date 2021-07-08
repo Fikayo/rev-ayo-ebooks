@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ViewChildren, NgZone } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewChildren, NgZone } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
@@ -9,7 +9,7 @@ import { UserService } from 'src/app/services/user/user.service';
   templateUrl: './personal-books.component.html',
   styleUrls: ['./personal-books.component.scss']
 })
-export class PersonalBooksComponent implements OnInit, AfterViewInit {
+export class PersonalBooksComponent implements OnInit {
     @ViewChild(MatTabGroup) group!: any;
     @ViewChildren(MatTab) tabs!: any;
 
@@ -46,65 +46,11 @@ export class PersonalBooksComponent implements OnInit, AfterViewInit {
         });
     }
 
-    openShop() {
-        this.router.navigate([`/store`]);
+    public openShop() {
+        this.router.navigate([`books/store`]);
     }
 
-
-    // selectChange(): void{
-    //     console.log("Selected INDEX: " + this.selectedIndex);
-    // }
-
-    SWIPE_ACTION = { LEFT: 'swipeleft', RIGHT: 'swiperight' };
-
-    // // Action triggered when user swipes
-    // swipe(selectedIndex: number, action = this.SWIPE_ACTION.RIGHT) {
-    //     console.log("swipe");
-    //     console.log("number",selectedIndex);
-    //     console.log("action",action);
-    //     // Out of range
-    //     if (this.selectedIndex < 0 || this.selectedIndex > 1 ) return;
-
-    //     // Swipe left, next tab
-    //     if (action === this.SWIPE_ACTION.LEFT) {
-    //     const isLast = this.selectedIndex === 1;
-    //     this.selectedIndex = isLast ? 0 : this.selectedIndex + 1;
-    //     console.log("Swipe right - INDEX: " + this.selectedIndex);
-    //     }
-
-    //     // Swipe right, previous tab
-    //     if (action === this.SWIPE_ACTION.RIGHT) {
-    //     const isFirst = this.selectedIndex === 0;
-    //     this.selectedIndex = isFirst ? 1 : this.selectedIndex - 1;
-    //     console.log("Swipe left - INDEX: " + this.selectedIndex);
-    //     }
-    // }
-
-    ngAfterViewInit(){
-        this.tab_num = this.tabs.length
-        console.log("after init", this.group);
+    public openSearch() {
+        this.router.navigate(['/searchpage']);
     }
-
-    swipeLeft() {
-        console.log('swipe left');
-    }
-
-    swipeRight() {
-        console.log('swipe right');
-    }
-
-    public swipe(eType: string){
-        console.log("swiping: ", eType);
-        console.log(eType);
-        if(eType === this.SWIPE_ACTION.LEFT && this.selectedIndex > 0){
-          console.log("movin left")
-          this.selectedIndex--;
-        }
-        else if(eType === this.SWIPE_ACTION.RIGHT && this.selectedIndex < this.tab_num){
-          console.log("movin right")
-          this.selectedIndex++;
-        }
-        console.log(this.selectedIndex)
-      }
-
 }

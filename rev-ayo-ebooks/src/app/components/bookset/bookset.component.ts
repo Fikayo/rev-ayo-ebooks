@@ -18,6 +18,20 @@ export class BooksetComponent implements OnInit {
     @Input() showPrice: boolean = true;
     @Input() size: string = "xlarge";
 
+    slideOpts = {
+        slidesPerView: 'auto',
+        freeMode: false,
+        zoom: false,
+        grabCursor: true,
+        coverflowEffect: {
+          rotate: 50,
+          stretch: 0,
+          depth: 100,
+          modifier: 1,
+          slideShadows: true,
+        }
+      }
+
     constructor(private router: Router) { }
 
     ngOnInit(): void {
@@ -30,7 +44,7 @@ export class BooksetComponent implements OnInit {
         if(this.onSelect) {
             this.onSelect(book);
         } else {
-            this.router.navigate([`/details/${book.ISBN}/`]);
+            this.router.navigate([`books/store/details/${book.ISBN}/`]);
         }
     }
 }

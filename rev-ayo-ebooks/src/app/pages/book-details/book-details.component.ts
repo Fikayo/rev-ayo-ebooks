@@ -1,9 +1,10 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
-import { PaymentBottomSheetComponent } from 'src/app/components/payment-bottom-sheet/payment-bottom-sheet.component';
+import { BottomMenuComponent } from 'src/app/components/bottom-menu/bottom-menu.component';
+import { PaymentModal } from 'src/app/components/payment-modal/payment-modal.component';
 import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -28,12 +29,13 @@ export class BookDetailsComponent implements OnInit {
         private activatedRoute: ActivatedRoute,
         private bookstore: BookstoreService,
         private user: UserService,
-        private snackbar: MatSnackBar,
-        private bottomSheet: MatBottomSheet,
+        private toastCtrl: ToastController,
+        private modalCtrl: ModalController,
         private zone: NgZone) {
     }
 
     ngOnInit(): void {
+        console.log("in book details")
         this.routeSub = this.activatedRoute.params.subscribe(params => {
             let bookID = params['isbn'];
 
@@ -77,15 +79,30 @@ export class BookDetailsComponent implements OnInit {
         }
     }
 
-    public onActionClick(book: BookTitle) {
+    public openSearch() {
+        this.router.navigate(['/searchpage']);
+    }
+
+    public async onActionClick(book: BookTitle) {
         if (this.bookIsPurchased) {
             console.log("reading");
-            this.router.navigate([`/read/${book.ISBN}/`]);
+            this.router.navigate([`../../read/${book.ISBN}/`], {relativeTo: this.activatedRoute});
         } else {
             console.log("opening sheet");
-            this.bottomSheet.open(PaymentBottomSheetComponent, {
-                data: {book: this.book}
+            const presentModal = await this.modalCtrl.create({
+                component: PaymentModal,
+                componentProps: {
+                    book: this.book,
+                },
+                showBackdrop: true,
+                cssClass: 'payment-modal'
             });
+
+            presentModal.onWillDismiss().then((data) => {
+                console.log("dismiss data", data);
+            });
+
+            return await presentModal.present();
 
             // this.user.addToMyBooks(this.book.ISBN).subscribe({
             //     next: () => {
@@ -115,30 +132,37 @@ export class BookDetailsComponent implements OnInit {
         this.user.toggleInWishList(this.book.ISBN).subscribe({
             next: (inList) => {
                 
-                this.zone.run(() => {
-                    console.log("toggled in list: ", inList);
+                this.zone.run(async () => {
+                    this.bookInWishList = inList;
+                    console.info("book toggled in wishlist: ", inList);
+                    
                     let message = "Added to Wishlist";
                     if (!inList) message = "Remove from Wishlist";
-                    this.snackbar.open(message, 'Dismiss', {
-                        duration: 1500,
+                    const toast = await this.toastCtrl.create({
+                        message: message,
+                        duration: 1500
                     });
                     
-                    this.bookInWishList = inList;
+                    toast.present();                    
                 });
             },
 
             error: () => {
-                this.zone.run(() => {
+                this.zone.run(async () => {
                     console.error("failed to toggle wishlist");
-                    this.snackbar.open("Unfortunately, an error occured. Please try again", 'Dismiss', {
-                        duration: 2000,
-                    });                    
+                    const toast = await this.toastCtrl.create({
+                        message: "Unfortunately, an error occured. Please try again",
+                        duration: 2000
+                    });
+
+                    toast.present();                  
                 });
             },
         });
     }
 
     private setPurchasedBook(purchased: boolean) {
+        console.log(`${this.book.title} purchased: ${purchased}`);
         this.bookIsPurchased = purchased;
         if(this.bookIsPurchased) {
             this.actionText = "Read";

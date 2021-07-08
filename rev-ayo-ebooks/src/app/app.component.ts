@@ -4,8 +4,6 @@ import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { UserService } from './services/user/user.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
-import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
-import { Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-root',
@@ -28,18 +26,9 @@ export class AppComponent {
         private router: Router,
         private location: Location,
         private dialog: MatDialog,
-        private platform: Platform,
-        private inAppPurchase: InAppPurchase2,
     ) {
         this.monitorNavigation();
         // this.fixReload();
-
-        this.platform.ready().then(() => {
-            console.log("platform ready");
-            // Okay, so the platform is ready and our plugins are available.
-            // Here you can do any higher level native things you might need.
-            this.initAppStore();
-        });
     }
 
     public goBack() {
@@ -119,23 +108,5 @@ export class AppComponent {
         this.router.routeReuseStrategy.shouldReuseRoute = function(){
             return false;
         }
-    }
-
-    private productIDs: string[] = ['test_id_1'];
-    private initAppStore() {
-        this.productIDs.forEach(prodID => {
-            this.inAppPurchase.register({
-                id:    prodID,
-                type:   this.inAppPurchase.NON_CONSUMABLE
-            });
-        });
-
-        this.inAppPurchase.error(function(error: any) {
-            console.log('ERROR ' + error.code + ': ' + error.message);
-        });
-
-        // ... MORE HERE SOON
-
-        this.inAppPurchase.refresh();
     }
 }

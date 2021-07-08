@@ -1,0 +1,12 @@
+{
+  "defaultProject": "rev-ayo-ebooks",
+  "projects": {
+    "rev-ayo-ebooks": {
+      "name": "rev-ayo-ebooks",
+      "integrations": {
+        "capacitor": {}
+      },
+      "type": "angular"
+    }
+  }
+}

@@ -12,7 +12,6 @@ import { Router } from '@angular/router';
   })
 export class SearchpageComponent implements OnInit, AfterViewInit {
 
-    public searchBox = new FormControl();
     public filteredOptions!: Observable<string[]>;
     public allTitles: BookTitle[] = [];
     public autoCompleteList!: any[];
@@ -35,9 +34,10 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         });   
 
         // Detect input changes
-        this.searchBox.valueChanges.subscribe(userInput => {
-            this.autoCompleteExpenseList(userInput);
-        });
+        // this.searchBox.valueChanges.subscribe(userInput => {
+        //     console.log("new input");
+        //     this.autoCompleteSearchList(userInput);
+        // });
     }
     
     ngAfterViewInit() {
@@ -48,8 +48,15 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         this.location.back();
     }
     
-    private autoCompleteExpenseList(input: string) {
-        this.autoCompleteList = this.filterList(input);;
+    onKeyUp(event: any){
+        this.autoCompleteSearchList(event.target.value);
+    }
+
+    private autoCompleteSearchList(input: string) {        
+        console.log("filter with: " + input);
+        this.autoCompleteList = this.filterList(input);
+        console.log("filter result: ", this.autoCompleteList);
+
     }
 
     private filterList(val: string): BookTitle[] {
@@ -63,8 +70,10 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
 
     // focus the input field and remove any unwanted text.
     private focusOnPlaceInput() {
-        this.autocompleteInput.nativeElement.focus();
-        this.autocompleteInput.nativeElement.value = '';
+        if (this.autocompleteInput && this.autocompleteInput.nativeElement) {
+            this.autocompleteInput.nativeElement.focus();
+            this.autocompleteInput.nativeElement.value = '';
+        }
     }
 
 }

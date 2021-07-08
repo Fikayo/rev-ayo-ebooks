@@ -1,6 +1,6 @@
 <div id="dialog">
 
-    <mat-icon class="close" (click)="closeDialog()">close</mat-icon>
+    <ion-icon class="close" (click)="closeDialog()" name="close"></ion-icon>
 
     <div id="account-section">
 
@@ -24,14 +24,14 @@
 
     </div>
 
-    <mat-divider></mat-divider>
+    <div class="ebook-divider"></div>
 
     <div id="more">
-        <mat-list>
-            <mat-list-item class="item" (click)="openSettings()">
-                <mat-icon>settings</mat-icon>
+        <ion-list>
+            <ion-item class="item" (click)="openSettings()">
+                <ion-icon name="settings"></ion-icon>
                 <span class="text">Bookstore settings</span>
-            </mat-list-item>
-        </mat-list>
+            </ion-item>
+        </ion-list>
     </div>
 </div>

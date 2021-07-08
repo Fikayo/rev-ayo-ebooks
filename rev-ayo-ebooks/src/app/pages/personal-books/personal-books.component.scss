@@ -21,4 +21,32 @@
         }
     }
 
+    .tab-item {
+        width: 89%;
+    }
+
+}
+
+:host {
+    --st-indicator-color: var(--ion-color-primary);
+}
+
+super-tabs {
+
+    super-tabs-toolbar::after {
+        background: none;
+        border-top: 1px solid #0000004a;
+    }
+
+    super-tab-button{
+        
+
+        &.active {
+            color: var(--st-indicator-color);
+        }
+
+        ion-label {
+            text-transform: initial;
+        }
+    }
 }

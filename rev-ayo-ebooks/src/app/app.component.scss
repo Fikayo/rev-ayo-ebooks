@@ -4,49 +4,49 @@
     position: absolute;
     width: 100%;
 
-    #toolbar {
-        color: $darkMenuColor;
-        margin-top: 10px;
-        position: absolute;
-        /* border: 3px solid red; */
-        // z-index: -1;
-        // background: #ffffff47;
-        background: #ffffff00;
+    // #toolbar {
+    //     color: $darkMenuColor;
+    //     margin-top: 10px;
+    //     position: absolute;
+    //     /* border: 3px solid red; */
+    //     // z-index: -1;
+    //     // background: #ffffff47;
+    //     background: #ffffff00;
 
-        .spacer {
-            flex: 1 1 auto;
-        }
+    //     .spacer {
+    //         flex: 1 1 auto;
+    //     }
 
-        &.white, &.white * {
-            // color: #ffffff8c !important;
-            color: #ffffffdd !important;
-        }
+    //     &.white, &.white * {
+    //         // color: #ffffff8c !important;
+    //         color: #ffffffdd !important;
+    //     }
 
-        ebook-search-bar {
-            margin: 0 20px;
-        }
+    //     ebook-search-bar {
+    //         margin: 0 20px;
+    //     }
 
-        .searchbutton {
-            $background: #ffffff00;
-            display: flex;
-            align-items: center;
-            border: 1px solid #a0a0a069;
-            border-radius: 10px;
-            padding-left: 0.5rem;
-            overflow: hidden;
-            background: $background;
-            color: #555;
-            font-size: 14px;
-            width: 100%;
-            $space: 4px;
-            padding-top: $space;
-            padding-bottom: $space;
+    //     .searchbutton {
+    //         $background: #ffffff00;
+    //         display: flex;
+    //         align-items: center;
+    //         border: 1px solid #a0a0a069;
+    //         border-radius: 10px;
+    //         padding-left: 0.5rem;
+    //         overflow: hidden;
+    //         background: $background;
+    //         color: #555;
+    //         font-size: 14px;
+    //         width: 100%;
+    //         $space: 4px;
+    //         padding-top: $space;
+    //         padding-bottom: $space;
 
-            .text {
-                width: 100%;
-            }
-        }
-    }
+    //         .text {
+    //             width: 100%;
+    //         }
+    //     }
+    // }
 
     #bottom-nav {
         z-index: 10;
@@ -79,6 +79,51 @@
             &.active {
                 color: $my-primary;
             }
+        }
+    }
+}
+
+#header {
+    color: $darkMenuColor;
+    margin-top: 20px;
+    padding: 0 $pageSidePadding;
+    position: absolute;
+    /* border: 3px solid red; */
+    // z-index: -1;
+    // background: #ffffff47;
+    background: #ffffff00;
+
+    .spacer {
+        flex: 1 1 auto;
+    }
+
+    &.white, &.white * {
+        // color: #ffffff8c !important;
+        color: #ffffffdd !important;
+    }
+
+    ebook-search-bar {
+        margin: 0 20px;
+    }
+
+    .searchbutton {
+        $background: #ffffff00;
+        display: flex;
+        align-items: center;
+        border: 1px solid #a0a0a069;
+        border-radius: 10px;
+        padding-left: 0.5rem;
+        overflow: hidden;
+        background: $background;
+        color: #555;
+        font-size: 14px;
+        width: 100%;
+        $space: 4px;
+        padding-top: $space;
+        padding-bottom: $space;
+
+        .text {
+            width: 100%;
         }
     }
 }

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Bishop Ayo\'s Bookstore</string>
+    <string name="title_activity_main">Bishop Ayo\'s Bookstore</string>
+    <string name="package_name">org.cvi.bookstore</string>
+    <string name="custom_url_scheme">org.cvi.bookstore</string>
+</resources>

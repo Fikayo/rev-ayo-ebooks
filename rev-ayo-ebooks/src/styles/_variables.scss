@@ -1,15 +1,12 @@
-@use '~@angular/material' as mat;
+
+@import "_theme";
 
 
-$my-primary: #3F51B5; // mat.define-palette(mat.$indigo-palette, 500);
-$my-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
-
-// The "warn" palette is optional and defaults to red if not specified.
-$my-warn: mat.define-palette(mat.$red-palette);
-
+$my-primary: var(--ion-color-primary);
 $bottomMenuHeight: 65px;
 $pageSidePadding: 22px;
-$pageTopPadding: 100px;
+// $pageTopPadding: 100px;
+$pageTopPadding: 15px;
 $pageBottomPadding: $bottomMenuHeight + 20;
 $darkMenuColor: #555;
 $bookCoverRadius: 5px;

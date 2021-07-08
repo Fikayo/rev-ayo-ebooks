@@ -1,4 +1,26 @@
-<div id="details" *ngIf="book">
+<ion-header translucent class="ion-no-border">
+
+    <ion-toolbar>
+        
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/"></ion-back-button>
+        </ion-buttons>
+        <ion-buttons slot="secondary">
+            <ion-button (click)="openSearch()">
+              <ion-icon slot="icon-only" name="search"></ion-icon>
+            </ion-button>
+            <ion-button *ngIf="!bookIsPurchased" aria-label="Bookmark" (click)="toggleBookInList()">
+                <ion-icon *ngIf="bookInWishList" slot="icon-only" name="bookmark" color="primary"></ion-icon>
+                <ion-icon *ngIf="!bookInWishList" slot="icon-only" name="bookmark-outline" ></ion-icon>
+            </ion-button>
+        </ion-buttons>
+          
+    </ion-toolbar>
+
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <div id="details" *ngIf="book">
     <div id="top">
         <!-- <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div> -->
         <!-- <div id="shade"></div> -->
@@ -9,24 +31,24 @@
                 <div class="title">
                     {{book.displayName}}
                     <span class="author">{{book.author}}</span>
+                    <span class="meta">ISBN: {{book.ISBN}}</span>
                 </div>
             </div>
         </div>
 
         
-        <button *ngIf="!bookIsPurchased" class="icon"  mat-icon-button aria-label="Bookmark" (click)="toggleBookInList()">
-            <mat-icon *ngIf="bookInWishList" color="primary">playlist_add_check</mat-icon>
-            <mat-icon *ngIf="!bookInWishList">playlist_add</mat-icon>
-        </button>
-
+        <!-- <ion-button *ngIf="!bookIsPurchased" class="icon" fill="clear" size="small" aria-label="Bookmark" (click)="toggleBookInList()">
+            <ion-icon *ngIf="bookInWishList" slot="icon-only" name="bookmark" color="primary"></ion-icon>
+            <ion-icon *ngIf="!bookInWishList" slot="icon-only" name="bookmark-outline" ></ion-icon>
+        </ion-button> -->
          
     </div>
 
     <div class="action-container">
-        <button (click)="onActionClick(book)" id="main-action" mat-flat-button color="primary">{{actionText}}</button>
+        <ion-button (click)="onActionClick(book)" id="main-action" color="primary">{{actionText}}</ion-button>
     </div>
 
-    <mat-divider></mat-divider>
+    <div class="ebook-divider"></div>
 
     <div id="bottom">
         <div class="about">
@@ -40,3 +62,4 @@
     </div>
 
 </div>
+</ion-content>

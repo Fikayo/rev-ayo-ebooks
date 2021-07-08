@@ -1,0 +1,36 @@
+<ion-header translucent class="ion-no-border">
+    <ion-toolbar>
+        
+        <div id="customSearch">
+            <div class="searchbutton" (click)="openSearch()" >
+                <ion-icon slot="icon-only" name="search"></ion-icon>
+                <span class="text">Search Bookstore</span>
+                <!-- <ion-icon slot="icon-only" name="menu"></ion-icon> -->
+            </div>
+        </div>
+
+        <!-- <ion-buttons slot="end">
+            <ion-button fill="clear" size="small" color="medium" (click)="openDialog(); $event.stopPropagation()">
+                <ion-icon slot="icon-only" name="menu"></ion-icon>
+            </ion-button>
+        </ion-buttons> -->
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" >
+<div id="bookstore">
+
+    <div *ngIf="showFeatures">
+        <ebook-bookset [title]="'Most Popular'" [books]="popularBooks"></ebook-bookset>
+        <ebook-bookset [title]="'Featured'" [books]="featuredBooks"></ebook-bookset>
+        <ebook-bookset [title]="'More titles'" [books]="otherBooks" [style]="'grid'"></ebook-bookset>
+    </div>
+
+    <ebook-bookset *ngIf="searching" [books]="searchResults" [style]="'grid'" [size]="'small'"></ebook-bookset>
+
+    <div *ngIf="noResults" id="no-results">
+        <span>We couldn't find any books that match "{{filter}}"</span>
+    </div>
+    
+</div>
+</ion-content>

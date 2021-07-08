@@ -6,7 +6,7 @@
     height: 100%;
     padding: 0 $pageSidePadding;
     padding-top: $pageTopPadding;
-    padding-bottom: $pageBottomPadding;
+    padding-bottom: 10px;
 
     .action-container {
         position: relative;
@@ -98,6 +98,11 @@
                     display: block;
                     color: $my-primary;
                 }
+
+                .meta {
+                    font-size: small;
+                    color: #999;
+                }
             }
 
         }
@@ -108,10 +113,6 @@
             top: $pageTopPadding;
         }
 
-    }
-
-    mat-divider {
-        margin: 30px 0;
     }
 
     #bottom {

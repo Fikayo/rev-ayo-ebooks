@@ -1,9 +1,7 @@
 <div id="searchpage">
     <div class="search-section">
         
-        <button (click)="goBack()" mat-icon-button aria-label="Back">
-            <mat-icon>keyboard_backspace</mat-icon>
-        </button>
+        <ion-icon (click)="goBack()" aria-label="Back" name="arrow-back-outline"></ion-icon>
 
         <div class="input-box" style="width: 100%">
             <form>
@@ -11,19 +9,23 @@
                     type="text" 
                     placeholder="Search Bookstore" 
                     aria-label="Search" 
-                    [formControl]="searchBox"/>
-                <button  class="suffix" *ngIf="autocompleteInput.value" matSuffix mat-icon-button aria-label="Clear" type="button" (click)="autocompleteInput.value = ''">
-                    <mat-icon>close</mat-icon>
-                </button>
+                    (keyup)="onKeyUp($event)"/>
+                <ion-button fill="clear" size="small" color="medium" class="suffix" *ngIf="autocompleteInput.value" aria-label="Clear" type="button" (click)="autocompleteInput.value = ''">
+                    <ion-icon slot="icon-only" name="close"></ion-icon>
+                </ion-button>
             </form>
         </div>
     </div>
 
-    <!-- <mat-list class="search-options">
-        <mat-list-item class="option" *ngFor="let option of autoCompleteList" (click)="search(option.title)">
-            <img class="cover" src="{{option.cover}}" alt="{{option.title}}">
-            <span class="title">{{option.displayName}}</span>
-        </mat-list-item>
-    </mat-list> -->
     <ebook-bookset [books]="autoCompleteList" [style]="'list'"></ebook-bookset>
+    <!-- <ion-list>
+        <ion-item *ngFor="let book of autoCompleteList" (click)="selectBook(book)">
+                <img  src="{{book.cover}}">
+            <ion-label>
+                <h2>{{book.title}}</h2>
+                <h3>{{book.price}}</h3>
+            </ion-label>
+        </ion-item>        
+    </ion-list> -->
+
 </div>

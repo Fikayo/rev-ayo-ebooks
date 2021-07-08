@@ -1,42 +1,22 @@
-<div id="rev-ayo-ebooks">
-   
-    <mat-toolbar id="toolbar" *ngIf="showTopToolbar" [ngClass]="{white: !toolbarIsBlack}">
-        
-        <button (click)="goBack()" *ngIf="showBack" mat-icon-button aria-label="Back">
-            <mat-icon>keyboard_backspace</mat-icon>
-        </button>
 
-        <button type="button" class="searchbutton" *ngIf="showSearch" (click)="openSearch()" >
-            <mat-icon>search</mat-icon>
-            <span class="text">Search Bookstore</span>
-            <!-- <span class="avatar" (click)="openDialog(); $event.stopPropagation()">
-                <img src="./assets/books/becoming a better you/cover.jpg">
-            </span> -->
-            <mat-icon (click)="openDialog(); $event.stopPropagation()">menu</mat-icon>
-        </button>
+<!-- <ion-searchbar showCancelButton="focus"></ion-searchbar> -->
 
-        <span *ngIf="showMiniSearch" class="spacer"></span>
-        <button (click)="openSearch()" *ngIf="showMiniSearch" mat-icon-button aria-label="Search">
-            <mat-icon>search</mat-icon>
-        </button>
+<!-- <ion-header  id="header" *ngIf="showTopToolbar" translucent="true" class="ion-no-border">
+    <button type="button" class="searchbutton" *ngIf="showSearch" (click)="openSearch()" >
+        <ion-button fill="clear" size="small" color="medium">
+            <ion-icon slot="icon-only" name="search"></ion-icon>
+        </ion-button>
+        <span class="text">Search Bookstore</span>    
+        <ion-button fill="clear" size="small" color="medium" (click)="openDialog(); $event.stopPropagation()">
+            <ion-icon slot="icon-only" name="menu"></ion-icon>
+        </ion-button>
+    </button>
+</ion-header> -->
+<!-- <ion-header translucent="true" class="ion-no-border">
+    <ion-searchbar animated="true" showCancelButton="focus"></ion-searchbar>
+    <ion-button fill="clear" size="small" color="medium" (click)="openDialog(); $event.stopPropagation()">
+        <ion-icon slot="icon-only" name="menu"></ion-icon>
+    </ion-button>
+</ion-header> -->
 
-    </mat-toolbar>
-
-    <router-outlet #o="outlet"></router-outlet>
-
-    <mat-toolbar *ngIf="showBottomMenu" id="bottom-nav">
-        <div class="item" [ngClass]="{active: storeActive}" (click)="openStore()">
-            <button mat-icon-button class="store" aria-label="Store">
-                <mat-icon>store</mat-icon>
-            </button>
-            <span class="label">Store</span>
-        </div>
-        <div class="item"  [ngClass]="{active: personalActive}" (click)="openPersonal()">
-            <button mat-icon-button class="personal" aria-label="Personal">
-                <mat-icon>library_books</mat-icon>
-            </button>
-            <span class="label">My Libarry</span>
-        </div>
-    </mat-toolbar>
-       
-</div>
+<ion-router-outlet></ion-router-outlet>

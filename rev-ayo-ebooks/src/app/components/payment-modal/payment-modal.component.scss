@@ -1,0 +1,51 @@
+@import "/src/styles/_variables.scss";
+
+#bottomsheet {
+    padding: 0 $pageSidePadding;
+
+    .book {
+        margin: 20px 0;
+        height: initial;
+        display: flex;
+
+        $imgRatio: 0.72;
+        .cover {
+            $width: 55px;
+            width: $width;
+            height: $width / $imgRatio;
+            // display: inline-flex;
+            border-radius: 5px;
+        }
+
+        .title {
+            font-size: 15px;
+            margin-left: 10px;
+
+            .id {
+                font-size: small;
+                color: #999;
+                display: block;
+                margin-top: 5px;
+            }
+        }
+
+        .price {
+            font-weight: 500;
+            font-size: 20px;
+            margin-left: 10px;
+        }
+    }
+
+    .purchase-container {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        
+        .buy {
+            text-align: center;
+            width: 90%;
+            position: relative;
+            left: 50%;
+            transform: translate(-50%);
+        }
+    }
+}

@@ -1,18 +1,11 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { BrowserModule, HammerGestureConfig, HAMMER_GESTURE_CONFIG } from '@angular/platform-browser';
 import * as hammer from 'hammerjs';
 
-export class MyHammerConfig extends HammerGestureConfig {
-  overrides = <any>{
-    swipe: { direction: hammer.DIRECTION_HORIZONTAL },
-    pinch: { enable: false },
-    rotate: { enable: false }
-  };
-}
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BookSelectorComponent } from './pages/book-selector/book-selector.component';
+import { StoreComponent } from './pages/store/store.component';
 import { EbookRoutingModule } from './ebook-routing.module';
 import { MatGridListModule } from '@angular/material/grid-list';
 import {MatIconModule} from '@angular/material/icon';
@@ -27,7 +20,6 @@ import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
 import { BooksetComponent } from './components/bookset/bookset.component';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
-import { SearchBarComponent } from './components/search-bar/search-bar.component';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -46,11 +38,17 @@ import { SearchpageComponent } from './pages/searchpage/searchpage.component';
 import {MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS} from '@angular/material/dialog';
 import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
 import { SettingsComponent } from './pages/settings/settings.component';
-import { PaymentBottomSheetComponent } from './components/payment-bottom-sheet/payment-bottom-sheet.component';
+import { PaymentModal } from './components/payment-modal/payment-modal.component';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { RouteReuseStrategy } from '@angular/router';
+import { BottomMenuComponent } from './components/bottom-menu/bottom-menu.component';
+import { SuperTabsModule } from '@ionic-super-tabs/angular';
 
 
+/*
 @NgModule({
   declarations: [
     AppComponent,
@@ -64,10 +62,11 @@ import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
     SettingsDialogComponent,
     SettingsComponent,
     PaymentBottomSheetComponent,
+    BottomMenuComponent,
   ],
   imports: [
     // Angular Material Modules
-    MatGridListModule,
+    // MatGridListModule,
     MatIconModule,
     MatInputModule,
     MatChipsModule,
@@ -83,8 +82,13 @@ import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
     MatDialogModule,
     MatBottomSheetModule,
 
+    // Ionic Modules
+    IonicModule,
+    CommonModule,
+    IonicModule.forRoot(),
+
     // Bootstrap
-    NgbModule,
+    // NgbModule,
 
     // PDF Reader
     NgxExtendedPdfViewerModule,
@@ -96,15 +100,82 @@ import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
     ReactiveFormsModule,
     EbookRoutingModule,
     BrowserAnimationsModule,
-    HammerModule
+    // HammerModule
   ],
   providers: [
     BookstoreService,
     UserService,
     InAppPurchase2,
-    {provide: HAMMER_GESTURE_CONFIG, useClass: MyHammerConfig},
-    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: true}}
+    {provide: HAMMER_GESTURE_CONFIG, useClass: HammerGestureConfig},
+    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: true}},
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
   ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
+*/
+
+
+@NgModule({
+    declarations: [
+        AppComponent,
+        // StoreComponent,
+        // ReaderComponent,
+        // BooksetComponent,
+        // BookDetailsComponent,
+        // PersonalBooksComponent,
+        // SearchpageComponent,
+        SettingsDialogComponent,
+        SettingsComponent,
+        // PaymentModal,
+        // BottomMenuComponent,
+    ],
+    entryComponents: [],
+    imports: [
+        // MatIconModule,
+        // MatInputModule,
+        // MatChipsModule,
+        // MatFormFieldModule,
+        // MatCardModule,
+        // MatButtonModule,
+        // MatAutocompleteModule,
+        // MatListModule,
+        // MatToolbarModule,
+        // MatTabsModule,
+        // MatSidenavModule,
+        // MatSnackBarModule,
+        MatDialogModule,
+        // MatBottomSheetModule,
+
+        // BrowserModule, 
+        SuperTabsModule.forRoot(),
+        IonicModule.forRoot(), 
+
+
+        EbookRoutingModule,
+        BrowserAnimationsModule,
+
+        // PDF Reader
+        NgxExtendedPdfViewerModule,
+        PdfViewerModule,
+
+        HttpClientModule,
+        // BrowserModule,
+        FormsModule,
+        ReactiveFormsModule,
+        EbookRoutingModule,
+        // BrowserAnimationsModule,
+        
+    ],
+    
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    providers: [
+        BookstoreService,
+        UserService,
+        InAppPurchase2,
+        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
+    ],
+    bootstrap: [AppComponent],
+})
+export class AppModule {}
+
