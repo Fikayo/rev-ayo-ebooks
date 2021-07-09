@@ -1,4 +1,5 @@
 <div id="reader">
+    <ion-progress-bar type="{{progressType}}" color="{{progressColor}}" value="{{currentPage / totalPages}}"></ion-progress-bar>
     <pdf-viewer 
         [src]="srcUrl"
         [render-text]="true"
@@ -7,7 +8,8 @@
         [show-all]="true"
         [stick-to-page]="true"
         [(page)]="currentPage"
-        (pageChange)="pageChange($event)"
+        (pageChange)="onPageChange($event)"
+        (after-load-complete)="onLoadComplete($event)"
     >
     </pdf-viewer>
 </div>

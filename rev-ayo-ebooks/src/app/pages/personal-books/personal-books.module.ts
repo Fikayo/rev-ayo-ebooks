@@ -1,12 +1,11 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { MatTabsModule } from "@angular/material/tabs";
 import { IonicModule } from "@ionic/angular";
 import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
 import { PersonalBooksComponent } from "./personal-books.component";
-import { PersonalRoutingModule } from "./personal-routing.module";
 import { SuperTabsModule } from '@ionic-super-tabs/angular';
+import { RouterModule } from "@angular/router";
 
 @NgModule({
     imports: [
@@ -15,7 +14,7 @@ import { SuperTabsModule } from '@ionic-super-tabs/angular';
         FormsModule,
         BooksetComponentModule,
         // MatTabsModule,
-        PersonalRoutingModule,
+        RouterModule.forChild([{path: '', component: PersonalBooksComponent}]),
         // SuperTabsModule,
         SuperTabsModule.forRoot(),
     ],

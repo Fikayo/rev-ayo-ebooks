@@ -13,13 +13,8 @@ export class PaymentService {
     constructor(
         private user: UserService,
         private bookstore: BookstoreService,
-        private platform: Platform,
         private store: InAppPurchase2) 
-    {
-        platform.ready().then(() => {
-            this.initStore();
-        });
-    }
+    { }
 
     public initStore() {
         this.bookstore.fetchProdutinfo().subscribe({
@@ -31,6 +26,7 @@ export class PaymentService {
     }
 
     private prepare() {
+        this.store.verbosity = this.store.DEBUG;
         this.productIDs.forEach(p => {
             this.store.register({
                 id:    this.getCompleteProductId(p.productID),
@@ -42,6 +38,12 @@ export class PaymentService {
             this.store.when(p.productID).cancelled(this.productCancelled.bind(this));        
             this.store.when(p.productID).error(this.productError.bind(this));        
             this.store.when(p.productID).updated(this.productUpdated.bind(this));
+        });
+
+        this.store.ready(() =>  {
+            console.log('Store is ready');
+            console.log('Products: ' + JSON.stringify(this.store.products));
+            console.log(JSON.stringify(this.store.get("test_id_1")));
         });
 
         this.store.error(function(error: any) {

@@ -23,7 +23,7 @@
     <div *ngIf="showFeatures">
         <ebook-bookset [title]="'Most Popular'" [books]="popularBooks"></ebook-bookset>
         <ebook-bookset [title]="'Featured'" [books]="featuredBooks"></ebook-bookset>
-        <ebook-bookset [title]="'More titles'" [books]="otherBooks" [style]="'grid'"></ebook-bookset>
+        <ebook-bookset [title]="'More titles'" [books]="otherBooks" [style]="'carousel'"></ebook-bookset>
     </div>
 
     <ebook-bookset *ngIf="searching" [books]="searchResults" [style]="'grid'" [size]="'small'"></ebook-bookset>

@@ -1,18 +1,30 @@
 import { Observable, Subject } from "rxjs";
 
-const TABLES: string[] = [`
+export const User: string = "User";
+export const UserLibrary: string = "UserLibrary";
+export const UserProgress: string = "UserProgress";
+const TableNames: string[] = [User, UserLibrary, UserProgress];
 
-    CREATE TABLE IF NOT EXISTS [User] (
+const TABLES: string[] = [
+
+    `CREATE TABLE IF NOT EXISTS [${User}] (
         UserId STRING NOT NULL,
         PRIMARY KEY (UserId)
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [UserLibrary] (
+    `CREATE TABLE IF NOT EXISTS [${UserLibrary}] (
         [UserId] STRING NOT NULL UNIQUE,
         [Books] TEXT,
         [Wishlist] TEXT,
-        FOREIGN KEY (UserId) REFERENCES [User] (UserId) ON DELETE CASCADE
-    );`
+        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE
+    );`,
+
+    `CREATE TABLE IF NOT EXISTS [${UserProgress}] (
+        [UserId] STRING NOT NULL UNIQUE,
+        [BookId] STRING NOT NULL UNIQUE,
+        [CurrentPage] INT NOT NULL,
+        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE
+    );`,
 
 ];
 
@@ -27,8 +39,10 @@ export class SQLQuery
     }
 }
 
+export type SQLCallback = (tx: any, result: any) => void;
+
 export interface Transaction {
-    executeSql: (sql: string, params: any[] | undefined, successCB?: (tx: any, result: any) => void, errorCB?: (tx: any, error: any) => void) => void;
+    executeSql: (sql: string, params?: any[], successCB?: SQLCallback, errorCB?: SQLCallback) => void;
 }
 
 abstract class WebSQLConnection
@@ -53,8 +67,7 @@ abstract class WebSQLConnection
 
     protected abstract createTables(): void;
 
-    public executeTx(sqlQuery: SQLQuery, successCB?: (tx: any, result: any) => void, errorCB?: (tx: any, error: any) => void) {
-        // this.batchTx([sqlQuery], successCB, errorCB);
+    public execute(sqlQuery: SQLQuery, successCB?: SQLCallback, errorCB?: SQLCallback) {
         this.runTransaction((tx: Transaction) => {
             tx.executeSql(sqlQuery.sql, sqlQuery.params, successCB, errorCB);
         });
@@ -63,7 +76,6 @@ abstract class WebSQLConnection
     public runTransaction(func: (tx: Transaction) => void) {
         try {
             this.db.transaction(func);
-
         } catch(e) {
             console.error("Error during db transaction: ", e);
         }
@@ -73,20 +85,17 @@ abstract class WebSQLConnection
 
 export class EbooksSQL extends WebSQLConnection {
 
-    protected deleteTables(): void {
-        let queries: SQLQuery[] = [
-            new SQLQuery(`DROP TABLE IF EXISTS [User]`),
-            new SQLQuery(`DROP TABLE IF EXISTS [UserLibrary]`),
-        ];
-
-        queries.forEach(q => this.executeTx(q));
+    protected deleteTables(): void {        
+        TableNames.forEach(t => {
+            this.execute( new SQLQuery(`DROP TABLE IF EXISTS [${t}]`));
+        });
     }
 
     protected createTables(): void {
         // this.deleteTables();
 
         TABLES.forEach(t => {
-            this.executeTx(new SQLQuery(t));
+            this.execute(new SQLQuery(t));
         });
 
         // this.loadData();
@@ -94,8 +103,8 @@ export class EbooksSQL extends WebSQLConnection {
 
     private loadData(): void {
 
-        this.executeTx(new SQLQuery(`INSERT INTO [User] (UserId) VALUES ('fikayoid123')`));
-        this.executeTx(new SQLQuery(`INSERT INTO [UserLibrary] (UserId, Books, Wishlist) VALUES ('fikayoid123', 'unknown, unknown', '975-978-57020-4-0, 975-978-57020-4-0')`));
+        this.execute(new SQLQuery(`INSERT INTO [User] (UserId) VALUES ('fikayoid123')`));
+        this.execute(new SQLQuery(`INSERT INTO [UserLibrary] (UserId, Books, Wishlist) VALUES ('fikayoid123', 'unknown, unknown', '975-978-57020-4-0, 975-978-57020-4-0')`));
     }
 
 }

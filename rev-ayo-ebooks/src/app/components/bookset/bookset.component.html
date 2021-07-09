@@ -3,28 +3,15 @@
     <div class="topbar">
         <span [hidden]="!showTitle" class="title">{{title}}</span>
     </div>
-    <!-- <div *ngIf="style!='list'" class="set {{size}} {{style}}">
-        <ion-card class="book" *ngFor="let book of books"  (click)="selectBook(book)">
-            <img class="cover" src="{{book.cover}}" alt="{{book.title}}">
-            <ion-card-content class="info">
-                <span class="title">{{book.title}}</span>
-                <span class="price" *ngIf="showPrice" >{{book.price}}</span>
-            </ion-card-content>
-        </ion-card>
-    </div> -->
 
     <div *ngIf="style!='list'" class="set {{size}} {{style}}">
-        <ion-slides [options]="slideOpts">
-            <ion-slide *ngFor="let book of books"  class="book" (click)="selectBook(book)">
-                <ion-col>
-                    <ion-img style="pointer-events:none" class="cover" src="{{book.cover}}" alt="{{book.title}}"></ion-img>
-                    <div class="info">
-                        <span class="title">{{book.title}}</span>
-                        <span class="price" *ngIf="showPrice" >{{book.price}}</span>
-                    </div>
-                </ion-col>
-            </ion-slide>
-        </ion-slides>
+        <div *ngFor="let book of books" scrollX="true" class="book" (click)="selectBook(book)">
+            <ion-img style="pointer-events:none" class="cover" src="{{book.cover}}" alt="{{book.title}}"></ion-img>
+            <div class="info">
+                <span class="title">{{book.title}}</span>
+                <span class="price" *ngIf="showPrice" >{{book.price}}</span>
+            </div>
+        </div>
     </div>
 
 

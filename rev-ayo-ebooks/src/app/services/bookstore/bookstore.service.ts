@@ -84,16 +84,16 @@ export class BookstoreService {
 
         return detailsSub.asObservable();
     }
-    public fetchBookPDFObject(bookID: string): Observable<Object> {
-        const bookSub = new Subject<Object>();
+    public fetchBookPDFPath(bookID: string): Observable<string> {
+        const bookSub = new Subject<string>();
         let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
         if (bookID == "unknown") {
             path =  "./assets/books/becoming a better you/pdf.pdf";
         }
 
-        this.http.get(path)
+        this.fetchBookPDF(bookID)
         .subscribe({
-            next: (res) => bookSub.next(res),
+            next: (res) => bookSub.next(path.replace(".", "")),
             error: () => console.log(`failed to fetch book "${bookID}"`)
         });
 

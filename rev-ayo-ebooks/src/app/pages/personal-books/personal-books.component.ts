@@ -22,9 +22,16 @@ export class PersonalBooksComponent implements OnInit {
     constructor(
         private router: Router,
         private user: UserService,
-        private zone: NgZone) { }
+        private zone: NgZone) {}
 
     ngOnInit(): void {
+    }
+    
+    ionViewWillEnter() {
+        this.init();
+    }
+
+    private init(): void {
         this.user.fetchMyBooks().subscribe({
             next: (b) => {
                 this.zone.run(() => {
@@ -37,6 +44,7 @@ export class PersonalBooksComponent implements OnInit {
 
         this.user.fetchWishlist().subscribe({
             next: (b) => {
+                console.log("fetching wishlist", b);
                 this.zone.run(() => {
                     this.wishlist = b;
                     console.debug("fetched wishlist", b);

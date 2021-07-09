@@ -4,6 +4,8 @@ import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { UserService } from './services/user/user.service';
 import { MatDialog } from '@angular/material/dialog';
 import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
+import { Platform } from '@ionic/angular';
+import { PaymentService } from './services/payment/payment.service';
 
 @Component({
   selector: 'app-root',
@@ -26,9 +28,14 @@ export class AppComponent {
         private router: Router,
         private location: Location,
         private dialog: MatDialog,
+        private payment: PaymentService,
+        platform: Platform,
     ) {
         this.monitorNavigation();
         // this.fixReload();
+        platform.ready().then(() => {
+            this.payment.initStore();
+        });
     }
 
     public goBack() {

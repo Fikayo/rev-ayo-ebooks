@@ -25,10 +25,10 @@ export class StoreComponent implements OnInit {
     constructor(
         private router: Router,        
         private activatedRoute: ActivatedRoute,
-        private bookstore: BookstoreService) { }
+        private bookstore: BookstoreService) {console.log("store con"); }
 
     ngOnInit(): void {
-        
+        console.log("store init");
         // this.activatedRoute.queryParams.subscribe(param => {
         //     this.filterList(param['filter']);
         // });

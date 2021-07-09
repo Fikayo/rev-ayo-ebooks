@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { PDFProgressData } from 'ng2-pdf-viewer';
+import { PDFDocumentProxy, PDFProgressData } from 'ng2-pdf-viewer';
 import { pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
 import { Subscription } from 'rxjs';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
+import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'ebook-reader',
@@ -24,14 +25,19 @@ export class ReaderComponent implements OnInit, OnDestroy {
     0.5, 0.67, 0.75, 0.82, 0.9, 1, 1.1, 1.15, 
     1.25, 1.5];
 
+    public progressType: string = "indeterminate";
+    public progressColor: string = "primary";
+    public totalPages: number = 1;
+
     public srcUrl!: string;
     public currentPage: number = 1;
-    private recentPage!: number;
 
     private routeSub!: Subscription;
+    private bookID!: string;
 
     constructor(
         private activatedRoute: ActivatedRoute,
+        private user: UserService,
         private bookstore: BookstoreService) {
         pdfDefaultOptions.defaultZoomValue = 'page-fit';
         pdfDefaultOptions.doubleTapZoomFactor = "125%";
@@ -40,6 +46,7 @@ export class ReaderComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.routeSub = this.activatedRoute.params.subscribe(params => {
             let bookID = params['isbn'];
+            this.bookID = bookID;
 
             this.bookstore.fetchBookPDF(bookID)
             .subscribe({
@@ -47,14 +54,21 @@ export class ReaderComponent implements OnInit, OnDestroy {
                 error: () => console.log("failed to fetch book from bookstore")
             });
 
-            // this.bookstore.fetchBookPDFObject(bookID)
-            // .subscribe({
-            //     next: (b) => this.srcObj = b,
-            //     error: () => console.log("failed to fetch book from bookstore")
-            // });
-            this.srcUrl = "/assets/books/how to be happy and stay happy/pdf.pdf";
+            this.bookstore.fetchBookPDFPath(bookID)
+            .subscribe({
+                next: (b) => this.srcUrl = b,
+                error: () => console.log("failed to fetch book from bookstore")
+            });
+            // this.srcUrl = "/assets/books/how to be happy and stay happy/pdf.pdf";
 
-            this.recentPage = this.currentPage;
+            this.user.fetchBookCurrentPage(bookID)
+            .subscribe({
+                next: (page) => {
+                    this.currentPage = page;
+                },
+                error: () => console.log(`failed to fetch current page for book ${bookID}`)
+            });
+
         });
     }
 
@@ -62,10 +76,29 @@ export class ReaderComponent implements OnInit, OnDestroy {
         if(this.routeSub) {
             this.routeSub.unsubscribe();
         }
+
+        this.user.updateBookProgress(this.bookID, this.currentPage)
+        .subscribe({
+           error: () => console.error(`Failed to update current page for book ${this.bookID}`) 
+        });
     }
 
-    public pageChange(newPage: number) {
-        console.log("new page: ", newPage);
-        this.recentPage = newPage;
+    public onPageChange(page: number) {
+        let progress = page / this.totalPages;
+
+        if(progress >= 0.95) {
+            this.progressColor = "success";
+        } else if(progress >= 0.1) {
+            this.progressColor = "secondary";
+        } else {
+            this.progressColor = "primary";
+        }
     }
+
+    public onLoadComplete(pdf: PDFDocumentProxy) {
+        this.progressType = "determinate";
+        this.totalPages = pdf.numPages;
+        console.log("totalPages, ", this.totalPages);
+    }
+      
 }

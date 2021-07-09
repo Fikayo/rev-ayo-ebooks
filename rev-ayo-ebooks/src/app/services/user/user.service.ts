@@ -35,7 +35,7 @@ export class UserService {
         `, [this.userID]);
 
         let myIDs: string[] = [];
-        this.sql.executeTx(query, 
+        this.sql.execute(query, 
             (_, results: any) => {
                 console.debug("results", results);
                 if (results.rows.length > 0) {
@@ -72,39 +72,39 @@ export class UserService {
             SELECT Books, Wishlist FROM UserLibrary l WHERE l.UserId = ?;
         `, [this.userID]);
 
-        let myIDs: string[] = [];
-        let wishlist: string[] = [];
-        this.sql.executeTx(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if(row.Books) {
-                        myIDs = row.Books.split(",").map((item: string)=>item.trim());
-                    }
-                    if (row.Wishlist) {
-                        wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
-                    }
-
-                    if (!myIDs.includes(bookID)) {
-                        myIDs.push(bookID);                    
-                    }
-
-                    if (wishlist.includes(bookID)) {
-                        wishlist = wishlist.filter(b => b != bookID);
-                    }
-
-                    this.sql.executeTx(
-                        new SQLQuery(`UPDATE UserLibrary SET Books = ?, Wishlist = ? WHERE UserId = ?`, [myIDs, wishlist, this.userID]),
-                        (_, __) => {
-                            sub.next();
+        this.sql.runTransaction((tx: Transaction) => {       
+            let myIDs: string[] = [];
+            let wishlist: string[] = [];
+            tx.executeSql(query.sql, query.params, 
+                (_, results: any) => {
+                    console.debug("results", results);
+                    if (results.rows.length > 0) {
+                        let row = results.rows.item(0);
+                        console.debug("result row", row);
+                        if(row.Books) {
+                            myIDs = row.Books.split(",").map((item: string)=>item.trim());
                         }
-                    );
-                }
-            }
-        );
+                        if (row.Wishlist) {
+                            wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
+                        }
 
+                        if (!myIDs.includes(bookID)) {
+                            myIDs.push(bookID);                    
+                        }
+
+                        if (wishlist.includes(bookID)) {
+                            wishlist = wishlist.filter(b => b != bookID);
+                        }
+
+                        tx.executeSql(`UPDATE UserLibrary SET Books = ?, Wishlist = ? WHERE UserId = ?`, [myIDs, wishlist, this.userID],
+                            (_, __) => {
+                                sub.next();
+                            }
+                        );
+                    }
+                }
+            );
+        });
         return sub.asObservable();
     }
 
@@ -115,7 +115,7 @@ export class UserService {
         `, [this.userID]);
 
         let wishlist: string[] = [];
-        this.sql.executeTx(query, 
+        this.sql.execute(query, 
             (_, results: any) => {
                 console.debug("results", results);
                 if (results.rows.length > 0) {
@@ -148,50 +148,53 @@ export class UserService {
             SELECT Wishlist FROM UserLibrary l WHERE l.UserId = ?;
         `, [this.userID]);
 
-        let wishlist: string[] = [];
-        this.sql.executeTx(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if (row.Wishlist) {
-                        wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
+        this.sql.runTransaction((tx: Transaction) => {
+        
+            let wishlist: string[] = [];
+            tx.executeSql(query.sql, query.params, 
+                (_, results: any) => {
+                    console.debug("results", results);
+                    if (results.rows.length > 0) {
+                        let row = results.rows.item(0);
+                        console.debug("result row", row);
+                        if (row.Wishlist) {
+                            wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
+                        }
                     }
-                }
 
-                if (wishlist.includes(bookID)) {
-                    wishlist = wishlist.filter(b => b != bookID);
-                } else {
-                    wishlist.push(bookID);
-                }
+                    if (wishlist.includes(bookID)) {
+                        wishlist = wishlist.filter(b => b != bookID);
+                    } else {
+                        wishlist.push(bookID);
+                    }
 
-                console.log("new wishlist", wishlist);
-                this.sql.executeTx(new SQLQuery(`UPDATE UserLibrary SET Wishlist=? WHERE UserId=?`, [wishlist, this.userID]),
-                    (_, results) => {
-                        if (results.rowsAffected > 0) {
-                            sub.next(wishlist.includes(bookID));
-                        } else {
-                            let msg = `no rows updated while updating wishlist to be [${wishlist}] for user ${this.userID}`;
-                            console.error(msg);
+                    console.log("new wishlist", wishlist);
+                    tx.executeSql(`UPDATE UserLibrary SET Wishlist=? WHERE UserId=?`, [wishlist, this.userID],
+                        (_, results) => {
+                            if (results.rowsAffected > 0) {
+                                sub.next(wishlist.includes(bookID));
+                            } else {
+                                let msg = `no rows updated while updating wishlist to be [${wishlist}] for user ${this.userID}`;
+                                console.error(msg);
+                                sub.error(msg);
+                            }  
+                        },
+                        
+                        (_, error) => {
+                            let msg = `updating wishlist to be [${wishlist}]: ${error.message}`;
+                            console.error(msg, error);
                             sub.error(msg);
-                        }  
-                    },
-                    
-                    (_, error) => {
-                        let msg = `updating wishlist to be [${wishlist}]: ${error.message}`;
-                        console.error(msg, error);
-                        sub.error(msg);
-                    }
-                );                
-            }, 
+                        }
+                    );                
+                }, 
 
-            (_, error: any) => {
-                let msg = `toggling book ${bookID} in wishlist failed: ${error.message}`;
-                console.error(msg, error);
-                sub.error(msg);            
-            }
-        );
+                (_, error: any) => {
+                    let msg = `toggling book ${bookID} in wishlist failed: ${error.message}`;
+                    console.error(msg, error);
+                    sub.error(msg);            
+                }
+            );
+        });
 
         return sub.asObservable();
     }
@@ -203,7 +206,7 @@ export class UserService {
         `, [this.userID]);
 
         let wishlist: string[] = [];
-        this.sql.executeTx(query, 
+        this.sql.execute(query, 
             (_, results: any) => {
                 console.debug("results", results);
                 if (results.rows.length > 0) {
@@ -228,7 +231,7 @@ export class UserService {
         `, [this.userID]);
 
         let myIDs: string[] = [];
-        this.sql.executeTx(query, 
+        this.sql.execute(query, 
             (_, results: any) => {
                 console.debug("results", results);
                 if (results.rows.length > 0) {
@@ -242,6 +245,96 @@ export class UserService {
                 sub.next(myIDs.includes(bookID));               
             }
         );
+
+        return sub.asObservable();
+    }
+
+    public fetchBookCurrentPage(bookID: string): Observable<number> {
+        const sub = new Subject<number>();
+        let query = new SQLQuery(`
+            SELECT CurrentPage FROM UserProgress p WHERE p.UserId = ? AND p.BookId = ?;
+        `, [this.userID, bookID]);
+
+        this.sql.execute(query, 
+            (_, results: any) => {
+                console.debug("results", results);
+
+                let page = 1;
+                if (results.rows.length > 0) {
+                    let row = results.rows.item(0);
+                    console.debug("result row", row);
+                    page = row.CurrentPage;
+                }
+
+                sub.next(page);
+            },
+
+            (_, error) => {
+                let msg = `error fetching current page from book [${bookID}]: ${error.message}`;
+                console.error(msg, error);
+                sub.error(msg);
+            }
+        );
+
+        return sub.asObservable();
+    }
+
+    public updateBookProgress(bookID: string, currentPage: number): Observable<number> {
+        let sub = new Subject<number>();
+        let query = new SQLQuery(`
+            SELECT CurrentPage FROM UserProgress p WHERE p.UserId = ? AND p.BookId = ?;
+        `, [this.userID, bookID]);
+
+        this.sql.runTransaction((tx: Transaction) => {
+                tx.executeSql(query.sql, query.params, 
+                (_, results: any) => {
+                    console.debug("results", results);
+                    if (results.rows.length > 0) {
+                        tx.executeSql(`UPDATE UserProgress SET CurrentPage=? WHERE UserId=?`, [currentPage, this.userID],
+                            (_, results) => {
+                                if (results.rowsAffected > 0) {
+                                    sub.next(currentPage);
+                                } else {
+                                    let msg = `no rows updated while updating book ${bookID} progress to be [${currentPage}] for user ${this.userID}`;
+                                    console.error(msg);
+                                    sub.error(msg);
+                                }  
+                            },
+                            
+                            (_, error) => {
+                                let msg = `updating current page to be [${currentPage}]: ${error.message}`;
+                                console.error(msg, error);
+                                sub.error(msg);
+                            }
+                        );    
+                    }  else {
+                        tx.executeSql(`INSERT INTO UserProgress (UserId, BookId, CurrentPage) VALUES (?, ?, ?)`, [this.userID, bookID, currentPage],
+                            (_, results) => {
+                                if (results.rowsAffected > 0) {
+                                    sub.next(currentPage);
+                                } else {
+                                    let msg = `no rows updated while updating book ${bookID} progress to be [${currentPage}] for user ${this.userID}`;
+                                    console.error(msg);
+                                    sub.error(msg);
+                                }  
+                            },
+                            
+                            (_, error) => {
+                                let msg = `updating current page to be [${currentPage}]: ${error.message}`;
+                                console.error(msg, error);
+                                sub.error(msg);
+                            }
+                        );    
+                    }            
+                }, 
+
+                (_, error: any) => {
+                    let msg = `updating reading progress for book ${bookID} to page ${currentPage}: ${error.message}`;
+                    console.error(msg, error);
+                    sub.error(msg);            
+                }
+            );
+        });
 
         return sub.asObservable();
     }
@@ -272,6 +365,5 @@ export class UserService {
         });
 
         return sub.asObservable();
-    
     }
 }
