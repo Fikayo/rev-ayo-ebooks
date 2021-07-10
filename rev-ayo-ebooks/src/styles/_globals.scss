@@ -98,3 +98,13 @@ body {
     --height:30%;
     align-items: flex-end;
 }
+
+
+.ion-loading-class {
+    --background: none;
+    --spinner-color:#ffffff;
+
+    .loading-wrapper {
+        box-shadow: none;
+    }
+}

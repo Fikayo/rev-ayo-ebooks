@@ -1,15 +1,24 @@
 
 <div class="bookset">
     <div class="topbar">
-        <span [hidden]="!showTitle" class="title">{{title}}</span>
+        <span [hidden]="!showTitle || books === undefined" class="title">{{title}}</span>
+        <span [hidden]="books !== undefined" class="title fake">{{title}}</span>
     </div>
 
     <div *ngIf="style!='list'" class="set {{size}} {{style}}">
-        <div *ngFor="let book of books" scrollX="true" class="book" (click)="selectBook(book)">
+        <div [hidden]="books == undefined" *ngFor="let book of books" class="book" (click)="selectBook(book)">
             <ion-img style="pointer-events:none" class="cover" src="{{book.cover}}" alt="{{book.title}}"></ion-img>
             <div class="info">
                 <span class="title">{{book.title}}</span>
                 <span class="price" *ngIf="showPrice" >{{book.price}}</span>
+            </div>
+        </div>
+        
+        <div [hidden]="books !== undefined" *ngFor="let book of [1,2,3]" class="book">
+            <div style="pointer-events:none" class="cover fake"></div>
+            <div class="info">
+                <span class="title fake"></span>
+                <span class="price fake" *ngIf="showPrice"></span>
             </div>
         </div>
     </div>
