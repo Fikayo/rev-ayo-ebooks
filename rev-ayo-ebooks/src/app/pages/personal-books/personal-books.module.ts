@@ -13,7 +13,6 @@ import { RouterModule } from "@angular/router";
         CommonModule, 
         FormsModule,
         BooksetComponentModule,
-        // MatTabsModule,
         RouterModule.forChild([{path: '', component: PersonalBooksComponent}]),
         // SuperTabsModule,
         SuperTabsModule.forRoot(),

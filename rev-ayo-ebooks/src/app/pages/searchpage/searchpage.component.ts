@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterVi
 import { FormControl } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
-import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstore.service';
+import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
 export class SearchpageComponent implements OnInit, AfterViewInit {
 
     public filteredOptions!: Observable<string[]>;
-    public allTitles: BookTitle[] = [];
+    public allTitles: BookInfo[] = [];
     public autoCompleteList!: any[];
 
     @ViewChild('autocompleteInput')
@@ -59,7 +59,7 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
 
     }
 
-    private filterList(val: string): BookTitle[] {
+    private filterList(val: string): BookInfo[] {
         if (val === '' || val === null || val === undefined) {
             return [];
         }

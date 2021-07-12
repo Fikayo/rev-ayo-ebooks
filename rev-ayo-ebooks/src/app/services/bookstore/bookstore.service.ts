@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
 import { Observable, Subject } from 'rxjs';
 
-export interface BookTitle {
+export interface BookInfo {
     ISBN: string;
     title: string;
     displayName: string;
@@ -25,15 +26,15 @@ export class BookstoreService {
 
     constructor(private http: HttpClient) { }
 
-    public fetchAllTitles(): Observable<BookTitle[]> {
-        const titlesSub = new Subject<BookTitle[]>();
+    public fetchAllTitles(): Observable<BookInfo[]> {
+        const titlesSub = new Subject<BookInfo[]>();
 
         this.http.get("./assets/books/list.json", {responseType: "json"})
         .subscribe({
             next: (data: any) => {
                 let titles = []
                 for(let b of data["books"]) {
-                    titles.push(this.parseTitle(b));
+                    titles.push(this.parseBook(b));
                 }
 
                 titlesSub.next(titles);
@@ -43,38 +44,36 @@ export class BookstoreService {
         return titlesSub.asObservable();
     }
 
-    public fetchDetails(bookID: string): Observable<BookTitle> {
-        const detailsSub = new Subject<BookTitle>();
+    public fetchDetails(bookID: string): Observable<BookInfo> {
+        const detailsSub = new Subject<BookInfo>();
 
-        this.http.get("./assets/books/list.json", {responseType: "json"})
-        .subscribe({
-            next: (data: any) => {
-                for(let b of data["books"]) {
-                    if (b.ISBN == bookID) {
-                        detailsSub.next(this.parseTitle(b));
-                        break;
-                    }
+        this.fetchAllDetails([bookID]).subscribe({
+            next: (books) => {
+                if (books.length > 0) {
+                    detailsSub.next(books[0]);
+                } else {                    
+                    detailsSub.next();
                 }
             }
-        });
+        })
 
         return detailsSub.asObservable();
     }
 
-    public fetchDetailsArray(bookIDs: string[]): Observable<BookTitle[]> {
-        const detailsSub = new Subject<BookTitle[]>();
+    public fetchAllDetails(bookIDs: string[]): Observable<BookInfo[]> {
+        const detailsSub = new Subject<BookInfo[]>();
 
         this.http.get("./assets/books/list.json", {responseType: "json"})
         .subscribe({
             next: (data: any) => {
-                let books: BookTitle[] = [];
+                let books: BookInfo[] = [];
 
                 let allBooks: any[] = data["books"];
                 bookIDs.forEach(b => {
                     let found = allBooks.find(el => el.ISBN == b);
                     console.debug("found", found);
                     if (found) {
-                        books.push(this.parseTitle(found));
+                        books.push(this.parseBook(found));
                     }
                 });
 
@@ -155,10 +154,34 @@ export class BookstoreService {
         return sub.asObservable();
     }
 
-    private parseTitle(b: any): BookTitle {
-        let title = b as BookTitle;
+    public updateProduct(bookID: string, iapproduct: IAPProduct) {
+        let isNaira = iapproduct.id.toLowerCase().indexOf("naira") != -1;
+
+        this.http.get("./assets/books/list.json", {responseType: "json"})
+        .subscribe({
+            next: (data: any) => {
+                for(let b of data["books"]) {
+                    if (b.ISBN == bookID) {
+                        if(isNaira) {
+                            b.price.naira = iapproduct.price
+                        } else {
+                            b.price.world = iapproduct.price;
+                        }
+
+                        break;                   
+                    }
+                }
+
+                //TODO: WRITE TO LOCAL JSON FILE
+             }
+        });
+
+    }
+
+    private parseBook(b: any): BookInfo {
+        let title = b as BookInfo;
         title.cover = `./assets/books/${b.title.toLowerCase()}/cover.jpg`;
-        title.price = `₦${b.naira}`;
+        title.price = `₦${b.price.naira}`;
         return title;
     }
 }

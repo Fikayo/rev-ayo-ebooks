@@ -5,7 +5,7 @@ import { ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { BottomMenuComponent } from 'src/app/components/bottom-menu/bottom-menu.component';
 import { PaymentModal } from 'src/app/components/payment-modal/payment-modal.component';
-import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstore.service';
+import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -15,8 +15,8 @@ import { UserService } from 'src/app/services/user/user.service';
 })
 export class BookDetailsComponent implements OnInit {
     
-    public book!: BookTitle;
-    public suggestions: BookTitle[] = [];
+    public book!: BookInfo;
+    public suggestions: BookInfo[] = [];
     public actionText!: string;  
     public bookInWishList!: boolean;
     public bookIsPurchased!: boolean;
@@ -47,8 +47,11 @@ export class BookDetailsComponent implements OnInit {
                     this.user.hasPurchasedBook(this.book.ISBN).subscribe({
                         next: (i) => {
                             this.zone.run(() => {
+                                if (this.book.ISBN == "unknown") {
+                                    i = true;
+                                }
+                                
                                 this.setPurchasedBook(i);
-                                // this.setPurchasedBook(true);
                             });
                         },
                     })
@@ -84,7 +87,7 @@ export class BookDetailsComponent implements OnInit {
         this.router.navigate(['/searchpage']);
     }
 
-    public async onActionClick(book: BookTitle) {
+    public async onActionClick(book: BookInfo) {
         if (this.bookIsPurchased) {
             console.log("reading");
             this.router.navigate([`../../read/${book.ISBN}/`], {relativeTo: this.activatedRoute});

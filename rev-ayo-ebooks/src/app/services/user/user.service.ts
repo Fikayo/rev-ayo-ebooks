@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { EbooksSQL, SQLQuery, Transaction } from 'src/app/models/WebSQLConnection';
-import { BookstoreService, BookTitle } from '../bookstore/bookstore.service';
+import { BookstoreService, BookInfo } from '../bookstore/bookstore.service';
 
 @Injectable({
   providedIn: 'root'
@@ -28,8 +28,8 @@ export class UserService {
         return this.id;
     }
 
-    public fetchMyBooks(): Observable<BookTitle[]> {
-        const sub = new Subject<BookTitle[]>();
+    public fetchMyBooks(): Observable<BookInfo[]> {
+        const sub = new Subject<BookInfo[]>();
         let query = new SQLQuery(`
             SELECT Books FROM UserLibrary l WHERE l.UserId = ?;
         `, [this.userID]);
@@ -47,7 +47,7 @@ export class UserService {
                         sub.next([]);
                     }
 
-                    this.bookstore.fetchDetailsArray(myIDs).subscribe({
+                    this.bookstore.fetchAllDetails(myIDs).subscribe({
                         next: (b) => {
                             sub.next(b);
                         }
@@ -108,8 +108,8 @@ export class UserService {
         return sub.asObservable();
     }
 
-    public fetchWishlist(): Observable<BookTitle[]> {
-        const sub = new Subject<BookTitle[]>();
+    public fetchWishlist(): Observable<BookInfo[]> {
+        const sub = new Subject<BookInfo[]>();
         let query = new SQLQuery(`
             SELECT Wishlist FROM UserLibrary l WHERE l.UserId = ?;
         `, [this.userID]);
@@ -127,7 +127,7 @@ export class UserService {
                         sub.next([]);
                     }
                 
-                    this.bookstore.fetchDetailsArray(wishlist).subscribe({
+                    this.bookstore.fetchAllDetails(wishlist).subscribe({
                         next: (b) => {
                             console.log("fetched wish books", b);
                             sub.next(b);

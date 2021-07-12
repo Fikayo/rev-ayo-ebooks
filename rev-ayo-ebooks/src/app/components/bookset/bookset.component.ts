@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from 'src/app/services/bookstore/bookstore.service';
 
 @Component({
   selector: 'ebook-bookset',
@@ -11,8 +11,8 @@ export class BooksetComponent implements OnInit {
     // const styles = ["carousel", "grid"];
 
     @Input() title: string = "";
-    @Input() books: BookTitle[] = [];    
-    @Input() onSelect!: (book: BookTitle) => void;
+    @Input() books: BookInfo[] = [];    
+    @Input() onSelect!: (book: BookInfo) => void;
     @Input() style: string = "carousel";
     @Input() showTitle: boolean = true;
     @Input() showPrice: boolean = true;
@@ -40,7 +40,7 @@ export class BooksetComponent implements OnInit {
         }
     }
     
-    selectBook(book: BookTitle) {
+    selectBook(book: BookInfo) {
         if(this.onSelect) {
             this.onSelect(book);
         } else {

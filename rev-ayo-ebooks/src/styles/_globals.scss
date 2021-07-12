@@ -81,11 +81,15 @@ body {
         overflow: hidden;
         background: $background;
         color: #555;
-        font-size: 14px;
+        font-size: initial;
         width: 100%;
-        $space: 9px;
+        $space: 13px;
         padding-top: $space;
         padding-bottom: $space;
+
+        $borderColor: #cccccc85;
+        border-color: $borderColor;
+        box-shadow: 0 0 7px $borderColor;
 
         .text {
             width: 100%;

@@ -49,6 +49,7 @@ function registerUser() {
         );      
     });
 
+    sql.prefetchData();
 }
 
 function insertUserID(tx: Transaction, userID: string) {

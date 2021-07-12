@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ViewChildren, NgZone } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { Router } from '@angular/router';
-import { BookTitle } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -13,8 +13,8 @@ export class PersonalBooksComponent implements OnInit {
     @ViewChild(MatTabGroup) group!: any;
     @ViewChildren(MatTab) tabs!: any;
 
-    public myBooks!: BookTitle[];
-    public wishlist!: BookTitle[];
+    public myBooks!: BookInfo[];
+    public wishlist!: BookInfo[];
 
     public tab_num: number = 0;
     public selectedIndex: number = 0;

@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstore.service';
+import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
 
 @Component({
   selector: 'ebook-store',
@@ -9,14 +9,14 @@ import { BookstoreService, BookTitle } from 'src/app/services/bookstore/bookstor
 })
 export class StoreComponent implements OnInit {
 
-    public popularBooks: BookTitle[] = [];
-    public featuredBooks: BookTitle[] = [];
-    public otherBooks: BookTitle[] = [];
+    public popularBooks: BookInfo[] = [];
+    public featuredBooks: BookInfo[] = [];
+    public otherBooks: BookInfo[] = [];
     public searching: boolean = false;
     public filter!: string;
-    public searchResults: BookTitle[] = [];
+    public searchResults: BookInfo[] = [];
     
-    private allBooks: BookTitle[] = [];
+    private allBooks: BookInfo[] = [];
 
 
     // public showFeatures = true;

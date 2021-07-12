@@ -85,6 +85,8 @@ abstract class WebSQLConnection
 
 export class EbooksSQL extends WebSQLConnection {
 
+    static loaded: boolean = false;
+
     protected deleteTables(): void {        
         TableNames.forEach(t => {
             this.execute( new SQLQuery(`DROP TABLE IF EXISTS [${t}]`));
@@ -92,19 +94,66 @@ export class EbooksSQL extends WebSQLConnection {
     }
 
     protected createTables(): void {
-        // this.deleteTables();
 
         TABLES.forEach(t => {
             this.execute(new SQLQuery(t));
         });
+        
+    }
 
-        // this.loadData();
+    public prefetchData() {
+        this.loadData();
     }
 
     private loadData(): void {
+        if (EbooksSQL.loaded) return;
 
-        this.execute(new SQLQuery(`INSERT INTO [User] (UserId) VALUES ('fikayoid123')`));
-        this.execute(new SQLQuery(`INSERT INTO [UserLibrary] (UserId, Books, Wishlist) VALUES ('fikayoid123', 'unknown, unknown', '975-978-57020-4-0, 975-978-57020-4-0')`));
+        const numMyBooks = 5;
+        const numWishlist = 8;
+        const allBooks = ['975-978-57020-4-0', 'unknown'];
+
+        let myBooks: string[] = [];
+        let wishlist: string[] = [];
+
+        for(let i = 0; i < numMyBooks; i++) {
+            myBooks.push(allBooks[i % allBooks.length]);
+        }
+
+        for(let i = 0; i < numWishlist; i++) {
+            wishlist.push(allBooks[i % allBooks.length]);
+        }
+
+        console.debug("loading data: ", JSON.stringify(myBooks), JSON.stringify(wishlist))
+
+        this.runTransaction((tx: Transaction) => {
+
+            tx.executeSql("SELECT UserId from User", [], 
+            (_, results) => {
+                if (results.rows.length > 0) {
+                    let row = results.rows.item(0);
+                    console.debug("result row", row);
+                    if (row.UserId) {
+                        let userID = row.UserId;                   
+                        tx.executeSql(`UPDATE UserLibrary SET Books = ?, Wishlist = ? WHERE UserId = ?`, [myBooks, wishlist, userID],
+                        (_, results) => {
+                            if (results.rowsAffected > 0) {
+                                EbooksSQL.loaded = true;
+                                console.debug("done loading");
+                            } else {
+                                console.error("no rows affected loading data");
+                            }
+                        },
+                        (_, error) => console.error("Failed to load data", error),
+                        );
+                    }
+                }
+                
+            },
+            (_, error) => {
+                console.error("Error reading userID", error);
+            }
+            );
+        });
     }
 
 }
