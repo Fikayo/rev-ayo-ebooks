@@ -67,7 +67,7 @@ export class BookDetailsComponent implements OnInit {
                 error: () => console.log("failed to fetch book from bookstore")
             });
 
-            this.bookstore.fetchAllTitles().subscribe({    
+            this.bookstore.fetchAllBooks().subscribe({    
                 complete: () => {console.log("complete")}, 
                 next: (b) => {
                     this.suggestions = b;

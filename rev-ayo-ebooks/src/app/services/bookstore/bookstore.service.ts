@@ -26,7 +26,7 @@ export class BookstoreService {
 
     constructor(private http: HttpClient) { }
 
-    public fetchAllTitles(): Observable<BookInfo[]> {
+    public fetchAllBooks(): Observable<BookInfo[]> {
         const titlesSub = new Subject<BookInfo[]>();
 
         this.http.get("./assets/books/list.json", {responseType: "json"})

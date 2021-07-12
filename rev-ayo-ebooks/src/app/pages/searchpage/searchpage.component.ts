@@ -28,7 +28,7 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
-        this.bookstore.fetchAllTitles().subscribe({    
+        this.bookstore.fetchAllBooks().subscribe({    
             next: (b) => this.allTitles = b,
             error: () => console.log("failed to fetch titles from bookstore")
         });   
