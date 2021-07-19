@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
 import { Observable, Subject } from 'rxjs';
+import { BookTable, EbooksSQL, SQLQuery } from 'src/app/models/WebSQLConnection';
 
 export interface BookInfo {
     ISBN: string;
@@ -12,6 +13,7 @@ export interface BookInfo {
     description?: string;
     price?: string;
     productID: string;
+    [key: string]: any;
 } 
 
 export interface ProductInfo {
@@ -24,79 +26,127 @@ export interface ProductInfo {
 })
 export class BookstoreService {
 
-    constructor(private http: HttpClient) { }
+    private sql: EbooksSQL;
+
+    constructor(private http: HttpClient) { 
+        this.sql = new EbooksSQL();
+    }
 
     public fetchAllBooks(): Observable<BookInfo[]> {
-        const titlesSub = new Subject<BookInfo[]>();
+        const sub = new Subject<BookInfo[]>();
+        let query = new SQLQuery(`SELECT * FROM Books`);
 
-        this.http.get("./assets/books/list.json", {responseType: "json"})
-        .subscribe({
-            next: (data: any) => {
-                let titles = []
-                for(let b of data["books"]) {
-                    titles.push(this.parseBook(b));
-                }
+        this.sql.execute(query, 
+            (_, results: any) => {
+                console.debug("books results", results);
+                let books: BookInfo[] = [];
+                if (results.rows) {
+                    for (const b of results.rows) {
+                        books.push(this.parseBookDb(b));
+                    }
 
-                titlesSub.next(titles);
+                    console.debug("books read", books);
+                } 
+
+                sub.next(books);
+
+            },
+
+            (_, error) => {
+                console.error("Error fetching books", error);   
             }
-        });
+        );
 
-        return titlesSub.asObservable();
+        return sub.asObservable();
     }
 
-    public fetchDetails(bookID: string): Observable<BookInfo> {
-        const detailsSub = new Subject<BookInfo>();
+    public fetchBook(bookID: string): Observable<BookInfo> {
+        const sub = new Subject<BookInfo>();
 
-        this.fetchAllDetails([bookID]).subscribe({
+        // let query = new SQLQuery(`SELECT * FROM Books WHERE ${BookTable.BookId}=?`, [bookID]);
+        // this.sql.execute(query, 
+        //     (_, result: any) => {
+        //         console.debug("fetched book", query, result);
+        //         let book: BookInfo | undefined = undefined;
+        //         if (result.rows) {
+        //             book = this.parseBookDb(result.rows[0]);
+        //             console.debug("books read", book);
+        //         } 
+
+        //         sub.next(book);
+        //     },
+
+        //     (_, error) => {
+        //         console.error(`Error fetching book with ID ${bookID} `, error);   
+        //     }
+        // );
+
+        this.fetchBooks([bookID]).subscribe({
             next: (books) => {
                 if (books.length > 0) {
-                    detailsSub.next(books[0]);
+                    sub.next(books[0]);
                 } else {                    
-                    detailsSub.next();
+                    sub.next();
                 }
             }
-        })
+        });
 
-        return detailsSub.asObservable();
+        return sub.asObservable();
     }
 
-    public fetchAllDetails(bookIDs: string[]): Observable<BookInfo[]> {
-        const detailsSub = new Subject<BookInfo[]>();
+    public fetchBooks(bookIDs: string[]): Observable<BookInfo[]> {
+        const sub = new Subject<BookInfo[]>();
 
-        this.http.get("./assets/books/list.json", {responseType: "json"})
-        .subscribe({
-            next: (data: any) => {
+        let query = new SQLQuery(`SELECT * FROM Books WHERE ${BookTable.BookId} IN (?)`, bookIDs);
+        this.sql.execute(query, 
+            (_, results: any) => {
+                console.debug("fetched books", results);
                 let books: BookInfo[] = [];
-
-                let allBooks: any[] = data["books"];
-                bookIDs.forEach(b => {
-                    let found = allBooks.find(el => el.ISBN == b);
-                    console.debug("found", found);
-                    if (found) {
-                        books.push(this.parseBook(found));
+                if (results.rows) {
+                    for (const b of results.rows) {
+                        books.push(this.parseBookDb(b));
                     }
-                });
 
-                detailsSub.next(books);
+                    console.debug("books read", books);
+                } 
+
+                sub.next(books);
+            },
+
+            (_, error) => {
+                let msg = `Error fetching books ${bookIDs}: ${error.message}`;
+                console.error(msg, error);
+                sub.error(msg);
             }
-        });
+        );
 
-        return detailsSub.asObservable();
+        return sub.asObservable();
     }
+
     public fetchBookPDFPath(bookID: string): Observable<string> {
-        const bookSub = new Subject<string>();
-        let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
-        if (bookID == "unknown") {
-            path =  "./assets/books/becoming a better you/pdf.pdf";
-        }
+        const sub = new Subject<string>();
+        
+        let query = new SQLQuery(`SELECT ${BookTable.Title} FROM Books WHERE ${BookTable.BookId}=?`, [bookID]);
+        this.sql.execute(query, 
+            (_, results: any) => {
+                console.debug("fetched book", results);
+                let path = ""
+                if (results.rows.length > 0) {
+                    let row = results.rows.item(0);
+                    path = `./assets/books/${row.Title.toLowerCase()}/pdf.pdf`;
+                } 
 
-        this.fetchBookPDF(bookID)
-        .subscribe({
-            next: (res) => bookSub.next(path.replace(".", "")),
-            error: () => console.log(`failed to fetch book "${bookID}"`)
-        });
+                sub.next(path);
+            },
 
-        return bookSub.asObservable();
+            (_, error) => {
+                let msg = `Error fetching book ${bookID}: ${error.message}`;
+                console.error(msg, error);
+                sub.error(msg); 
+            }
+        );
+        
+        return sub.asObservable();
     }
 
     public fetchBookPDF(bookID: string): Observable<Blob> {
@@ -112,76 +162,73 @@ export class BookstoreService {
             error: () => console.log(`failed to fetch book "${bookID}"`)
         });
 
-        // this.http.get("./assets/books/list.json", {responseType: "json"})
-        // .subscribe({
-        //     next: (data: any) => {
-        //         let path = "";
-        //         for(let b of data["books"]) {
-        //             if (b.id == bookID) {
-        //                 path = `./asset/books/${b.title.toLowerCase()}/pdf.pdf`;
-        //                 break;
-        //             }
-        //         }
-
-        //         this.http.get(path, { responseType: 'blob' })
-        //         .subscribe({
-        //             next: (res) => bookSub.next(res),
-        //             error: () => console.log(`failed to fetch book "${bookID}"`)
-        //         });
-        //     }
-        // });
-
-
         return bookSub.asObservable();
     }
 
     public fetchProdutinfo(): Observable<ProductInfo[]> {
         const sub = new Subject<ProductInfo[]>();
 
-        this.http.get("./assets/books/list.json", {responseType: "json"})
-        .subscribe({
-            next: (data: any) => {
+        let query = new SQLQuery(`SELECT ${BookTable.BookId}, ${BookTable.ProductID} FROM Books`);
+        this.sql.execute(query, 
+            (_, results: any) => {
+                console.debug("fetched product ids", results);
                 let infos: ProductInfo[] = [];
-                let allBooks: any[] = data["books"];
-                allBooks.forEach(b => {
-                    infos.push({ISBN: b.ISBN, productID: b.producID});
-                });
+                if (results.rows) {
+                    for (const b of results.rows) {
+                        infos.push({ISBN: b.BookId, productID: b.ProducID});
+                    }
+                } 
 
                 sub.next(infos);
+            },
+
+            (_, error) => {
+                let msg = `Error fetching product ids:${error.message} `;
+                console.error(msg, error);   
             }
-        });
+        );
 
         return sub.asObservable();
     }
 
     public updateProduct(bookID: string, iapproduct: IAPProduct) {
         let isNaira = iapproduct.id.toLowerCase().indexOf("naira") != -1;
+        let priceColumn = isNaira ? BookTable.PriceNaira : BookTable.PriceWorld;
 
-        this.http.get("./assets/books/list.json", {responseType: "json"})
-        .subscribe({
-            next: (data: any) => {
-                for(let b of data["books"]) {
-                    if (b.ISBN == bookID) {
-                        if(isNaira) {
-                            b.price.naira = iapproduct.price
-                        } else {
-                            b.price.world = iapproduct.price;
-                        }
-
-                        break;                   
-                    }
-                }
-
-                //TODO: WRITE TO LOCAL JSON FILE
-             }
-        });
-
+        let query = new SQLQuery(`UPDATE Books SET [${priceColumn}]=? WHERE ${BookTable.BookId}=?`, [iapproduct.price, bookID]);
+        this.sql.execute(query, 
+            (_, results) => {
+                if (results.rowsAffected == 0) {
+                    let msg = `no rows updated while updating book ${bookID} to ${JSON.stringify(iapproduct)}`;
+                    console.error(msg);
+                }  
+            },
+            
+            (_, error) => {
+                let msg = `updating book ${bookID} to ${JSON.stringify(iapproduct)}: ${error.message}`;
+                console.error(msg, error);
+            }
+        );
     }
 
-    private parseBook(b: any): BookInfo {
-        let title = b as BookInfo;
-        title.cover = `./assets/books/${b.title.toLowerCase()}/cover.jpg`;
-        title.price = `₦${b.price.naira}`;
-        return title;
+    private parseBookJson(b: any): BookInfo {
+        let book = b as BookInfo;
+        book.cover = `./assets/books/${b.title.toLowerCase()}/cover.jpg`;
+        book.price = `₦${b.price.naira}`;
+        return book;
+    }
+    
+    private parseBookDb(b: any): BookInfo {
+        let book = b as BookInfo;
+        for(var key in b) {
+            var newKey = `${key[0].toLowerCase()}${key.substr(1)}`
+            book[newKey as any] = b[key];
+        }
+        book.ISBN = b.BookId;
+        book.cover = `./assets/books/${b.Title.toLowerCase()}/cover.jpg`;
+        book.price = `₦${b.PriceNaira}`;
+        console.log("parsed book", book);
+        console.log("title:", book.title);
+        return book;
     }
 }

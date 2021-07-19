@@ -47,7 +47,7 @@ export class UserService {
                         sub.next([]);
                     }
 
-                    this.bookstore.fetchAllDetails(myIDs).subscribe({
+                    this.bookstore.fetchBooks(myIDs).subscribe({
                         next: (b) => {
                             sub.next(b);
                         }
@@ -127,7 +127,7 @@ export class UserService {
                         sub.next([]);
                     }
                 
-                    this.bookstore.fetchAllDetails(wishlist).subscribe({
+                    this.bookstore.fetchBooks(wishlist).subscribe({
                         next: (b) => {
                             console.log("fetched wish books", b);
                             sub.next(b);

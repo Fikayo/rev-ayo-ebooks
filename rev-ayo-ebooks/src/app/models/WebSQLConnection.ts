@@ -1,11 +1,28 @@
-import { Observable, Subject } from "rxjs";
+import booksList from '../../assets/books/list.json';
 
+export const DBState: string = "DBState";
 export const User: string = "User";
 export const UserLibrary: string = "UserLibrary";
 export const UserProgress: string = "UserProgress";
-const TableNames: string[] = [User, UserLibrary, UserProgress];
+export const Books: string = "Books";
+const TableNames: string[] = [DBState, User, UserLibrary, UserProgress, Books];
+
+export const BookTable = {
+    BookId: "BookId",
+    Title: "Title",
+    DisplayName: "DisplayName",
+    Author: "Author",
+    Description: "Description",
+    ProductID: "ProductID",
+    PriceNaira: "PriceNaira",
+    PriceWorld: "PriceWorld",
+}
 
 const TABLES: string[] = [
+
+    `CREATE TABLE IF NOT EXISTS [${DBState}] (
+        [Initiliased] INT NOT NULL
+    );`,
 
     `CREATE TABLE IF NOT EXISTS [${User}] (
         UserId STRING NOT NULL,
@@ -23,7 +40,20 @@ const TABLES: string[] = [
         [UserId] STRING NOT NULL UNIQUE,
         [BookId] STRING NOT NULL UNIQUE,
         [CurrentPage] INT NOT NULL,
-        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE
+        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE,
+        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
+    );`,
+
+    `CREATE TABLE IF NOT EXISTS [${Books}] (
+        [${BookTable.BookId}] STRING NOT NULL,
+        [${BookTable.Title}] STRING NOT NULL,
+        [${BookTable.DisplayName}] STRING NOT NULL,
+        [${BookTable.Author}] STRING NOT NULL,
+        [${BookTable.Description}] STRING NOT NULL,
+        [${BookTable.ProductID}] STRING NOT NULL,
+        [${BookTable.PriceNaira}] Float NOT NULL,
+        [${BookTable.PriceWorld}] Float NOT NULL,
+        PRIMARY KEY (${BookTable.BookId})
     );`,
 
 ];
@@ -57,11 +87,14 @@ abstract class WebSQLConnection
     constructor() {
         this.initDB();
         this.createTables();
+        this.init();
     }
 
     private initDB() {
         this.db = (<any>window).openDatabase(this.name, this.version, this.displayName, this.estimatedSize);
     }
+
+    protected init() {}
 
     protected abstract deleteTables(): void;
 
@@ -85,7 +118,8 @@ abstract class WebSQLConnection
 
 export class EbooksSQL extends WebSQLConnection {
 
-    static loaded: boolean = false;
+    static loadedTestData: boolean = false;
+    static initialised: boolean = false;
 
     protected deleteTables(): void {        
         TableNames.forEach(t => {
@@ -94,11 +128,52 @@ export class EbooksSQL extends WebSQLConnection {
     }
 
     protected createTables(): void {
-
+        // this.deleteTables();
         TABLES.forEach(t => {
-            this.execute(new SQLQuery(t));
+            this.execute(new SQLQuery(t), undefined, 
+                (_, error) => console.error(`Error creating table with query: "${t}"`, error)
+            );
+        });        
+    }
+
+    protected init() {
+        console.log("inside init func", EbooksSQL.initialised);
+        if (EbooksSQL.initialised) return;
+
+        this.runTransaction((tx: Transaction) => {
+
+            tx.executeSql(`SELECT Initiliased FROM ${DBState}`, [], 
+                (_, results) => {
+                    let isInit = false;
+                    console.log("reading init value", results);
+                    if (results.rows.length > 0) {
+                        let row = results.rows.item(0);
+                        isInit = row.Initiliased == 1;
+                    }
+
+                    if(isInit) return;
+                    
+                    console.log("loading booklist", booksList);        
+                    booksList.books.forEach(b => {
+                        let q = new SQLQuery(
+                            `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}) 
+                            VALUES (?,?,?,?,?,?,?,?)`,
+                            [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world]
+                        );
+                    
+                        tx.executeSql(q.sql, q.params, undefined, 
+                            (_, error) => console.debug(`Failed to load book ${b.ISBN} into table: ${error.message}`, b, error)
+                        );
+                    });
+
+                    tx.executeSql(`INSERT INTO ${DBState} (Initiliased) VALUES (1)`, [], undefined, 
+                        (_, error) => console.error("Failed to set db to initialised", error)
+                    );
+                }
+            );
         });
-        
+
+        EbooksSQL.initialised = true;
     }
 
     public prefetchData() {
@@ -106,7 +181,7 @@ export class EbooksSQL extends WebSQLConnection {
     }
 
     private loadData(): void {
-        if (EbooksSQL.loaded) return;
+        if (EbooksSQL.loadedTestData) return;
 
         const numMyBooks = 5;
         const numWishlist = 8;
@@ -123,7 +198,7 @@ export class EbooksSQL extends WebSQLConnection {
             wishlist.push(allBooks[i % allBooks.length]);
         }
 
-        console.debug("loading data: ", JSON.stringify(myBooks), JSON.stringify(wishlist))
+        console.debug("loading test data: ", JSON.stringify(myBooks), JSON.stringify(wishlist))
 
         this.runTransaction((tx: Transaction) => {
 
@@ -137,8 +212,8 @@ export class EbooksSQL extends WebSQLConnection {
                         tx.executeSql(`UPDATE UserLibrary SET Books = ?, Wishlist = ? WHERE UserId = ?`, [myBooks, wishlist, userID],
                         (_, results) => {
                             if (results.rowsAffected > 0) {
-                                EbooksSQL.loaded = true;
-                                console.debug("done loading");
+                                EbooksSQL.loadedTestData = true;
+                                console.debug("done loading test data");
                             } else {
                                 console.error("no rows affected loading data");
                             }

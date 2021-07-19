@@ -39,10 +39,12 @@ export class BookDetailsComponent implements OnInit {
         this.routeSub = this.activatedRoute.params.subscribe(params => {
             let bookID = params['isbn'];
 
-            this.bookstore.fetchDetails(bookID)
+            this.bookstore.fetchBook(bookID)
             .subscribe({
-                next: (b) => {
-                    this.book = b;
+                next: (b: BookInfo) => {
+                    this.zone.run(() => {                 
+                        this.book = b;
+                    });
 
                     this.user.hasPurchasedBook(this.book.ISBN).subscribe({
                         next: (i) => {
@@ -70,7 +72,9 @@ export class BookDetailsComponent implements OnInit {
             this.bookstore.fetchAllBooks().subscribe({    
                 complete: () => {console.log("complete")}, 
                 next: (b) => {
-                    this.suggestions = b;
+                    this.zone.run(() => {                 
+                        this.suggestions = b;
+                    });
                 },
                 error: () => console.log("failed to fetch titles from bookstore")
             }); 

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
 
@@ -25,6 +25,7 @@ export class StoreComponent implements OnInit {
     constructor(
         private router: Router,        
         private activatedRoute: ActivatedRoute,
+        private zone: NgZone,
         private bookstore: BookstoreService) {console.log("store con"); }
 
     ngOnInit(): void {
@@ -36,12 +37,15 @@ export class StoreComponent implements OnInit {
         this.bookstore.fetchAllBooks().subscribe({    
             complete: () => {console.log("complete")}, 
             next: (b) => {
-                this.allBooks = b; 
-                console.log("fetched: ", this.allBooks);
+                this.zone.run(() => {
+               
+                    this.allBooks = b; 
+                    console.log("fetched: ", this.allBooks);
 
-                this.popularBooks = this.allBooks;
-                this.featuredBooks = this.allBooks;
-                this.otherBooks = this.allBooks;
+                    this.popularBooks = this.allBooks;
+                    this.featuredBooks = this.allBooks;
+                    this.otherBooks = this.allBooks;
+                });
 
                 // this.filterList(this.activatedRoute.snapshot.queryParams['filter']);
             },
