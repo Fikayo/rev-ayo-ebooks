@@ -19,9 +19,28 @@ export class PaymentService {
     public initStore() {
         this.bookstore.fetchProdutinfo().subscribe({
             next: (info) => {
-                this.productIDs = info;
+                let nairaIds = info.map((p: ProductInfo) => {
+                    let np = p;
+                    np.productID = this.getNairaProductId(p.productID);
+                    return np;
+                });
+
+                let worldIds = info.map((p: ProductInfo) => {
+                    let np = p;
+                    np.productID = this.getWorldProductId(p.productID);
+                    return np;
+                });
+
+                this.productIDs = nairaIds.concat(worldIds);
                 this.prepare();
             }
+        });
+
+        this.store.ready(() => {
+            this.store.products.forEach((p: IAPProduct) => {
+                let isbn: string = p.alias??"";
+                this.bookstore.updateProduct(isbn, p);
+            });
         });
     }
 
@@ -29,7 +48,7 @@ export class PaymentService {
         this.store.verbosity = this.store.DEBUG;
         this.productIDs.forEach(p => {
             this.store.register({
-                id:    this.getCompleteProductId(p.productID),
+                id:    p.productID,
                 type:  this.store.NON_CONSUMABLE,
                 alias: p.ISBN
             });
@@ -53,8 +72,12 @@ export class PaymentService {
         this.store.refresh();
     }
 
-    private getCompleteProductId(prodID: string): string {
-        return prodID;
+    private getNairaProductId(prodID: string): string {
+        return `${prodID}_NAIRA`;
+    }
+
+    private getWorldProductId(prodID: string): string {
+        return `${prodID}_WORLD`;
     }
 
     private productApproved(product: IAPProduct) {

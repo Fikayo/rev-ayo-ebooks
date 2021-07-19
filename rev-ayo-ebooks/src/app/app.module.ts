@@ -47,124 +47,22 @@ import { RouteReuseStrategy } from '@angular/router';
 import { BottomMenuComponent } from './components/bottom-menu/bottom-menu.component';
 import { SuperTabsModule } from '@ionic-super-tabs/angular';
 
-
-/*
-@NgModule({
-  declarations: [
-    AppComponent,
-    BookSelectorComponent,
-    ReaderComponent,
-    BooksetComponent,
-    SearchBarComponent,
-    BookDetailsComponent,
-    PersonalBooksComponent,
-    SearchpageComponent,
-    SettingsDialogComponent,
-    SettingsComponent,
-    PaymentBottomSheetComponent,
-    BottomMenuComponent,
-  ],
-  imports: [
-    // Angular Material Modules
-    // MatGridListModule,
-    MatIconModule,
-    MatInputModule,
-    MatChipsModule,
-    MatFormFieldModule,
-    MatCardModule,
-    MatButtonModule,
-    MatAutocompleteModule,
-    MatListModule,
-    MatToolbarModule,
-    MatTabsModule,
-    MatSidenavModule,
-    MatSnackBarModule,
-    MatDialogModule,
-    MatBottomSheetModule,
-
-    // Ionic Modules
-    IonicModule,
-    CommonModule,
-    IonicModule.forRoot(),
-
-    // Bootstrap
-    // NgbModule,
-
-    // PDF Reader
-    NgxExtendedPdfViewerModule,
-    PdfViewerModule,
-
-    HttpClientModule,
-    BrowserModule,
-    FormsModule,
-    ReactiveFormsModule,
-    EbookRoutingModule,
-    BrowserAnimationsModule,
-    // HammerModule
-  ],
-  providers: [
-    BookstoreService,
-    UserService,
-    InAppPurchase2,
-    {provide: HAMMER_GESTURE_CONFIG, useClass: HammerGestureConfig},
-    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: true}},
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
-  ],
-  bootstrap: [AppComponent]
-})
-export class AppModule { }
-*/
-
-
 @NgModule({
     declarations: [
         AppComponent,
-        // StoreComponent,
-        // ReaderComponent,
-        // BooksetComponent,
-        // BookDetailsComponent,
-        // PersonalBooksComponent,
-        // SearchpageComponent,
+
         SettingsDialogComponent,
         SettingsComponent,
-        // PaymentModal,
-        // BottomMenuComponent,
     ],
     entryComponents: [],
-    imports: [
-        // MatIconModule,
-        // MatInputModule,
-        // MatChipsModule,
-        // MatFormFieldModule,
-        // MatCardModule,
-        // MatButtonModule,
-        // MatAutocompleteModule,
-        // MatListModule,
-        // MatToolbarModule,
-        // MatTabsModule,
-        // MatSidenavModule,
-        // MatSnackBarModule,
-        MatDialogModule,
-        // MatBottomSheetModule,
-
-        // BrowserModule, 
+    imports: [ 
         SuperTabsModule.forRoot(),
         IonicModule.forRoot(), 
 
-
-        EbookRoutingModule,
-        BrowserAnimationsModule,
-
-        // PDF Reader
-        NgxExtendedPdfViewerModule,
-        PdfViewerModule,
-
         HttpClientModule,
-        // BrowserModule,
-        FormsModule,
-        ReactiveFormsModule,
+        BrowserAnimationsModule,
         EbookRoutingModule,
-        // BrowserAnimationsModule,
+        // ReactiveFormsModule,
         
     ],
     

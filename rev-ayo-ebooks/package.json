@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ionic build & ionic cap copy & ionic cap sync",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "android": "ionic cap run android -l --external"
   },
   "private": true,
   "dependencies": {
