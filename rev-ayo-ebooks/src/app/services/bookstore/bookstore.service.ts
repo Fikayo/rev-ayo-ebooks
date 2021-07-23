@@ -30,6 +30,7 @@ export class BookstoreService {
 
     constructor(private http: HttpClient) { 
         this.sql = new EbooksSQL();
+        this.sql.initialiseBooks(http);
     }
 
     public fetchAllBooks(): Observable<BookInfo[]> {
@@ -97,7 +98,8 @@ export class BookstoreService {
     public fetchBooks(bookIDs: string[]): Observable<BookInfo[]> {
         const sub = new Subject<BookInfo[]>();
 
-        let query = new SQLQuery(`SELECT * FROM Books WHERE ${BookTable.BookId} IN (?)`, bookIDs);
+        let bookList = JSON.stringify(bookIDs).replace("[", "(").replace("]", ")");
+        let query = new SQLQuery(`SELECT * FROM Books WHERE ${BookTable.BookId} IN ${bookList}`);
         this.sql.execute(query, 
             (_, results: any) => {
                 console.debug("fetched books", results);
@@ -115,7 +117,7 @@ export class BookstoreService {
 
             (_, error) => {
                 let msg = `Error fetching books ${bookIDs}: ${error.message}`;
-                console.error(msg, error);
+                console.error(msg, error, query);
                 sub.error(msg);
             }
         );
@@ -150,19 +152,40 @@ export class BookstoreService {
     }
 
     public fetchBookPDF(bookID: string): Observable<Blob> {
-        const bookSub = new Subject<Blob>();
-        let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
-        if (bookID == "unknown") {
-            path =  "./assets/books/becoming a better you/pdf.pdf";
-        }
+        const sub = new Subject<Blob>();
 
-        this.http.get(path, { responseType: 'blob' })
-        .subscribe({
-            next: (res) => bookSub.next(res),
-            error: () => console.log(`failed to fetch book "${bookID}"`)
-        });
+        let query = new SQLQuery(`SELECT ${BookTable.PDF} FROM Books WHERE ${BookTable.BookId}=?`, [bookID]);
+        this.sql.execute(query, 
+            (_, results: any) => {
+                console.debug("fetched book", results);
+                let pdf: Blob | undefined = undefined;
+                if (results.rows.length > 0) {
+                    let row = results.rows.item(0);
+                    pdf = row.PDF;
+                } 
 
-        return bookSub.asObservable();
+                sub.next(pdf);
+            },
+
+            (_, error) => {
+                let msg = `Error fetching book ${bookID}: ${error.message}`;
+                console.error(msg, error);
+                sub.error(msg); 
+            }
+        );
+
+        // let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
+        // if (bookID == "unknown") {
+        //     path =  "./assets/books/becoming a better you/pdf.pdf";
+        // }
+
+        // this.http.get(path, { responseType: 'blob' })
+        // .subscribe({
+        //     next: (res) => sub.next(res),
+        //     error: () => console.log(`failed to fetch book "${bookID}"`)
+        // });
+
+        return sub.asObservable();
     }
 
     public fetchProdutinfo(): Observable<ProductInfo[]> {

@@ -50,16 +50,9 @@ export class ReaderComponent implements OnInit, OnDestroy {
 
             this.bookstore.fetchBookPDF(bookID)
             .subscribe({
-                next: (b) => this.srcBlob = b,
+                next: (b) => this.srcUrl = URL.createObjectURL(b),
                 error: () => console.log("failed to fetch book from bookstore")
             });
-
-            this.bookstore.fetchBookPDFPath(bookID)
-            .subscribe({
-                next: (b) => this.srcUrl = b,
-                error: () => console.log("failed to fetch book from bookstore")
-            });
-            // this.srcUrl = "/assets/books/how to be happy and stay happy/pdf.pdf";
 
             this.user.fetchBookCurrentPage(bookID)
             .subscribe({

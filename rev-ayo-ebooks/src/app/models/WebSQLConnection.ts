@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import booksList from '../../assets/books/list.json';
 
 export const DBState: string = "DBState";
@@ -16,6 +17,7 @@ export const BookTable = {
     ProductID: "ProductID",
     PriceNaira: "PriceNaira",
     PriceWorld: "PriceWorld",
+    PDF: "PDF",
 }
 
 const TABLES: string[] = [
@@ -51,8 +53,9 @@ const TABLES: string[] = [
         [${BookTable.Author}] STRING NOT NULL,
         [${BookTable.Description}] STRING NOT NULL,
         [${BookTable.ProductID}] STRING NOT NULL,
-        [${BookTable.PriceNaira}] Float NOT NULL,
-        [${BookTable.PriceWorld}] Float NOT NULL,
+        [${BookTable.PriceNaira}] STRING NOT NULL,
+        [${BookTable.PriceWorld}] STRING NOT NULL,
+        [${BookTable.PDF}] BLOB NOT NULL,
         PRIMARY KEY (${BookTable.BookId})
     );`,
 
@@ -85,16 +88,14 @@ abstract class WebSQLConnection
     private db: any;
     
     constructor() {
-        this.initDB();
+        this.openDB();
         this.createTables();
-        this.init();
     }
 
-    private initDB() {
+    private openDB() {
         this.db = (<any>window).openDatabase(this.name, this.version, this.displayName, this.estimatedSize);
+        console.log("opened db, ", this.db);
     }
-
-    protected init() {}
 
     protected abstract deleteTables(): void;
 
@@ -120,15 +121,17 @@ export class EbooksSQL extends WebSQLConnection {
 
     static loadedTestData: boolean = false;
     static initialised: boolean = false;
-
+   
     protected deleteTables(): void {        
         TableNames.forEach(t => {
-            this.execute( new SQLQuery(`DROP TABLE IF EXISTS [${t}]`));
+            this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`), undefined, 
+                (_, error) => console.error(`Error deleting table "${t}"`, error)
+            );
         });
     }
 
     protected createTables(): void {
-        // this.deleteTables();
+        this.deleteTables();
         TABLES.forEach(t => {
             this.execute(new SQLQuery(t), undefined, 
                 (_, error) => console.error(`Error creating table with query: "${t}"`, error)
@@ -136,8 +139,8 @@ export class EbooksSQL extends WebSQLConnection {
         });        
     }
 
-    protected init() {
-        console.log("inside init func", EbooksSQL.initialised);
+    public initialiseBooks(http: HttpClient) {
+        console.log("Initialising Tables", EbooksSQL.initialised);
         if (EbooksSQL.initialised) return;
 
         this.runTransaction((tx: Transaction) => {
@@ -151,19 +154,40 @@ export class EbooksSQL extends WebSQLConnection {
                         isInit = row.Initiliased == 1;
                     }
 
+                    console.log("Tables initialised: ", isInit);
                     if(isInit) return;
                     
                     console.log("loading booklist", booksList);        
                     booksList.books.forEach(b => {
-                        let q = new SQLQuery(
-                            `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}) 
-                            VALUES (?,?,?,?,?,?,?,?)`,
-                            [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world]
-                        );
-                    
-                        tx.executeSql(q.sql, q.params, undefined, 
-                            (_, error) => console.debug(`Failed to load book ${b.ISBN} into table: ${error.message}`, b, error)
-                        );
+                        let path = `./assets/books/${b.title.toLowerCase()}/pdf.pdf`;
+                        http.get(path, { responseType: 'blob' })
+                        .subscribe({
+                            next: (blob: Blob) => {
+                                console.log("stringified blob: " + b.title, JSON.stringify(blob), blob);
+                                blob.arrayBuffer().then((value => {   
+                                    console.log("stringified buffer: " + b.title, JSON.stringify(value), value);                             
+                                    let q = new SQLQuery(
+                                        `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}, ${BookTable.PDF}) 
+                                        VALUES (?,?,?,?,?,?,?,?,?)`,
+                                        [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world, value]
+                                    );
+                                
+                                    this.execute(q, 
+                                        (_, results) => {
+                                            if(results.rowsAffected == 0) {
+                                                console.error(`No rows affected while loading book ${b.ISBN}`);
+                                            } else {
+                                                console.log(`successful load of book ${b.ISBN}`);
+                                            }
+                                        }, 
+            
+                                        (_, error) => console.debug(`Failed to load book ${b.ISBN} into table: ${error.message}`, b, error)
+                                    );
+                                    
+                                }));
+                            },
+                            error: () => console.log(`failed to fetch book "${b.ISBN}" from JSON`)
+                        });                        
                     });
 
                     tx.executeSql(`INSERT INTO ${DBState} (Initiliased) VALUES (1)`, [], undefined, 
