@@ -73,24 +73,3 @@ function insertUserID(tx: Transaction, userID: string) {
         }
     );  
 }
-
-// function initStore() {
-
-//   if (!window.store) {
-//       console.log('Store not available');
-//       return;
-//   }
-
-//   store.register({
-//       id:    'nonconsumable1',
-//       type:   store.NON_CONSUMABLE
-//   });
-
-//   store.error(function(error) {
-//       console.log('ERROR ' + error.code + ': ' + error.message);
-//   });
-
-//   // ... MORE HERE SOON
-
-//   store.refresh();
-// }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IAPProduct, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { Platform } from '@ionic/angular';
+import { BehaviorSubject } from 'rxjs';
 import { ProductInfo, BookstoreService } from '../bookstore/bookstore.service';
 import { UserService } from '../user/user.service';
 
@@ -9,12 +10,17 @@ import { UserService } from '../user/user.service';
 })
 export class PaymentService {
     private productIDs: ProductInfo[] = [{ISBN: "unknwon", productID: "test_id_1"}];
+    private paymentReady = new BehaviorSubject(false);
 
     constructor(
         private user: UserService,
         private bookstore: BookstoreService,
         private store: InAppPurchase2) 
     { }
+
+    public get ready(): BehaviorSubject<boolean> {
+        return this.paymentReady;
+    }
 
     public initStore() {
         this.bookstore.fetchProdutinfo().subscribe({
@@ -63,6 +69,8 @@ export class PaymentService {
             console.log('Store is ready');
             console.log('Products: ' + JSON.stringify(this.store.products));
             console.log(JSON.stringify(this.store.get("test_id_1")));
+
+            this.paymentReady.next(true);
         });
 
         this.store.error(function(error: any) {

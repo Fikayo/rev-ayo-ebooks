@@ -36,7 +36,6 @@ import { HammerModule } from '@angular/platform-browser';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import { SearchpageComponent } from './pages/searchpage/searchpage.component';
 import {MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS} from '@angular/material/dialog';
-import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { PaymentModal } from './components/payment-modal/payment-modal.component';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
@@ -50,8 +49,6 @@ import { SuperTabsModule } from '@ionic-super-tabs/angular';
 @NgModule({
     declarations: [
         AppComponent,
-
-        SettingsDialogComponent,
         SettingsComponent,
     ],
     entryComponents: [],

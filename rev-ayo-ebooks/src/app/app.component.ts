@@ -5,8 +5,9 @@ import { UserService } from './services/user/user.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
-import { Platform } from '@ionic/angular';
+import { LoadingController, Platform } from '@ionic/angular';
 import { PaymentService } from './services/payment/payment.service';
+import { DatabaseService } from './services/database/database.service';
 
 @Component({
   selector: 'app-root',
@@ -19,14 +20,39 @@ export class AppComponent {
     constructor(
         private router: Router,
         private payment: PaymentService,
+        private db: DatabaseService,
+        loadingCtrl: LoadingController,
         platform: Platform,
     ) {
         this.monitorNavigation();
         // this.fixReload();
 
-        platform.ready().then(() => {
-            this.payment.initStore();
-            this.setStatusBar();
+        platform.ready().then(async () => {
+            const loading = await loadingCtrl.create();
+            await loading.present();
+
+            this.db.init();
+            this.db.ready.asObservable().subscribe({
+                next: (ready) => {
+                    if(ready) {
+                        console.log("Database Ready!");
+
+                        this.payment.initStore();
+                        this.payment.ready.asObservable().subscribe({
+                            next: (pReady) => {
+                                if(pReady) {
+                                    console.log("AppStore Ready!");
+                                    this.setStatusBar();
+                                    loading.dismiss();
+                                }
+                            }
+                        });
+                        
+                    }
+                }
+            });
+
+           
         });        
     }
 
