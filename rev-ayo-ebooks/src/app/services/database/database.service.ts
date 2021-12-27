@@ -90,7 +90,7 @@ export class DatabaseService {
                 }
             },
 
-            error: () => console.error("An error occured while downloading the database");
+            error: () => console.error("An error occured while downloading the database"),
         });
     }
 }

@@ -4,10 +4,9 @@ import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { UserService } from './services/user/user.service';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { MatDialog } from '@angular/material/dialog';
-import { SettingsDialogComponent } from './components/settings-dialog/settings-dialog.component';
 import { LoadingController, Platform } from '@ionic/angular';
 import { PaymentService } from './services/payment/payment.service';
-import { DatabaseService } from './services/database/database.service';
+// import { DatabaseService } from './services/database/database.service';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +19,7 @@ export class AppComponent {
     constructor(
         private router: Router,
         private payment: PaymentService,
-        private db: DatabaseService,
+        // private db: DatabaseService,
         loadingCtrl: LoadingController,
         platform: Platform,
     ) {
@@ -28,9 +27,11 @@ export class AppComponent {
         // this.fixReload();
 
         platform.ready().then(async () => {
+            /*
             const loading = await loadingCtrl.create();
             await loading.present();
 
+            
             this.db.init();
             this.db.ready.asObservable().subscribe({
                 next: (ready) => {
@@ -51,7 +52,7 @@ export class AppComponent {
                     }
                 }
             });
-
+            */
            
         });        
     }

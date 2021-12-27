@@ -6,6 +6,8 @@ export const User: string = "User";
 export const UserLibrary: string = "UserLibrary";
 export const UserProgress: string = "UserProgress";
 export const Books: string = "Books";
+export const Products: string = "Products";
+export const BookProducts: string = "BookProducts";
 const TableNames: string[] = [DBState, User, UserLibrary, UserProgress, Books];
 
 export const BookTable = {
@@ -14,10 +16,13 @@ export const BookTable = {
     DisplayName: "DisplayName",
     Author: "Author",
     Description: "Description",
-    ProductID: "ProductID",
+    GCSLocation: "GCSLocation",
+}
+
+export const ProductTable = {
+    ProductId: "ProductId",
     PriceNaira: "PriceNaira",
     PriceWorld: "PriceWorld",
-    PDF: "PDF",
 }
 
 const TABLES: string[] = [
@@ -52,11 +57,22 @@ const TABLES: string[] = [
         [${BookTable.DisplayName}] STRING NOT NULL,
         [${BookTable.Author}] STRING NOT NULL,
         [${BookTable.Description}] STRING NOT NULL,
-        [${BookTable.ProductID}] STRING NOT NULL,
-        [${BookTable.PriceNaira}] STRING NOT NULL,
-        [${BookTable.PriceWorld}] STRING NOT NULL,
-        [${BookTable.PDF}] BLOB NOT NULL,
-        PRIMARY KEY (${BookTable.BookId})
+        [${BookTable.GCSLocation}] STRING NOT NULL,
+        PRIMARY KEY (${BookTable.BookId}),
+    );`,
+
+    `CREATE TABLE IF NOT EXISTS [${Products}] (
+        [ProductID] STRING NOT NULL,
+        [PriceNaira] STRING NOT NULL,
+        [PriceWorld] STRING NOT NULL,
+        PRIMARY KEY (ProductID)
+    );`,
+
+    `CREATE TABLE IF NOT EXISTS [${BookProducts}] (
+        [BookID] STRING NOT NULL,
+        [ProductID] STRING NOT NULL,
+        FOREIGN KEY (ProductId) REFERENCES [${Products}] (ProductId) ON DELETE CASCADE,
+        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
     );`,
 
 ];
@@ -136,6 +152,8 @@ export class EbooksSQL extends WebSQLConnection {
             this.execute(new SQLQuery(t), undefined, 
                 (_, error) => console.error(`Error creating table with query: "${t}"`, error)
             );
+
+            console.log(t);
         });        
     }
 
@@ -158,36 +176,48 @@ export class EbooksSQL extends WebSQLConnection {
                     if(isInit) return;
                     
                     console.log("loading booklist", booksList);        
-                    booksList.books.forEach(b => {
-                        let path = `./assets/books/${b.title.toLowerCase()}/pdf.pdf`;
-                        http.get(path, { responseType: 'blob' })
-                        .subscribe({
-                            next: (blob: Blob) => {
-                                console.log("stringified blob: " + b.title, JSON.stringify(blob), blob);
-                                blob.arrayBuffer().then((value => {   
-                                    console.log("stringified buffer: " + b.title, JSON.stringify(value), value);                             
-                                    let q = new SQLQuery(
-                                        `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}, ${BookTable.PDF}) 
-                                        VALUES (?,?,?,?,?,?,?,?,?)`,
-                                        [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world, value]
-                                    );
+                    // booksList.books.forEach(b => {
+                    //     let path = `./assets/books/${b.title.toLowerCase()}/pdf.pdf`;
+                    //     http.get(path, { responseType: 'blob' })
+                    //     .subscribe({
+                    //         next: (blob: Blob) => {
+                    //             console.log("stringified blob: " + b.title, JSON.stringify(blob), blob);
+                    //             blob.arrayBuffer().then((value => {   
+                    //                 console.log("stringified buffer: " + b.title, JSON.stringify(value), value);                             
+                    //                 let q = new SQLQuery(
+                    //                     `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}, ${BookTable.PDF}) 
+                    //                     VALUES (?,?,?,?,?,?,?,?,?)`,
+                    //                     [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world, value]
+                    //                 );
                                 
-                                    this.execute(q, 
-                                        (_, results) => {
-                                            if(results.rowsAffected == 0) {
-                                                console.error(`No rows affected while loading book ${b.ISBN}`);
-                                            } else {
-                                                console.log(`successful load of book ${b.ISBN}`);
-                                            }
-                                        }, 
+                    //                 this.execute(q, 
+                    //                     (_, results) => {
+                    //                         if(results.rowsAffected == 0) {
+                    //                             console.error(`No rows affected while loading book ${b.ISBN}`);
+                    //                         } else {
+                    //                             console.log(`successful load of book ${b.ISBN}`);
+                    //                         }
+                    //                     }, 
             
-                                        (_, error) => console.debug(`Failed to load book ${b.ISBN} into table: ${error.message}`, b, error)
-                                    );
+                    //                     (_, error) => console.debug(`Failed to load book '${b.ISBN}' into table: ${error.message}`, b, error)
+                    //                 );
                                     
-                                }));
-                            },
-                            error: () => console.log(`failed to fetch book "${b.ISBN}" from JSON`)
-                        });                        
+                    //             }));
+                    //         },
+                    //         error: () => console.log(`failed to fetch book "${b.ISBN}" from JSON`)
+                    //     });                        
+                    // });
+
+                    booksList.books.forEach(b => {
+                        let q = new SQLQuery(
+                            `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}) 
+                            VALUES (?,?,?,?,?,?,?,?)`,
+                            [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world]
+                        );
+                    
+                        tx.executeSql(q.sql, q.params, undefined, 
+                            (_, error) => console.debug(`Failed to load book ${b.ISBN} into table: ${error.message}`, b, error)
+                        );
                     });
 
                     tx.executeSql(`INSERT INTO ${DBState} (Initiliased) VALUES (1)`, [], undefined, 
@@ -200,11 +230,7 @@ export class EbooksSQL extends WebSQLConnection {
         EbooksSQL.initialised = true;
     }
 
-    public prefetchData() {
-        this.loadData();
-    }
-
-    private loadData(): void {
+    public PRELOADTESTDATA(): void {
         if (EbooksSQL.loadedTestData) return;
 
         const numMyBooks = 5;

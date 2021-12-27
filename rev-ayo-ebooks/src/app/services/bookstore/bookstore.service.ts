@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
 import { Observable, Subject } from 'rxjs';
-import { BookTable, EbooksSQL, SQLQuery } from 'src/app/models/WebSQLConnection';
+import { BookTable, EbooksSQL, ProductTable, SQLQuery } from 'src/app/models/WebSQLConnection';
 
 export interface BookInfo {
     ISBN: string;
@@ -216,9 +216,9 @@ export class BookstoreService {
 
     public updateProduct(bookID: string, iapproduct: IAPProduct) {
         let isNaira = iapproduct.id.toLowerCase().indexOf("naira") != -1;
-        let priceColumn = isNaira ? BookTable.PriceNaira : BookTable.PriceWorld;
+        let priceColumn = isNaira ? ProductTable.PriceNaira : ProductTable.PriceWorld;
 
-        let query = new SQLQuery(`UPDATE Books SET [${priceColumn}]=? WHERE ${BookTable.BookId}=?`, [iapproduct.price, bookID]);
+        let query = new SQLQuery(`UPDATE Products SET [${priceColumn}]=? WHERE ${ProductTable.ProductId}=?`, [iapproduct.price, bookID]);
         this.sql.execute(query, 
             (_, results) => {
                 if (results.rowsAffected == 0) {

@@ -49,7 +49,7 @@ function registerUser() {
         );      
     });
 
-    sql.prefetchData();
+    sql.PRELOADTESTDATA();
 }
 
 function insertUserID(tx: Transaction, userID: string) {
