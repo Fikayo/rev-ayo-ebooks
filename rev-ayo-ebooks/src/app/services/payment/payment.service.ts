@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { IAPProduct, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { Platform } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
-import { ProductInfo, BookstoreService } from '../bookstore/bookstore.service';
+import { BookstoreService } from '../bookstore/bookstore.service';
+import { ProductInfo } from "../../models/ProductInfo";
 import { UserService } from '../user/user.service';
 
 @Injectable({

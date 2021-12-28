@@ -1,27 +1,12 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
 import { Observable, Subject } from 'rxjs';
-import { BookTable, EbooksSQL, ProductTable, SQLQuery } from 'src/app/models/WebSQLConnection';
+import { Books } from 'src/app/models/WebSQLConnection';
+import { ParseBookDb } from 'src/app/util';
 import { ApiService } from '../api/api.service';
-
-export interface BookInfo {
-    ISBN: string;
-    title: string;
-    displayName: string;
-    author?: string;
-    cover?: string;
-    description?: string;
-    price?: string;
-    productID: string;
-    [key: string]: any;
-} 
-
-export interface ProductInfo {
-    ISBN: string;
-    productID: string;
-}
-
+import { DatabaseService } from '../database/database.service';
+import { BookInfo } from '../../models/BookInfo';
+import { ProductInfo } from '../../models/ProductInfo';
 
 @Injectable({
   providedIn: 'root'
@@ -29,19 +14,27 @@ export interface ProductInfo {
 export class BookstoreService {
 
     constructor(
-        private http: HttpClient,
-        private api: ApiService) { 
+        private api: ApiService,
+        private db: DatabaseService) { 
     }
 
     public fetchAllBooks(): Observable<BookInfo[]> {
         const sub = new Subject<BookInfo[]>();
+        const refreshRequired = this.db.expired;
+        
+        let results: Promise<any>;
+        if (refreshRequired) {
+            results = this.refreshAllBooks();   
+        } else {
+            results = this.db.fetch(Books);
+        }
 
-        this.api.get('/bookstore')
+        results
         .then(res => {
             const books: BookInfo[] = [];
             if (res) {
                 res.forEach((book: any) => {
-                    books.push(BookstoreService.parseBookDb(book));
+                    books.push(ParseBookDb(book));
                 });
             }
 
@@ -57,12 +50,26 @@ export class BookstoreService {
 
     public fetchBook(bookID: string): Observable<BookInfo> {
         const sub = new Subject<BookInfo>();
+        const refreshRequired = this.db.expired;
+        
+        let results: Promise<any>;
+        if (refreshRequired) {
+            results = this.refreshAllBooks();
+        } else {
+            results = this.db.fetch(Books);
+        }
 
-        this.api.get(`/book/${bookID}`)
+        results
         .then(res => {
             let book: BookInfo | undefined;           
             if (res) {
-               book = BookstoreService.parseBookDb(res);
+
+                let bookResp = res;
+                if(refreshRequired) {
+                    bookResp = res.filter((book: any) => book.BookId == bookID);
+                }
+
+                book = ParseBookDb(bookResp);
             }
 
             sub.next(book);
@@ -136,8 +143,16 @@ export class BookstoreService {
 
     public fetchProdutinfo(): Observable<ProductInfo[]> {
         const sub = new Subject<ProductInfo[]>();
+        const refreshRequired = this.db.expired;
+        
+        let results: Promise<any>;
+        if (refreshRequired) {
+            results = this.refreshAllBooks();
+        } else {
+            results = this.db.fetch(Books);
+        }
 
-        this.api.get(`/product`)
+        results
         .then(res => {
             const products: ProductInfo[] = [];
             if (res) {
@@ -165,6 +180,21 @@ export class BookstoreService {
         const prodID = iapproduct.id.slice(0, -6);
         const isNaira = iapproduct.id.toLowerCase().indexOf("naira") != -1;
         const region = isNaira ? "nigeria" : "world";
+        const price = iapproduct.price;
+       
+        let dbupdate: any = {};
+        if (isNaira) {
+            dbupdate = {
+                BookId: bookID,
+                PriceNaira: price
+            }
+        } else {
+            dbupdate = {
+                BookId: bookID,
+                PriceWorld: price
+            }
+        }
+
         this.api.post(`/product/${prodID}`, {
             ProductId: prodID,
             price: iapproduct.price,
@@ -176,8 +206,8 @@ export class BookstoreService {
                 console.error(msg);
                 sub.error('update failed');
             }
-
-            sub.next(true);            
+            
+            this.db.update(Books, dbupdate).then(_ => sub.next(true)).catch(err => sub.error(err));
         })
         .catch(error => {
             console.error(`error updating book ${bookID} to ${JSON.stringify(iapproduct)}`);
@@ -187,17 +217,29 @@ export class BookstoreService {
         return sub.asObservable();
     }
     
-    public static parseBookDb(b: any): BookInfo {
-        let book = b as BookInfo;
-        for(var key in b) {
-            var newKey = `${key[0].toLowerCase()}${key.substr(1)}`
-            book[newKey as any] = b[key];
-        }
-        book.ISBN = b.BookId;
-        book.cover = `./assets/books/${b.Title.toLowerCase()}/cover.jpg`;
-        book.price = `₦${b.PriceNaira}`;
-        console.log("parsed book", book);
-        console.log("title:", book.title);
-        return book;
+
+    private async refreshAllBooks(): Promise<BookInfo[]> {        
+        return new Promise((resolve, reject) => {
+            this.api.get('/bookstore')    
+            .then(async res => {
+                const books: BookInfo[] = [];
+                if (res) {
+    
+                    const promises: Promise<void>[] = [];
+                    res.forEach((book: any) => {
+                        promises.push(this.db.update(Books, book));
+                    });
+    
+                    await Promise.all(promises);
+                }
+    
+                this.db.updateLastUpdateTime();
+                resolve(books);
+            })
+            .catch(error => {
+                console.error("Error fetching books", error);
+                reject(error);
+            });
+        });        
     }
 }

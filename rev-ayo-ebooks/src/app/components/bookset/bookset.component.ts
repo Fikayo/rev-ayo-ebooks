@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { BookInfo } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from "src/app/models/BookInfo";
 
 @Component({
   selector: 'ebook-bookset',

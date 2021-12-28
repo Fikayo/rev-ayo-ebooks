@@ -25,39 +25,4 @@ if (typeof window['cordova' as any] !== 'undefined') {
 function deviceReady() {
     console.log("device is ready");
     bootstrap();
-    registerUser();
-}
-
-function registerUser() {
-    const sql = new EbooksSQL();
-    sql.runTransaction((tx: Transaction) => {
-        let query = new SQLQuery(`SELECT UserId FROM User`);
-        tx.executeSql(query.sql, query.params, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length == 0) {
-                    let userID = '2259d5fe-cea4-4547-9681-03cc5fb72d8auser';
-                    insertUserID(tx, userID);
-                }            
-            },
-            
-            (_, error) => {
-                let err = `Reading useriD from User table: ${error.message}`;
-                console.error(err);
-            }
-        );      
-    });
-}
-
-function insertUserID(tx: Transaction, userID: string) {
-    console.log("inserting user", userID);
-
-    const query = new SQLQuery(`INSERT INTO User (UserId) VALUES (?)`, [userID]);
-    tx.executeSql(query.sql, query.params,
-        (_, __) => { },
-        (_, error) => {
-            let err = `Writing new userID ${userID} to User table: ${error.message}`;
-            console.error(err);
-        }
-    );    
 }

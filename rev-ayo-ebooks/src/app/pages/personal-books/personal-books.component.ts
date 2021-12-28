@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, ViewChildren, NgZone } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { Router } from '@angular/router';
-import { BookInfo } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({

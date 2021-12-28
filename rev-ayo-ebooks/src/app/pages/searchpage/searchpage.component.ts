@@ -2,7 +2,8 @@ import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterVi
 import { FormControl } from '@angular/forms';
 import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
-import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
+import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from "src/app/models/BookInfo";
 import { Router } from '@angular/router';
 
 @Component({

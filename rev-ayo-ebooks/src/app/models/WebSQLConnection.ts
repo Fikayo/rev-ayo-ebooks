@@ -1,12 +1,9 @@
-export const DBState: string = "DBState";
 export const User: string = "User";
-export const UserPurchased: string = "UserPurchased";
-export const UserWishlist: string = "UserWishlist";
-export const UserProgress: string = "UserBookProgress";
+export const Purchased: string = "Purchased";
+export const Wishlist: string = "Wishlist";
+export const BookProgress: string = "BookProgress";
 export const Books: string = "Books";
-export const Products: string = "Products";
-export const BookProducts: string = "BookProducts";
-const TableNames: string[] = [DBState, User, UserPurchased, UserWishlist, UserProgress, Books];
+const TableNames: string[] = [User, Purchased, Wishlist, BookProgress, Books];
 
 export const BookTable = {
     BookId: "BookId",
@@ -14,10 +11,7 @@ export const BookTable = {
     DisplayName: "DisplayName",
     Author: "Author",
     Description: "Description",
-    GCSLocation: "DataSource",
-}
-
-export const ProductTable = {
+    DataSource: "DataSource",
     ProductId: "ProductId",
     PriceNaira: "PriceNaira",
     PriceWorld: "PriceWorld",
@@ -25,59 +19,38 @@ export const ProductTable = {
 
 const TABLES: string[] = [
 
-    `CREATE TABLE IF NOT EXISTS [${DBState}] (
-        [Initiliased] INT NOT NULL
-    );`,
-
     `CREATE TABLE IF NOT EXISTS [${User}] (
-        UserId STRING NOT NULL,
+        [UserId] varchar(50) NOT NULL UNIQUE,
         PRIMARY KEY (UserId)
     );`,
-
-    `CREATE TABLE IF NOT EXISTS [${UserPurchased}] (
-        [UserId] STRING NOT NULL,
-        [BookId] STRING NOT NULL,
-        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE,
-        FOREIGN KEY (BookId) REFERENCES [${Books}] (BookId) ON DELETE CASCADE
+    
+    `CREATE TABLE IF NOT EXISTS [${Purchased}] (
+        [BookId] varchar(50) NOT NULL UNIQUE,
+        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [${UserWishlist}] (
-        [UserId] STRING NOT NULL,
-        [BookId] STRING NOT NULL,
-        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE,
-        FOREIGN KEY (BookId) REFERENCES [${Books}] (BookId) ON DELETE CASCADE
+    `CREATE TABLE IF NOT EXISTS [${Wishlist}] (
+        [BookId] varchar(50) NOT NULL UNIQUE,
+        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [${UserProgress}] (
-        [UserId] STRING NOT NULL UNIQUE,
+    `CREATE TABLE IF NOT EXISTS [${BookProgress}] (
         [BookId] STRING NOT NULL UNIQUE,
         [CurrentPage] INT NOT NULL,
-        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE,
         FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
     );`,
 
     `CREATE TABLE IF NOT EXISTS [${Books}] (
-        [${BookTable.BookId}] STRING NOT NULL,
+        [${BookTable.BookId}] varchar(50) NOT NULL,
         [${BookTable.Title}] STRING NOT NULL,
         [${BookTable.DisplayName}] STRING NOT NULL,
         [${BookTable.Author}] STRING NOT NULL,
         [${BookTable.Description}] STRING NOT NULL,
-        [${BookTable.GCSLocation}] STRING NOT NULL,
-        PRIMARY KEY (${BookTable.BookId}),
-    );`,
-
-    `CREATE TABLE IF NOT EXISTS [${Products}] (
-        [ProductID] STRING NOT NULL,
-        [PriceNaira] STRING NOT NULL,
-        [PriceWorld] STRING NOT NULL,
-        PRIMARY KEY (ProductID)
-    );`,
-
-    `CREATE TABLE IF NOT EXISTS [${BookProducts}] (
-        [BookID] STRING NOT NULL,
-        [ProductID] STRING NOT NULL,
-        FOREIGN KEY (ProductId) REFERENCES [${Products}] (ProductId) ON DELETE CASCADE,
-        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
+        [${BookTable.DataSource}] STRING NOT NULL,
+        [${BookTable.ProductId}] STRING NOT NULL,
+        [${BookTable.PriceNaira}] STRING NOT NULL,
+        [${BookTable.PriceWorld}] STRING NOT NULL,
+        PRIMARY KEY (${BookTable.BookId})
     );`,
 
 ];
@@ -87,7 +60,7 @@ export class SQLQuery
     public sql: string;
     public params: any[] | undefined = [];
 
-    constructor(sql: string, params?: any[]) {
+    constructor(sql: string, ...params: any[]) {
         this.sql = sql;
         this.params = params;
     }

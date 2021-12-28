@@ -5,7 +5,8 @@ import { ToastController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { BottomMenuComponent } from 'src/app/components/bottom-menu/bottom-menu.component';
 import { PaymentModal } from 'src/app/components/payment-modal/payment-modal.component';
-import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
+import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({

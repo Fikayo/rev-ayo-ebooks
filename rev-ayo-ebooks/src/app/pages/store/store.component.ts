@@ -1,6 +1,7 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BookstoreService, BookInfo } from 'src/app/services/bookstore/bookstore.service';
+import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from "src/app/models/BookInfo";
 
 @Component({
   selector: 'ebook-store',

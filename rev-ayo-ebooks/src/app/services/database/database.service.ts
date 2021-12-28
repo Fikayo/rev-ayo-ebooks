@@ -3,94 +3,127 @@ import { Injectable } from '@angular/core';
 import { JsonSQLite } from '@capacitor-community/sqlite';
 import { Plugins } from '@capacitor/core';
 import { AlertController } from '@ionic/angular';
+import { NpmBuildCLI } from '@ionic/cli/lib/build';
 import { BehaviorSubject } from 'rxjs';
+import { EbooksSQL, SQLQuery } from 'src/app/models/WebSQLConnection';
 const {CapacitorSQLite, Device, Storage}  = Plugins;
 
-const DB_SETUP_KEY = "first_db_setup";
-const DB_NAME_KEY = "db_name";
-const REMOTE_SCHEMA_JSON = "";
-
-// https://www.youtube.com/watch?v=2kTT3k8ztL8 for reference
+const DBExpiry = 1000 * 60 * 30 // 30 mninutes;
 
 @Injectable({
   providedIn: 'root'
 })
 export class DatabaseService {
-    private dbReady = new BehaviorSubject(false);
-    private name = '';
+    private lastDBupdate: Date;
+    private sql: EbooksSQL;
 
-    constructor(
-        private http: HttpClient,
-        private alertCtrl: AlertController) { }
-
-
-    public get ready(): BehaviorSubject<boolean> {
-        return this.dbReady;
+    constructor() {
+        this.sql = new EbooksSQL();
+        this.lastDBupdate = this.fetchLastUpdateTime();
     }
 
-    public async init() {
-        const info = await Device.getInfo();
-        if(info.platform == 'android') {
-            try {
-                const sqlite = CapacitorSQLite as any;
-                await sqlite.requestPermissions();
-                this.setupDatabase();
-            } catch (error) {
-                const alert = await this.alertCtrl.create({
-                    header: 'No DB access',
-                    message: "This app can't work without Database access.",
-                    buttons: ['Ok']
-                });
+    public get expired(): boolean {
+        const duration = new Date().valueOf() - this.lastDBupdate.valueOf();
+        return duration > DBExpiry;
+    }
 
-                console.error("No db access", error);
-                await alert.present();
-            }
-        } else {
-            this.setupDatabase();
+    public updateLastUpdateTime() {
+        const now = new Date();
+        localStorage.setItem('lastUpdate',  now.toUTCString());
+        this.lastDBupdate = now;
+    }
+
+    public async fetch(table: string, conditions?: any): Promise<any> {        
+        let query = `SELECT * FROM ${table}`;
+        if (conditions) {
+            query += " WHERE "
+            const columns = Object.keys(conditions);
+            const conds: string[] = [];
+            columns.forEach(col => {
+                conds.push(`{${col}=${conditions[col]}}`);
+            });
+        
+            query += conds.join(" AND ")
         }
-    }
 
-    private async setupDatabase() {
-        const initiliased = await Storage.get({ key: DB_SETUP_KEY });
-
-        if (!initiliased.value) {
-            this.downloadDatabase();
-        } else {
-            this.name = (await Storage.get({ key: DB_NAME_KEY })).value;
-            await CapacitorSQLite.open({ database: this.name });
-            this.dbReady.next(true);
-        }
-    }
-
-    private downloadDatabase(update = false) {
-        this.http.get(REMOTE_SCHEMA_JSON)
-        .subscribe({
-            next: async (jsonExport: any) => {
-                console.log(jsonExport);
-                let json = jsonExport as JsonSQLite;
-                console.log(json);
-                const jsonstring = JSON.stringify(json);
-                const isValid = await CapacitorSQLite.isJsonValid({jsonstring});
-
-                if(isValid.result) {
-                    this.name = json.database;
-                    await Storage.set({key: DB_NAME_KEY, value: this.name});
-                    await CapacitorSQLite.importFromJson({jsonstring});
-                    await Storage.set({key: DB_SETUP_KEY, value: '1'});
-
-                    // Detect any offline changes (may not be needed for my puposes though).
-                    if(update) {
-                        await CapacitorSQLite.setSyncDate({syncdate: '' + new Date().getTime()});
-                    } else {
-                        await CapacitorSQLite.createSyncTable();
+        return new Promise((resolve, reject) => {
+            this.sql.execute(new SQLQuery(query),
+                (_, results: any) => {
+                    console.debug("results", results);
+                    let data: any | undefined;
+                    if (results.rows) {
+                        data = results.rows;
                     }
 
-                    // await CapacitorSQLite.open({ database: this.name });
-                    this.dbReady.next(true);
-                }
-            },
+                    resolve(data);
+                },
 
-            error: () => console.error("An error occured while downloading the database"),
+                (_, error) => {
+                    console.error(`Error fetching data from local db: query: ${query}`, error);
+                    reject(error) ;
+                }
+            );
+        });
+    }
+
+    public async insert(table: string, data: any): Promise<void> {
+        const columns = Object.keys(data);
+        const values = Object.values(data);
+
+        const query = new SQLQuery(`
+            INSERT INTO ${table} (${columns}) VALUES (${'?, '.repeat(columns.length - 1)}?);
+        `, ...values);
+        
+        return this.updatedb(query);
+    }
+
+    public async update(table: string, data: any): Promise<void> {
+        const columns = Object.keys(data);
+        const values = Object.values(data);
+
+        const query = new SQLQuery(`
+            INSERT INTO ${table} (${columns}) VALUES (${'?, '.repeat(columns.length - 1)}?);
+        `, ...values);
+        
+        return this.updatedb(query);
+    }
+
+    public async delete(table: string, conditions?: any): Promise<void> {        
+        let query = `DELETE FROM ${table}`;
+        if (conditions) {
+            query += " WHERE "
+            const columns = Object.keys(conditions);
+            const conds: string[] = [];
+            columns.forEach(col => {
+                conds.push(`{${col}=${conditions[col]}}`);
+            });
+        
+            query += conds.join(" AND ")
+        }
+
+        return this.updatedb(new SQLQuery(query));
+    }
+
+    private fetchLastUpdateTime(): Date {
+        const update = localStorage.getItem('lastUpdate');
+        if (!update) {
+            return new Date();
+        }
+
+        return new Date(update);
+    }
+
+    private async updatedb(query: SQLQuery): Promise<void> {
+        return new Promise((resolve, reject) => {            
+            this.sql.execute(query, 
+                (_, results: any) => {
+                    if (results.rows.length > 0) {
+                        resolve();                   
+                    } else {
+                        reject('nothing updated');
+                    }
+                }
+            );
         });
     }
 }

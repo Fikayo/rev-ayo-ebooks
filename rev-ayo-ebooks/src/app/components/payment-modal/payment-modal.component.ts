@@ -1,7 +1,7 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { LoadingController, ToastController } from '@ionic/angular';
-import { BookInfo } from 'src/app/services/bookstore/bookstore.service';
+import { BookInfo } from "src/app/models/BookInfo";
 
 @Component({
   selector: 'ebook-payment-modal',
