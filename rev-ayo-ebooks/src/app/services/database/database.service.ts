@@ -85,7 +85,15 @@ export class DatabaseService {
             INSERT INTO ${table} (${columns}) VALUES (${'?, '.repeat(columns.length - 1)}?);
         `, ...values);
         
-        return this.updatedb(query);
+        return new Promise(async (resolve, reject) => {            
+            await this.updatedb(query)
+            .catch(error => {
+                // Try to insert instead
+                this.insert(table, data)
+                .then(resolve)
+                .catch(err => reject(err));
+            });
+        });
     }
 
     public async delete(table: string, conditions?: any): Promise<void> {        
