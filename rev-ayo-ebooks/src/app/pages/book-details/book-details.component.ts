@@ -46,25 +46,25 @@ export class BookDetailsComponent implements OnInit {
                         this.book = b;
                     });
 
-                    this.user.hasPurchasedBook(this.book.ISBN).subscribe({
-                        next: (i) => {
-                            this.zone.run(() => {
-                                if (this.book.ISBN == "unknown") {
-                                    i = true;
-                                }
+                    // this.user.hasPurchasedBook(this.book.ISBN).subscribe({
+                    //     next: (i) => {
+                    //         this.zone.run(() => {
+                    //             if (this.book.ISBN == "unknown") {
+                    //                 i = true;
+                    //             }
                                 
-                                this.setPurchasedBook(i);
-                            });
-                        },
-                    })
+                    //             this.setPurchasedBook(i);
+                    //         });
+                    //     },
+                    // })
 
-                    this.user.hasBookInWishList(this.book.ISBN).subscribe({
-                        next: (i) => {
-                            this.zone.run(() => {
-                                this.bookInWishList = i; console.log("book in wishlist", this.book.title, this.bookInWishList, i)
-                            });
-                        },
-                    });
+                    // this.user.hasBookInWishList(this.book.ISBN).subscribe({
+                    //     next: (i) => {
+                    //         this.zone.run(() => {
+                    //             this.bookInWishList = i; console.log("book in wishlist", this.book.title, this.bookInWishList, i)
+                    //         });
+                    //     },
+                    // });
                 },
                 error: () => console.log("failed to fetch book from bookstore")
             });

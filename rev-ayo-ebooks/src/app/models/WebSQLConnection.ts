@@ -1,14 +1,12 @@
-import { HttpClient } from '@angular/common/http';
-import booksList from '../../assets/books/list.json';
-
 export const DBState: string = "DBState";
 export const User: string = "User";
-export const UserLibrary: string = "UserLibrary";
-export const UserProgress: string = "UserProgress";
+export const UserPurchased: string = "UserPurchased";
+export const UserWishlist: string = "UserWishlist";
+export const UserProgress: string = "UserBookProgress";
 export const Books: string = "Books";
 export const Products: string = "Products";
 export const BookProducts: string = "BookProducts";
-const TableNames: string[] = [DBState, User, UserLibrary, UserProgress, Books];
+const TableNames: string[] = [DBState, User, UserPurchased, UserWishlist, UserProgress, Books];
 
 export const BookTable = {
     BookId: "BookId",
@@ -16,7 +14,7 @@ export const BookTable = {
     DisplayName: "DisplayName",
     Author: "Author",
     Description: "Description",
-    GCSLocation: "GCSLocation",
+    GCSLocation: "DataSource",
 }
 
 export const ProductTable = {
@@ -36,11 +34,18 @@ const TABLES: string[] = [
         PRIMARY KEY (UserId)
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [${UserLibrary}] (
-        [UserId] STRING NOT NULL UNIQUE,
-        [Books] TEXT,
-        [Wishlist] TEXT,
-        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE
+    `CREATE TABLE IF NOT EXISTS [${UserPurchased}] (
+        [UserId] STRING NOT NULL,
+        [BookId] STRING NOT NULL,
+        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE,
+        FOREIGN KEY (BookId) REFERENCES [${Books}] (BookId) ON DELETE CASCADE
+    );`,
+
+    `CREATE TABLE IF NOT EXISTS [${UserWishlist}] (
+        [UserId] STRING NOT NULL,
+        [BookId] STRING NOT NULL,
+        FOREIGN KEY (UserId) REFERENCES [${User}] (UserId) ON DELETE CASCADE,
+        FOREIGN KEY (BookId) REFERENCES [${Books}] (BookId) ON DELETE CASCADE
     );`,
 
     `CREATE TABLE IF NOT EXISTS [${UserProgress}] (
@@ -155,130 +160,6 @@ export class EbooksSQL extends WebSQLConnection {
 
             console.log(t);
         });        
-    }
-
-    public initialiseBooks(http: HttpClient) {
-        console.log("Initialising Tables", EbooksSQL.initialised);
-        if (EbooksSQL.initialised) return;
-
-        this.runTransaction((tx: Transaction) => {
-
-            tx.executeSql(`SELECT Initiliased FROM ${DBState}`, [], 
-                (_, results) => {
-                    let isInit = false;
-                    console.log("reading init value", results);
-                    if (results.rows.length > 0) {
-                        let row = results.rows.item(0);
-                        isInit = row.Initiliased == 1;
-                    }
-
-                    console.log("Tables initialised: ", isInit);
-                    if(isInit) return;
-                    
-                    console.log("loading booklist", booksList);        
-                    // booksList.books.forEach(b => {
-                    //     let path = `./assets/books/${b.title.toLowerCase()}/pdf.pdf`;
-                    //     http.get(path, { responseType: 'blob' })
-                    //     .subscribe({
-                    //         next: (blob: Blob) => {
-                    //             console.log("stringified blob: " + b.title, JSON.stringify(blob), blob);
-                    //             blob.arrayBuffer().then((value => {   
-                    //                 console.log("stringified buffer: " + b.title, JSON.stringify(value), value);                             
-                    //                 let q = new SQLQuery(
-                    //                     `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}, ${BookTable.PDF}) 
-                    //                     VALUES (?,?,?,?,?,?,?,?,?)`,
-                    //                     [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world, value]
-                    //                 );
-                                
-                    //                 this.execute(q, 
-                    //                     (_, results) => {
-                    //                         if(results.rowsAffected == 0) {
-                    //                             console.error(`No rows affected while loading book ${b.ISBN}`);
-                    //                         } else {
-                    //                             console.log(`successful load of book ${b.ISBN}`);
-                    //                         }
-                    //                     }, 
-            
-                    //                     (_, error) => console.debug(`Failed to load book '${b.ISBN}' into table: ${error.message}`, b, error)
-                    //                 );
-                                    
-                    //             }));
-                    //         },
-                    //         error: () => console.log(`failed to fetch book "${b.ISBN}" from JSON`)
-                    //     });                        
-                    // });
-
-                    booksList.books.forEach(b => {
-                        let q = new SQLQuery(
-                            `INSERT INTO ${Books} (${BookTable.BookId}, ${BookTable.Title}, ${BookTable.DisplayName}, ${BookTable.Author}, ${BookTable.Description}, ${BookTable.ProductID}, ${BookTable.PriceNaira}, ${BookTable.PriceWorld}) 
-                            VALUES (?,?,?,?,?,?,?,?)`,
-                            [b.ISBN, b.title, b.displayName, b.author, b.description, b.productID, b.price.naira, b.price.world]
-                        );
-                    
-                        tx.executeSql(q.sql, q.params, undefined, 
-                            (_, error) => console.debug(`Failed to load book ${b.ISBN} into table: ${error.message}`, b, error)
-                        );
-                    });
-
-                    tx.executeSql(`INSERT INTO ${DBState} (Initiliased) VALUES (1)`, [], undefined, 
-                        (_, error) => console.error("Failed to set db to initialised", error)
-                    );
-                }
-            );
-        });
-
-        EbooksSQL.initialised = true;
-    }
-
-    public PRELOADTESTDATA(): void {
-        if (EbooksSQL.loadedTestData) return;
-
-        const numMyBooks = 5;
-        const numWishlist = 8;
-        const allBooks = ['975-978-57020-4-0', 'unknown'];
-
-        let myBooks: string[] = [];
-        let wishlist: string[] = [];
-
-        for(let i = 0; i < numMyBooks; i++) {
-            myBooks.push(allBooks[i % allBooks.length]);
-        }
-
-        for(let i = 0; i < numWishlist; i++) {
-            wishlist.push(allBooks[i % allBooks.length]);
-        }
-
-        console.debug("loading test data: ", JSON.stringify(myBooks), JSON.stringify(wishlist))
-
-        this.runTransaction((tx: Transaction) => {
-
-            tx.executeSql("SELECT UserId from User", [], 
-            (_, results) => {
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if (row.UserId) {
-                        let userID = row.UserId;                   
-                        tx.executeSql(`UPDATE UserLibrary SET Books = ?, Wishlist = ? WHERE UserId = ?`, [myBooks, wishlist, userID],
-                        (_, results) => {
-                            if (results.rowsAffected > 0) {
-                                EbooksSQL.loadedTestData = true;
-                                console.debug("done loading test data");
-                            } else {
-                                console.error("no rows affected loading data");
-                            }
-                        },
-                        (_, error) => console.error("Failed to load data", error),
-                        );
-                    }
-                }
-                
-            },
-            (_, error) => {
-                console.error("Error reading userID", error);
-            }
-            );
-        });
     }
 
 }

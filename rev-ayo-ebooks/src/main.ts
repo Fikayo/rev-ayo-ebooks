@@ -2,7 +2,6 @@ import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { EbooksSQL, SQLQuery, Transaction } from 'src/app/models/WebSQLConnection';
-import { v4 as uuidv4 } from 'uuid';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
 
@@ -30,14 +29,14 @@ function deviceReady() {
 }
 
 function registerUser() {
-    let sql = new EbooksSQL();
+    const sql = new EbooksSQL();
     sql.runTransaction((tx: Transaction) => {
         let query = new SQLQuery(`SELECT UserId FROM User`);
         tx.executeSql(query.sql, query.params, 
             (_, results: any) => {
                 console.debug("results", results);
                 if (results.rows.length == 0) {
-                    let userID = `${uuidv4()}user`;
+                    let userID = '2259d5fe-cea4-4547-9681-03cc5fb72d8auser';
                     insertUserID(tx, userID);
                 }            
             },
@@ -48,28 +47,17 @@ function registerUser() {
             }
         );      
     });
-
-    sql.PRELOADTESTDATA();
 }
 
 function insertUserID(tx: Transaction, userID: string) {
     console.log("inserting user", userID);
 
-    let query = new SQLQuery(`INSERT INTO User (UserId) VALUES (?)`, [userID]);
+    const query = new SQLQuery(`INSERT INTO User (UserId) VALUES (?)`, [userID]);
     tx.executeSql(query.sql, query.params,
         (_, __) => { },
         (_, error) => {
             let err = `Writing new userID ${userID} to User table: ${error.message}`;
             console.error(err);
         }
-    );  
-    
-    query = new SQLQuery(`INSERT INTO UserLibrary (UserId) VALUES (?)`, [userID]);
-    tx.executeSql(query.sql, query.params,
-        (_, __) => { },
-        (_, error) => {
-            let err = `Writing new userID ${userID} to UserLibrary table: ${error.message}`;
-            console.error(err);
-        }
-    );  
+    );    
 }

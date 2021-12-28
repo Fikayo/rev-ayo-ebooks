@@ -1,7 +1,16 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { EbooksSQL, SQLQuery, Transaction } from 'src/app/models/WebSQLConnection';
 import { BookstoreService, BookInfo } from '../bookstore/bookstore.service';
+
+const API = "https://ebooksserver-jnueslq6ba-ez.a.run.app"
+const TESTEMAIL = "test@email.com"
+
+export interface UserCollection {
+    purchased: BookInfo[];
+    wishlist: BookInfo[];
+}
 
 @Injectable({
   providedIn: 'root'
@@ -9,18 +18,14 @@ import { BookstoreService, BookInfo } from '../bookstore/bookstore.service';
 export class UserService {
 
     private id!: string;
-    private sql: EbooksSQL;
 
-    private count = 0;
-
-    constructor(private bookstore: BookstoreService) { 
-        this.sql = new EbooksSQL();
-        this.fetchUserID().subscribe({
+    constructor(private http: HttpClient) { 
+        this.loginUser(TESTEMAIL).subscribe({
             next: (id) => {
                 this.id = id;
                 console.log("userID", this.userID);
             },
-            error: () => console.error("Failed to fetch user ID from table")
+            error: () => console.error("Failed to fetch user ID from server")
         });
     }
 
@@ -30,33 +35,20 @@ export class UserService {
 
     public fetchMyBooks(): Observable<BookInfo[]> {
         const sub = new Subject<BookInfo[]>();
-        let query = new SQLQuery(`
-            SELECT Books FROM UserLibrary l WHERE l.UserId = ?;
-        `, [this.userID]);
-
-        let myIDs: string[] = [];
-        this.sql.execute(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if (row.Books) {
-                        myIDs = row.Books.split(",").map((item: string)=>item.trim());
-                    } else {
-                        sub.next([]);
-                    }
-
-                    this.bookstore.fetchBooks(myIDs).subscribe({
-                        next: (b) => {
-                            sub.next(b);
-                        }
+        this.http.get(`${API}/user/${this.userID}/purchased`)
+        .subscribe({
+            next: (res: any) => {
+                const books: BookInfo[] = [];
+                if (res.data) {
+                    res.data.forEach((book: any) => {
+                        books.push(BookstoreService.parseBookDb(book));
                     });
-                } else {
-                    sub.next([]);
                 }
-            }
-        );
+
+                sub.next(books)
+            },
+           error: () => console.error("Error fetching purchased books")
+       });
 
         return sub.asObservable();
     }
@@ -68,300 +60,131 @@ export class UserService {
      */
     public addToMyBooks(bookID: string): Observable<void> {
         const sub = new Subject<void>();
-        let query = new SQLQuery(`
-            SELECT Books, Wishlist FROM UserLibrary l WHERE l.UserId = ?;
-        `, [this.userID]);
+        sub.next();
+        return sub.asObservable();
+    }
 
-        this.sql.runTransaction((tx: Transaction) => {       
-            let myIDs: string[] = [];
-            let wishlist: string[] = [];
-            tx.executeSql(query.sql, query.params, 
-                (_, results: any) => {
-                    console.debug("results", results);
-                    if (results.rows.length > 0) {
-                        let row = results.rows.item(0);
-                        console.debug("result row", row);
-                        if(row.Books) {
-                            myIDs = row.Books.split(",").map((item: string)=>item.trim());
-                        }
-                        if (row.Wishlist) {
-                            wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
-                        }
+    public fetchCollection(): Observable<UserCollection> {
+        const sub = new Subject<UserCollection>();
+        this.http.get(`${API}/user/${this.userID}/collection`)
+        .subscribe({
+            next: (res: any) => {
+                const purchased: BookInfo[] = [];
+                const wishlist: BookInfo[] = [];
+                if (res.data) {
+                    if (res.data.purchased) {
+                        res.data.purchased.forEach((book: any) => {
+                            purchased.push(BookstoreService.parseBookDb(book));
+                        });
+                    }
 
-                        if (!myIDs.includes(bookID)) {
-                            myIDs.push(bookID);                    
-                        }
-
-                        if (wishlist.includes(bookID)) {
-                            wishlist = wishlist.filter(b => b != bookID);
-                        }
-
-                        tx.executeSql(`UPDATE UserLibrary SET Books = ?, Wishlist = ? WHERE UserId = ?`, [myIDs, wishlist, this.userID],
-                            (_, __) => {
-                                sub.next();
-                            }
-                        );
+                    if (res.data.wishlist) {
+                        res.data.wishlist.forEach((book: any) => {
+                            wishlist.push(BookstoreService.parseBookDb(book));
+                        });
                     }
                 }
-            );
-        });
+
+                sub.next({
+                    purchased: purchased,
+                    wishlist: wishlist,
+                });
+            },
+           error: () => console.error("Error fetching wishlist books")
+       });
+
         return sub.asObservable();
     }
 
     public fetchWishlist(): Observable<BookInfo[]> {
         const sub = new Subject<BookInfo[]>();
-        let query = new SQLQuery(`
-            SELECT Wishlist FROM UserLibrary l WHERE l.UserId = ?;
-        `, [this.userID]);
-
-        let wishlist: string[] = [];
-        this.sql.execute(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if (row.Wishlist) {
-                        wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
-                    } else {
-                        sub.next([]);
-                    }
-                
-                    this.bookstore.fetchBooks(wishlist).subscribe({
-                        next: (b) => {
-                            console.log("fetched wish books", b);
-                            sub.next(b);
-                        }
+        this.http.get(`${API}/user/${this.userID}/wishlist`)
+        .subscribe({
+            next: (res: any) => {
+                const books: BookInfo[] = [];
+                if (res.data) {
+                    res.data.forEach((book: any) => {
+                        books.push(BookstoreService.parseBookDb(book));
                     });
-                } else {
-                    sub.next([]);
                 }
-            }
-        );
+
+                sub.next(books)
+            },
+           error: () => console.error("Error fetching wishlist books")
+       });
 
         return sub.asObservable();
     }
 
     public toggleInWishList(bookID: string): Observable<boolean> {
         const sub = new Subject<boolean>();
-        let query = new SQLQuery(`
-            SELECT Wishlist FROM UserLibrary l WHERE l.UserId = ?;
-        `, [this.userID]);
-
-        this.sql.runTransaction((tx: Transaction) => {
-        
-            let wishlist: string[] = [];
-            tx.executeSql(query.sql, query.params, 
-                (_, results: any) => {
-                    console.debug("results", results);
-                    if (results.rows.length > 0) {
-                        let row = results.rows.item(0);
-                        console.debug("result row", row);
-                        if (row.Wishlist) {
-                            wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
-                        }
-                    }
-
-                    if (wishlist.includes(bookID)) {
-                        wishlist = wishlist.filter(b => b != bookID);
-                    } else {
-                        wishlist.push(bookID);
-                    }
-
-                    console.log("new wishlist", wishlist);
-                    tx.executeSql(`UPDATE UserLibrary SET Wishlist=? WHERE UserId=?`, [wishlist, this.userID],
-                        (_, results) => {
-                            if (results.rowsAffected > 0) {
-                                sub.next(wishlist.includes(bookID));
-                            } else {
-                                let msg = `no rows updated while updating wishlist to be [${wishlist}] for user ${this.userID}`;
-                                console.error(msg);
-                                sub.error(msg);
-                            }  
-                        },
-                        
-                        (_, error) => {
-                            let msg = `updating wishlist to be [${wishlist}]: ${error.message}`;
-                            console.error(msg, error);
-                            sub.error(msg);
-                        }
-                    );                
-                }, 
-
-                (_, error: any) => {
-                    let msg = `toggling book ${bookID} in wishlist failed: ${error.message}`;
-                    console.error(msg, error);
-                    sub.error(msg);            
-                }
-            );
-        });
-
+        sub.next(true);
         return sub.asObservable();
     }
 
-    public hasBookInWishList(bookID: string): Observable<boolean> {
-        const sub = new Subject<boolean>();
-        let query = new SQLQuery(`
-            SELECT Wishlist FROM UserLibrary l WHERE l.UserId = ?;
-        `, [this.userID]);
-
-        let wishlist: string[] = [];
-        this.sql.execute(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if (row.Wishlist) {
-                        wishlist = row.Wishlist.split(",").map((item: string)=>item.trim());
-                    }
-                }
-
-                sub.next(wishlist.includes(bookID));
-            }
-        );
-
-        return sub.asObservable();
-    }
-
-    public hasPurchasedBook(bookID: string): Observable<boolean> {
-        const sub = new Subject<boolean>();
-        let query = new SQLQuery(`
-            SELECT Books FROM UserLibrary l WHERE l.UserId = ?;
-        `, [this.userID]);
-
-        let myIDs: string[] = [];
-        this.sql.execute(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    if (row.Books) {
-                        myIDs = row.Books.split(",").map((item: string)=>item.trim());
-                    }
-                }
-                    
-                sub.next(myIDs.includes(bookID));               
-            }
-        );
-
-        return sub.asObservable();
-    }
 
     public fetchBookCurrentPage(bookID: string): Observable<number> {
         const sub = new Subject<number>();
-        let query = new SQLQuery(`
-            SELECT CurrentPage FROM UserProgress p WHERE p.UserId = ? AND p.BookId = ?;
-        `, [this.userID, bookID]);
-
-        this.sql.execute(query, 
-            (_, results: any) => {
-                console.debug("results", results);
-
-                let page = 1;
-                if (results.rows.length > 0) {
-                    let row = results.rows.item(0);
-                    console.debug("result row", row);
-                    page = row.CurrentPage;
+        this.http.get(`${API}/user/${this.userID}/progress/${bookID}`)
+        .subscribe({
+            next: (res: any) => {
+                let page: number | undefined;
+                if (res.data) {
+                    page = res.data.Page as number;
                 }
-
+                
                 sub.next(page);
             },
-
-            (_, error) => {
-                let msg = `error fetching current page from book [${bookID}]: ${error.message}`;
-                console.error(msg, error);
-                sub.error(msg);
-            }
-        );
+           error: () => console.error(`Error fetching current page for book ${bookID}`)
+       });
 
         return sub.asObservable();
     }
 
     public updateBookProgress(bookID: string, currentPage: number): Observable<number> {
         let sub = new Subject<number>();
-        let query = new SQLQuery(`
-            SELECT CurrentPage FROM UserProgress p WHERE p.UserId = ? AND p.BookId = ?;
-        `, [this.userID, bookID]);
-
-        this.sql.runTransaction((tx: Transaction) => {
-                tx.executeSql(query.sql, query.params, 
-                (_, results: any) => {
-                    console.debug("results", results);
-                    if (results.rows.length > 0) {
-                        tx.executeSql(`UPDATE UserProgress SET CurrentPage=? WHERE UserId=?`, [currentPage, this.userID],
-                            (_, results) => {
-                                if (results.rowsAffected > 0) {
-                                    sub.next(currentPage);
-                                } else {
-                                    let msg = `no rows updated while updating book ${bookID} progress to be [${currentPage}] for user ${this.userID}`;
-                                    console.error(msg);
-                                    sub.error(msg);
-                                }  
-                            },
-                            
-                            (_, error) => {
-                                let msg = `updating current page to be [${currentPage}]: ${error.message}`;
-                                console.error(msg, error);
-                                sub.error(msg);
-                            }
-                        );    
-                    }  else {
-                        tx.executeSql(`INSERT INTO UserProgress (UserId, BookId, CurrentPage) VALUES (?, ?, ?)`, [this.userID, bookID, currentPage],
-                            (_, results) => {
-                                if (results.rowsAffected > 0) {
-                                    sub.next(currentPage);
-                                } else {
-                                    let msg = `no rows updated while updating book ${bookID} progress to be [${currentPage}] for user ${this.userID}`;
-                                    console.error(msg);
-                                    sub.error(msg);
-                                }  
-                            },
-                            
-                            (_, error) => {
-                                let msg = `updating current page to be [${currentPage}]: ${error.message}`;
-                                console.error(msg, error);
-                                sub.error(msg);
-                            }
-                        );    
-                    }            
-                }, 
-
-                (_, error: any) => {
-                    let msg = `updating reading progress for book ${bookID} to page ${currentPage}: ${error.message}`;
-                    console.error(msg, error);
-                    sub.error(msg);            
+        this.http.post(`${API}/user/${this.userID}/progress/${bookID}`, {
+            userId: this.userID,
+            bookID: bookID,
+            page: currentPage
+        })
+        .subscribe({
+            next: (res: any) => {;
+                if (res.data.page != currentPage) {
+                    let msg = `Unexpected result after updating page in ${bookID} to ${currentPage}`;
+                    console.error(msg);
+                    sub.error(msg);;
+                    return;
                 }
-            );
+
+                sub.next(currentPage);
+            },
+            error: () => console.error(`error updating book page in ${bookID} to ${currentPage}`)
         });
 
         return sub.asObservable();
     }
 
-    private fetchUserID(): Observable<string> {
+    public loginUser(email: string): Observable<string> {
         const sub = new Subject<string>();
 
-        this.sql.runTransaction((tx: Transaction) => {
-            console.log("tx object", tx);
-            let query = new SQLQuery(`SELECT UserId FROM User`);
-            tx.executeSql(query.sql, query.params, 
-                (_, results: any) => {
-                    console.debug("results", results);
-                    let userID: string;
-                    if (results.rows.length > 0) {
-                        let row = results.rows.item(0);
-                        userID = row.UserId;
-                        sub.next(userID);
-                    }            
-                },
-                
-                (_, error) => {
-                    let err = `Reading useriD from User table: ${error.message}`;
-                    console.error(err);
-                    sub.error(err);
+        this.http.post(`${API}/user/login`, {
+            email: email
+        })
+        .subscribe({
+            next: (res: any) => {
+                if (res.status != 200) {
+                    sub.error(res.data);
                 }
-            );           
+
+                let userID: string | undefined;
+                if (res.data) {
+                    userID = res.data.UserId;
+                }
+
+                sub.next(userID);
+            },
+            error: () => console.error(`error fetching userID for email ${email}`)
         });
 
         return sub.asObservable();
