@@ -6,6 +6,7 @@ export interface BookInfo {
     author?: string;
     cover?: string;
     description?: string;
+    pdfPath?: string;
     price?: string;
     productID: string;
     [key: string]: any;

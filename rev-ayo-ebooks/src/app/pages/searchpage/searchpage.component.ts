@@ -29,10 +29,12 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
-        this.bookstore.fetchAllBooks().subscribe({    
-            next: (b) => this.allTitles = b,
-            error: () => console.log("failed to fetch titles from bookstore")
-        });   
+        this.bookstore.fetchAllBooks().subscribe({
+            next: (books) => {
+                this.allTitles = books;
+            },
+            error: (err) => console.error("failed to fetch titles from bookstore:", err),
+        });
 
         // Detect input changes
         // this.searchBox.valueChanges.subscribe(userInput => {

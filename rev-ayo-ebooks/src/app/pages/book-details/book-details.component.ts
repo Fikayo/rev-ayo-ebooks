@@ -40,45 +40,41 @@ export class BookDetailsComponent implements OnInit {
         this.routeSub = this.activatedRoute.params.subscribe(params => {
             let bookID = params['isbn'];
 
-            this.bookstore.fetchBook(bookID)
-            .subscribe({
-                next: (b: BookInfo) => {
+            this.bookstore.fetchBook(bookID).subscribe({
+                next: (book) => {
+                    if(!book) return;
                     this.zone.run(() => {                 
-                        this.book = b;
+                        this.book = book as BookInfo;
+                        this.actionText = `Buy ${this.book.price}`
                     });
-
-                    // this.user.hasPurchasedBook(this.book.ISBN).subscribe({
-                    //     next: (i) => {
-                    //         this.zone.run(() => {
-                    //             if (this.book.ISBN == "unknown") {
-                    //                 i = true;
-                    //             }
-                                
-                    //             this.setPurchasedBook(i);
-                    //         });
-                    //     },
-                    // })
-
-                    // this.user.hasBookInWishList(this.book.ISBN).subscribe({
-                    //     next: (i) => {
-                    //         this.zone.run(() => {
-                    //             this.bookInWishList = i; console.log("book in wishlist", this.book.title, this.bookInWishList, i)
-                    //         });
-                    //     },
-                    // });
                 },
-                error: () => console.log("failed to fetch book from bookstore")
+                error: (err) => console.error(`failed to fetch book {${bookID}} from bookstore`, err)
+            });
+            
+            this.user.fetchCollection().subscribe({
+                next: (collection) => {
+                    if(!collection) return;
+                    const bookPurchased = collection.purchased.filter((book: BookInfo) => book.BookId == bookID).length > 0;
+                    const bookWishful = collection.wishlist.filter((book: BookInfo) => book.BookId == bookID).length > 0;
+                    this.zone.run(() => {                            
+                        this.setPurchasedBook(bookPurchased);
+                        this.bookInWishList = bookWishful;
+                    });
+                },
+
+                error: (err) => console.error("Error fetching collection:", err),
             });
 
-            this.bookstore.fetchAllBooks().subscribe({    
-                complete: () => {console.log("complete")}, 
-                next: (b) => {
+            this.bookstore.fetchAllBooks().subscribe({
+                next: (books) => {
+                    if(!books) return;
                     this.zone.run(() => {                 
-                        this.suggestions = b;
+                        this.suggestions = books;
                     });
                 },
-                error: () => console.log("failed to fetch titles from bookstore")
-            }); 
+                error: (err) => console.error("failed to fetch titles from bookstore:", err),
+            });
+            
         });
     }
 
@@ -171,6 +167,8 @@ export class BookDetailsComponent implements OnInit {
     }
 
     private setPurchasedBook(purchased: boolean) {
+        if (!this.book) return;
+        
         console.log(`${this.book.title} purchased: ${purchased}`);
         this.bookIsPurchased = purchased;
         if(this.bookIsPurchased) {

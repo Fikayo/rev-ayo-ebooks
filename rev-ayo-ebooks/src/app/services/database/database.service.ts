@@ -1,12 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { JsonSQLite } from '@capacitor-community/sqlite';
-import { Plugins } from '@capacitor/core';
-import { AlertController } from '@ionic/angular';
-import { NpmBuildCLI } from '@ionic/cli/lib/build';
-import { BehaviorSubject } from 'rxjs';
 import { EbooksSQL, SQLQuery } from 'src/app/models/WebSQLConnection';
-const {CapacitorSQLite, Device, Storage}  = Plugins;
 
 const DBExpiry = 1000 * 60 * 30 // 30 mninutes;
 
@@ -14,45 +7,67 @@ const DBExpiry = 1000 * 60 * 30 // 30 mninutes;
   providedIn: 'root'
 })
 export class DatabaseService {
-    private lastDBupdate: Date;
-    private sql: EbooksSQL;
+    private readonly sql: EbooksSQL;
+    private readonly lastTableUpdate: Map<string, Date>;
 
     constructor() {
         this.sql = new EbooksSQL();
-        this.lastDBupdate = this.fetchLastUpdateTime();
+        this.lastTableUpdate = this.fetchLastUpdateTime();
     }
 
-    public get expired(): boolean {
-        const duration = new Date().valueOf() - this.lastDBupdate.valueOf();
-        return duration > DBExpiry;
+    public get expiryDuration(): number {
+        return DBExpiry;
     }
 
-    public updateLastUpdateTime() {
+    public expired(table: string): boolean {
         const now = new Date();
-        localStorage.setItem('lastUpdate',  now.toUTCString());
-        this.lastDBupdate = now;
+        let lastDBupdate = this.lastTableUpdate.get(table);
+        if (!lastDBupdate) {
+            lastDBupdate = new Date(now.valueOf() - DBExpiry - 10)
+        }
+
+        const duration = now.valueOf() - lastDBupdate.valueOf();
+        const expired = duration > DBExpiry;
+        if (expired) {
+            console.info(`Table '${table}' Expired. API Refresh required!`);
+        }
+
+        return expired;
+    }
+
+    public updateLastUpdateTime(table: string) {
+        const now = new Date();
+        localStorage.setItem(`lastUpdate-${table}`,  now.toUTCString());
+        this.lastTableUpdate.set(table, now);
+
+        console.info(`Updating ${table} Refresh time to `, now);
     }
 
     public async fetch(table: string, conditions?: any): Promise<any> {        
         let query = `SELECT * FROM ${table}`;
+        let condValues: string[] = [];
         if (conditions) {
             query += " WHERE "
             const columns = Object.keys(conditions);
+            condValues = Object.values(conditions);
             const conds: string[] = [];
             columns.forEach(col => {
-                conds.push(`{${col}=${conditions[col]}}`);
+                conds.push(`${col}=?`);
             });
         
             query += conds.join(" AND ")
         }
 
         return new Promise((resolve, reject) => {
-            this.sql.execute(new SQLQuery(query),
+            this.sql.execute(new SQLQuery(query, ...condValues),
                 (_, results: any) => {
-                    console.debug("results", results);
+                    console.debug("fetch results", results);
                     let data: any | undefined;
-                    if (results.rows) {
-                        data = results.rows;
+                    if (results.rows && results.rows.length > 0) {
+                        data = [];
+                        for (const b of results.rows) {
+                            data.push(b);
+                        }
                     }
 
                     resolve(data);
@@ -74,23 +89,35 @@ export class DatabaseService {
             INSERT INTO ${table} (${columns}) VALUES (${'?, '.repeat(columns.length - 1)}?);
         `, ...values);
         
-        return this.updatedb(query);
+        await this.updatedb(query);
     }
 
-    public async update(table: string, data: any): Promise<void> {
+    public async update(table: string, data: any, conditions: any): Promise<void> {
         const columns = Object.keys(data);
         const values = Object.values(data);
+        const pairs: any[] = [];
+        columns.forEach(c => {
+            pairs.push(`${c}=?`);
+        })
 
-        const query = new SQLQuery(`
-            INSERT INTO ${table} (${columns}) VALUES (${'?, '.repeat(columns.length - 1)}?);
-        `, ...values);
         
+        const condColumns = Object.keys(conditions);
+        const condValues = Object.values(conditions);
+        const conds: string[] = [];
+        condColumns.forEach(col => {
+            conds.push(`${col}=?`);
+        });
+
+        let query = `UPDATE ${table} SET ${pairs.join(",")} WHERE ${conds.join(" AND ")};`;
+
         return new Promise(async (resolve, reject) => {            
-            await this.updatedb(query)
+            this.updatedb(new SQLQuery(query, ...values, ...condValues))
+            .then(_ => resolve())
             .catch(error => {
+                console.debug(`update error during ${query}:`, error);
                 // Try to insert instead
                 this.insert(table, data)
-                .then(resolve)
+                .then(_ => resolve())
                 .catch(err => reject(err));
             });
         });
@@ -109,27 +136,45 @@ export class DatabaseService {
             query += conds.join(" AND ")
         }
 
-        return this.updatedb(new SQLQuery(query));
+        return this.updatedb(new SQLQuery(query), true);
     }
 
-    private fetchLastUpdateTime(): Date {
-        const update = localStorage.getItem('lastUpdate');
-        if (!update) {
-            return new Date();
+    private fetchLastUpdateTime(): Map<string, Date> {
+        const prefix = 'lastUpdate-';
+
+        const updates: Map<string, Date> = new Map()
+        let i = 0;
+        let key: string | null = "";
+        while (key !== null) {
+            key = localStorage.key(i++);
+            if (key?.startsWith(prefix)) {
+                const update = localStorage.getItem(key);
+                const tableName = key.replace(prefix, '');
+                updates.set(tableName, new Date(update as string))
+            }
         }
-
-        return new Date(update);
+    
+        return updates;
     }
 
-    private async updatedb(query: SQLQuery): Promise<void> {
+    private async updatedb(query: SQLQuery, ignoreAffectedRows = false): Promise<void> {
         return new Promise((resolve, reject) => {            
             this.sql.execute(query, 
                 (_, results: any) => {
-                    if (results.rows.length > 0) {
-                        resolve();                   
-                    } else {
-                        reject('nothing updated');
-                    }
+                    console.debug("updatedb results", results, "ignore affected rows", ignoreAffectedRows);
+                    if (ignoreAffectedRows) resolve();
+                    
+                    if (results.rowsAffected <= 0) {
+                        reject('no rows updated');
+                        return;                  
+                    } 
+
+                    resolve();
+                },
+
+                (_, error) => {
+                    console.error(`Error while updating table: ${query}: `, error);
+                    reject(error);
                 }
             );
         });

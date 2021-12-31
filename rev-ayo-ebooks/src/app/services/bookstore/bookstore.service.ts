@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
 import { Observable, Subject } from 'rxjs';
-import { Books } from 'src/app/models/WebSQLConnection';
+import { BooksTable } from 'src/app/models/WebSQLConnection';
 import { ParseBookDb } from 'src/app/util';
 import { ApiService } from '../api/api.service';
 import { DatabaseService } from '../database/database.service';
@@ -13,6 +13,8 @@ import { ProductInfo } from '../../models/ProductInfo';
 })
 export class BookstoreService {
 
+    private allBooks: Map<string, BookInfo> = new Map();
+
     constructor(
         private api: ApiService,
         private db: DatabaseService) { 
@@ -20,136 +22,109 @@ export class BookstoreService {
 
     public fetchAllBooks(): Observable<BookInfo[]> {
         const sub = new Subject<BookInfo[]>();
-        const refreshRequired = this.db.expired;
-        
-        let results: Promise<any>;
+        const refreshRequired = this.db.expired(BooksTable);
+                
+        console.info("fetching all books", this.allBooks);
+
         if (refreshRequired) {
-            results = this.refreshAllBooks();   
-        } else {
-            results = this.db.fetch(Books);
+            this.refreshAllBooks()
+            .then(books => sub.next(books))
+            .catch(err => console.error("Error refreshing books", err));
+            return sub.asObservable();
+        }
+        
+        if(this.allBooks.size > 0) {
+            sub.next(Array.from(this.allBooks.values()));
+            return sub.asObservable();
         }
 
-        results
-        .then(res => {
+        this.db.fetch(BooksTable)
+        .then(booksResponse => {
+            console.info("all books data", booksResponse);
             const books: BookInfo[] = [];
-            if (res) {
-                res.forEach((book: any) => {
+            if (booksResponse) {
+                booksResponse.forEach((book: any) => {
                     books.push(ParseBookDb(book));
                 });
             }
-
+    
             sub.next(books);
-        })
-        .catch(error => {
-            console.error("Error fetching books", error);
-            sub.error(error);
         });
-
         return sub.asObservable();
     }
 
     public fetchBook(bookID: string): Observable<BookInfo> {
         const sub = new Subject<BookInfo>();
-        const refreshRequired = this.db.expired;
+        const refreshRequired = this.db.expired(BooksTable);
         
-        let results: Promise<any>;
         if (refreshRequired) {
-            results = this.refreshAllBooks();
-        } else {
-            results = this.db.fetch(Books);
+            this.refreshAllBooks()
+            .then(books => books.filter((book: BookInfo) => book.BookId == bookID)[0])
+            .catch(err => console.error("Error refreshing books", err));
+            return sub.asObservable();
+        } 
+
+        if(this.allBooks.size > 0 && this.allBooks.has(bookID)) {
+            sub.next(this.allBooks.get(bookID) as BookInfo);
+            return sub.asObservable();
         }
+        
+        this.db.fetch(BooksTable, {BookId: bookID})
+        .then(booksResponse => {
+            let book!: BookInfo;
+            if (booksResponse) {
 
-        results
-        .then(res => {
-            let book: BookInfo | undefined;           
-            if (res) {
-
-                let bookResp = res;
+                let bookResp = booksResponse[0];
                 if(refreshRequired) {
-                    bookResp = res.filter((book: any) => book.BookId == bookID);
+                    bookResp = booksResponse.filter((book: any) => book.BookId == bookID)[0];
                 }
 
                 book = ParseBookDb(bookResp);
             }
 
             sub.next(book);
+        });
+        return sub.asObservable();
+    }
+
+    public fetchBookPDFPath(bookID: string): Observable<string> {
+        const sub = new Subject<string>();
+
+        if(this.allBooks.size > 0 && this.allBooks.has(bookID)) {
+            const book = this.allBooks.get(bookID);
+            if (book?.pdfPath) {
+                sub.next(book.pdfPath);
+                return sub.asObservable();
+            }
+        }
+
+        this.api.get(`/books/${bookID}/pdf?duration=${this.db.expiryDuration}`)
+        .then(path => {
+            if(this.allBooks.has(bookID)) {
+                const book = this.allBooks.get(bookID) as BookInfo;
+                book.pdfPath = path;
+                this.allBooks.set(bookID, book);
+            }
+
+            this.db.update(BooksTable, {FileSource: path}, {BookId: bookID}).then(_ => sub.next(path)).catch(err => sub.error(err));
         })
         .catch(error => {
-            console.error(`Error fetching book with ID ${bookID}`, error);
+            console.error(`Error buying book ${bookID}`, error);
             sub.error(error);
         });
 
         return sub.asObservable();
     }
 
-    // public fetchBookPDFPath(bookID: string): Observable<string> {
-    //     const sub = new Subject<string>();
-        
-    //     let query = new SQLQuery(`SELECT ${BookTable.Title} FROM Books WHERE ${BookTable.BookId}=?`, [bookID]);
-    //     this.sql.execute(query, 
-    //         (_, results: any) => {
-    //             console.debug("fetched book", results);
-    //             let path = ""
-    //             if (results.rows.length > 0) {
-    //                 let row = results.rows.item(0);
-    //                 path = `./assets/books/${row.Title.toLowerCase()}/pdf.pdf`;
-    //             } 
-
-    //             sub.next(path);
-    //         },
-
-    //         (_, error) => {
-    //             let msg = `Error fetching book ${bookID}: ${error.message}`;
-    //             console.error(msg, error);
-    //             sub.error(msg); 
-    //         }
-    //     );
-        
-    //     return sub.asObservable();
-    // }
-
-    public fetchBookPDF(bookID: string): Observable<Blob> {
-        const sub = new Subject<Blob>();
-
-    //     this.http.get(`${API}/book/${bookID}`)
-    //     .subscribe({
-    //        next: (res: any) => {   
-    //             let book: BookInfo | undefined;           
-    //             if (res.data) {
-    //                book = BookstoreService.parseBookDb(res.data);
-    //                res.data.DataSource;
-    //             }
-
-    //            sub.next();
-    //        },
-    //        error: () => console.error(`Error fetching book with ID ${bookID}`)
-    //    });
-
-    //     return sub.asObservable();
-
-        // let path = "./assets/books/how to be happy and stay happy/pdf.pdf"
-        // if (bookID == "unknown") {
-        //     path =  "./assets/books/becoming a better you/pdf.pdf";
-        // }
-
-        // this.http.get(path, { responseType: 'blob' })
-        // .subscribe({
-        //     next: (res) => sub.next(res),
-        //     error: () => console.log(`failed to fetch book "${bookID}"`)
-        // });
-
-        return sub.asObservable();
-    }
-
     public fetchProdutinfo(): Observable<ProductInfo[]> {
         const sub = new Subject<ProductInfo[]>();
-        const refreshRequired = this.db.expired;
+        const refreshRequired = this.db.expired(BooksTable);
         
         let results: Promise<any>;
         if (refreshRequired) {
             results = this.refreshAllBooks();
         } else {
-            results = this.db.fetch(Books);
+            results = this.db.fetch(BooksTable);
         }
 
         results
@@ -159,7 +134,7 @@ export class BookstoreService {
                 res.forEach((p: any) => {
                     products.push({
                         ISBN: p.BookId, 
-                        productID: p.ProducId
+                        productID: p.ProductId
                     });
                 });
             }
@@ -185,14 +160,18 @@ export class BookstoreService {
         let dbupdate: any = {};
         if (isNaira) {
             dbupdate = {
-                BookId: bookID,
                 PriceNaira: price
             }
         } else {
             dbupdate = {
-                BookId: bookID,
                 PriceWorld: price
             }
+        }
+
+        if(this.allBooks.has(bookID)) {
+            const book = this.allBooks.get(bookID) as BookInfo;
+            book.price = price;
+            this.allBooks.set(bookID, book);
         }
 
         this.api.post(`/product/${prodID}`, {
@@ -207,7 +186,7 @@ export class BookstoreService {
                 sub.error('update failed');
             }
             
-            this.db.update(Books, dbupdate).then(_ => sub.next(true)).catch(err => sub.error(err));
+            this.db.update(BooksTable, dbupdate, {BookId: bookID}).then(_ => sub.next(true)).catch(err => sub.error(err));
         })
         .catch(error => {
             console.error(`error updating book ${bookID} to ${JSON.stringify(iapproduct)}`);
@@ -217,27 +196,32 @@ export class BookstoreService {
         return sub.asObservable();
     }
     
-
-    private async refreshAllBooks(): Promise<BookInfo[]> {        
+    private async refreshAllBooks(): Promise<BookInfo[]> {      
+        console.info("Regreshing all books");  
         return new Promise((resolve, reject) => {
-            this.api.get('/bookstore')    
+            this.api.get(`/bookstore?duration=${this.db.expiryDuration}`)    
             .then(async res => {
+                console.debug("refreshbooks response", res);
                 const books: BookInfo[] = [];
-                if (res) {
-    
+                this.allBooks.clear();
+                if (res) {    
                     const promises: Promise<void>[] = [];
-                    res.forEach((book: any) => {
-                        promises.push(this.db.update(Books, book));
+                    res.forEach((book: any) => {                        
+                        promises.push(this.db.update(BooksTable, book, {BookId: book.BookId}));
+                        books.push(book);
+                        this.allBooks.set(book.BookId, book);
                     });
     
+                    console.debug("waiting for book updates");
                     await Promise.all(promises);
+                    console.debug("finished waiting");
                 }
     
-                this.db.updateLastUpdateTime();
+                this.db.updateLastUpdateTime(BooksTable);
                 resolve(books);
             })
             .catch(error => {
-                console.error("Error fetching books", error);
+                console.error("Error refreshing books from api:", error);
                 reject(error);
             });
         });        

@@ -25,32 +25,25 @@ export class PersonalBooksComponent implements OnInit {
         private zone: NgZone) {}
 
     ngOnInit(): void {
-    }
-    
-    ionViewWillEnter() {
         this.init();
     }
+    
+    // ionViewWillEnter() {
+    //     this.init();
+    // }
 
-    private init(): void {
-        this.user.fetchMyBooks().subscribe({
-            next: (b) => {
+    private init(): void {        
+        this.user.fetchCollection().subscribe({
+            next: (collection) => {
+                if(!collection) return;
                 this.zone.run(() => {
-                    this.myBooks = b;
-                    console.debug("fetched my books", b);
+                    this.myBooks = collection.purchased;
+                    this.wishlist = collection.wishlist;
+                    console.debug("fetched collection", collection, this.myBooks, this.wishlist);
                 });
             },
-            error: () => console.error("Failed to fetch my books!")
-        });
 
-        this.user.fetchWishlist().subscribe({
-            next: (b) => {
-                console.log("fetching wishlist", b);
-                this.zone.run(() => {
-                    this.wishlist = b;
-                    console.debug("fetched wishlist", b);
-                });
-            },
-            error: () => console.error("Failed to fetch wishlist!")
+            error: (err) => console.error("Error fetching collection:", err),
         });
     }
 

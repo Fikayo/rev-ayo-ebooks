@@ -27,7 +27,8 @@ export class StoreComponent implements OnInit {
         private router: Router,        
         private activatedRoute: ActivatedRoute,
         private zone: NgZone,
-        private bookstore: BookstoreService) {console.log("store con"); }
+        private bookstore: BookstoreService) {
+        }
 
     ngOnInit(): void {
         console.log("store init");
@@ -35,23 +36,20 @@ export class StoreComponent implements OnInit {
         //     this.filterList(param['filter']);
         // });
 
-        this.bookstore.fetchAllBooks().subscribe({    
-            complete: () => {console.log("complete")}, 
-            next: (b) => {
+        this.bookstore.fetchAllBooks().subscribe({
+            next: (books) => {
                 this.zone.run(() => {
-               
-                    this.allBooks = b; 
+                
+                    this.allBooks = books; 
                     console.log("fetched: ", this.allBooks);
 
                     this.popularBooks = this.allBooks;
                     this.featuredBooks = this.allBooks;
                     this.otherBooks = this.allBooks;
                 });
-
-                // this.filterList(this.activatedRoute.snapshot.queryParams['filter']);
             },
-            error: () => console.error("failed to fetch titles from bookstore")
-        });   
+            error: (err) => console.error("failed to fetch titles from bookstore:", err),
+        });
     }
 
     get showFeatures(): boolean {

@@ -10,7 +10,7 @@ import { UserService } from '../user/user.service';
   providedIn: 'root'
 })
 export class PaymentService {
-    private productIDs: ProductInfo[] = [{ISBN: "unknwon", productID: "test_id_1"}];
+    private productInfos: ProductInfo[] = [{ISBN: "unknwon", productID: "test_id_1"}];
     private paymentReady = new BehaviorSubject(false);
 
     constructor(
@@ -25,35 +25,51 @@ export class PaymentService {
 
     public initStore() {
         this.bookstore.fetchProdutinfo().subscribe({
-            next: (info) => {
-                let nairaIds = info.map((p: ProductInfo) => {
-                    let np = p;
-                    np.productID = this.getNairaProductId(p.productID);
-                    return np;
+            next: (info: ProductInfo[]) => {
+                const prods: ProductInfo[] = [];
+                info.forEach(p => {
+                    const naira: ProductInfo = {
+                        ISBN: p.ISBN,
+                        productID: this.getNairaProductId(p.productID)
+                    }
+
+                    const world: ProductInfo = {
+                        ISBN: p.ISBN,
+                        productID: this.getWorldProductId(p.productID)
+                    }
+
+                    prods.push(naira);
+                    prods.push(world);
                 });
 
-                let worldIds = info.map((p: ProductInfo) => {
-                    let np = p;
-                    np.productID = this.getWorldProductId(p.productID);
-                    return np;
-                });
-
-                this.productIDs = nairaIds.concat(worldIds);
-                this.prepare();
+                this.productInfos = prods;
+                this.prepareStore();
             }
         });
 
         this.store.ready(() => {
+            console.info("Store ready");
             this.store.products.forEach((p: IAPProduct) => {
                 let isbn: string = p.alias??"";
                 this.bookstore.updateProduct(isbn, p);
             });
+            
+            console.info('Store Products: ' + JSON.stringify(this.store.products));
+            this.paymentReady.next(true);
         });
     }
 
-    private prepare() {
+    private prepareStore() {
+        console.info("store product infos", this.productInfos);
+        const storeEvents = this.store.when('') as any
+        if (storeEvents.error) {
+            console.error("Cordova likely not avaiable - try on a device. Error: ", storeEvents.error);
+            this.paymentReady.next(true);
+            return;
+        }
+
         this.store.verbosity = this.store.DEBUG;
-        this.productIDs.forEach(p => {
+        this.productInfos.forEach(p => {
             this.store.register({
                 id:    p.productID,
                 type:  this.store.NON_CONSUMABLE,
@@ -64,14 +80,6 @@ export class PaymentService {
             this.store.when(p.productID).cancelled(this.productCancelled.bind(this));        
             this.store.when(p.productID).error(this.productError.bind(this));        
             this.store.when(p.productID).updated(this.productUpdated.bind(this));
-        });
-
-        this.store.ready(() =>  {
-            console.log('Store is ready');
-            console.log('Products: ' + JSON.stringify(this.store.products));
-            console.log(JSON.stringify(this.store.get("test_id_1")));
-
-            this.paymentReady.next(true);
         });
 
         this.store.error(function(error: any) {
@@ -94,7 +102,7 @@ export class PaymentService {
 
         // Ensure to download book if needed
         let isbn: any = product.alias;
-        this.user.addToMyBooks(isbn).subscribe({
+        this.user.purchaseBook(isbn).subscribe({
             next: () => {
                 product.finish();
             }

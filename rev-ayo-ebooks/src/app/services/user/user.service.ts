@@ -1,11 +1,9 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { Books, EbooksSQL, Purchased, SQLQuery, Transaction, User, Wishlist,  } from 'src/app/models/WebSQLConnection';
+import { BooksTable, PurchasedTable, UserTable , WishlistTable,  } from 'src/app/models/WebSQLConnection';
 import { ParseBookDb } from 'src/app/util';
-import { BookstoreService } from '../bookstore/bookstore.service';
 import { BookInfo } from "../../models/BookInfo";
-import { UserCollection } from '../../models/UserCollection';
+import { User, UserCollection } from '../../models/User';
 import { DatabaseService } from '../database/database.service';
 import { ApiService } from '../api/api.service';
 
@@ -16,58 +14,29 @@ const TESTEMAIL = "test@email.com"
 })
 export class UserService {
 
-    private id!: string;
+    private user: User = {};
 
     constructor(
         private api: ApiService,
-        private db: DatabaseService) { 
-        this.loginUser(TESTEMAIL).subscribe({
-            next: (id) => {
-                this.id = id;
-                console.log("userID", this.userID);
-            },
-            error: () => console.error("Failed to fetch user ID from server")
-        });
-    }
+        private db: DatabaseService) {
 
-    private get userID(): string {
-        return this.id;
-    }
-
-    public fetchMyBooks(): Observable<BookInfo[]> {
-        const sub = new Subject<BookInfo[]>();
-        const refreshRequired = this.db.expired;
-        
-        let results: Promise<any>;
-        if (refreshRequired) {
-            results = this.refreshCollection();   
-        } else {
-            results = this.db.fetch(`${Purchased} p JOIN ${Books} b ON b.BookId = p.BookId`);
-        }
-
-        results
-        .then((res: any) => {
-            const books: BookInfo[] = [];
-            if (res) {
-
-                let purchasedResp = res;
-                if(refreshRequired) {
-                    purchasedResp = res.purchased;
+            this.loginIfloggedOut()
+            .then(id => {
+                if (!id) {
+                    this.loginUser(TESTEMAIL)
+                    .then(id => this.user.userID = id);
                 }
 
-                purchasedResp.forEach((book: any) => {
-                    books.push(ParseBookDb(book));
-                });
-            }
+                this.user.userID = id;
+            })
+            .catch(error => {
+                console.error(`Error logging in`, error);
+            });
+    }
 
-            sub.next(books)
-        })
-        .catch(error => {
-            console.error("Error fetching purchased books", error)
-            sub.error(error);
-        })
-
-        return sub.asObservable();
+    public get isLoggedIn(): boolean {
+        if(this.user.userID) return true;
+        return false;
     }
 
     /**
@@ -75,47 +44,20 @@ export class UserService {
      * @param bookID 
      * @returns 
      */
-    public addToMyBooks(bookID: string): Observable<void> {
+    public purchaseBook(bookID: string): Observable<void> {
         const sub = new Subject<void>();
-        sub.next();
-        return sub.asObservable();
-    }
-
-    public fetchWishlist(): Observable<BookInfo[]> {
-        const sub = new Subject<BookInfo[]>();
-        const refreshRequired = this.db.expired;
-        
-        let results: Promise<any>;
-        if (refreshRequired) {
-            results = this.refreshCollection();   
-        } else {
-            results = this.db.fetch(`${Wishlist} p JOIN ${Books} b ON b.BookId = p.BookId`);
-        }
-
-        results
-        .then((res: any) => {
-            const books: BookInfo[] = [];
-            if (res) {
-
-                let wishlistResp = res;
-                if(refreshRequired) {
-                    wishlistResp = res.wishlist;
-                }
-
-                wishlistResp.forEach((book: any) => {
-                    books.push(ParseBookDb(book));
-                });
-            }
-
-            sub.next(books)
+        this.api.post(`/user/${this.user.userID}/buy?bookId=${bookID}`, {})
+        .then(_ => {
+            sub.next();
         })
         .catch(error => {
-            console.error("Error fetching wishlist books", error)
+            console.error(`Error buying book ${bookID}`, error);
             sub.error(error);
-        })
+        });
 
         return sub.asObservable();
     }
+
 
     public toggleInWishList(bookID: string): Observable<boolean> {
         const sub = new Subject<boolean>();
@@ -126,11 +68,11 @@ export class UserService {
 
     public fetchBookCurrentPage(bookID: string): Observable<number> {
         const sub = new Subject<number>();
-        this.api.get(`/user/${this.userID}/progress/${bookID}`)
+        this.api.get(`/user/${this.user.userID}/progress/${bookID}`)
         .then((res: any) => {
-            let page: number | undefined;
-            if (res.data) {
-                page = res.data.Page as number;
+            let page: number = 1;
+            if (res) {
+                page = res.Page as number;
             }
             
             sub.next(page);
@@ -145,13 +87,13 @@ export class UserService {
 
     public updateBookProgress(bookID: string, currentPage: number): Observable<number> {
         let sub = new Subject<number>();
-        this.api.post(`/user/${this.userID}/progress/${bookID}`, {
-            userId: this.userID,
+        this.api.post(`/user/${this.user.userID}/progress/${bookID}`, {
+            userId: this.user.userID,
             bookID: bookID,
             page: currentPage
         })
         .then((res: any) => {;
-            if (res.data.page != currentPage) {
+            if (res.page != currentPage) {
                 let msg = `Unexpected result after updating page in ${bookID} to ${currentPage}`;
                 console.error(msg);
                 sub.error(msg);;
@@ -167,73 +109,146 @@ export class UserService {
        
         return sub.asObservable();
     }
+    
+    public fetchCollection(): Observable<UserCollection> {
+        const sub = new Subject<UserCollection>();
+        const refreshRequired = this.db.expired(WishlistTable);
+        
+        if (refreshRequired) {
+            this.refreshCollection()
+            .then(res => sub.next(res))
+            .catch(error => {
+                console.error("Error fetching user collection books:", error)
+                sub.error(error);
+            });
 
-    public loginUser(email: string): Observable<string> {
-        const sub = new Subject<string>();
+            return sub.asObservable();
+        } 
+        
 
-        this.api.post(`/user/login`, {
-            email: email
-        })
-        .then(async (res: any) => {
-            if (res.status != 200) {
-                sub.error(res.data);
+        if(this.user.collection) {
+            sub.next(this.user.collection);
+            return sub.asObservable();
+        }
+
+        const purchProm = this.db.fetch(`${PurchasedTable} p JOIN ${BooksTable} b ON b.BookId = p.BookId`)      
+        const wishProm = this.db.fetch(`${WishlistTable} p JOIN ${BooksTable} b ON b.BookId = p.BookId`)      
+        
+        Promise.all([purchProm, wishProm])
+        .then(collection => {
+            const purchased: BookInfo[] = [];
+            const wishlist: BookInfo[] = [];
+            if (collection[0]) {
+                collection[0].forEach((book: any) => {
+                    purchased.push(ParseBookDb(book));
+                });
             }
 
-            let userID: string | undefined;
-            if (res.data) {
-                userID = res.data.UserId;
-                await this.db.insert(User, {UserId: userID});
+            if (collection[1]) {
+                collection[1].forEach((book: any) => {
+                    wishlist.push(ParseBookDb(book));
+                });
             }
 
-            sub.next(userID);
+            sub.next({purchased: purchased, wishlist: wishlist});
         })
-        .catch(error => {
-            console.error(`error fetching userID for email ${email}`, error);
-            sub.next(error);
+        .catch(err => {
+            console.error("Error fetching collecton from db", err);
+            sub.error(err);
         });
 
         return sub.asObservable();
     }
 
+    public async loginUser(email: string): Promise<string> {
+        const res = await this.api.post(`/user/login`, {
+            email: email
+        });
+
+        let userID: string = '';
+        try {
+            console.debug("loginUser data", res);
+            if (res) {
+                userID = res.UserId;
+                await this.db.insert(UserTable, {UserId: userID});
+            }
+
+            this.user.userID = userID;
+            return userID;
+        } catch (error: any) {
+            console.log("Error from login", error);
+            if (error.code && error.code === 6) {
+                // Unique constraint. Id already in DB - return the userID
+                return userID;
+            }
+
+            return Promise.reject(error);
+        }
+    }
+
     private async refreshCollection(): Promise<UserCollection> {
+        if(!this.user.userID) {
+            return {purchased: [], wishlist: []};
+        }
+
         return new Promise((resolve, reject) => {
-            this.api.get(`/user/${this.userID}/collection`)
+            console.log("my user id is", this.user.userID);
+            this.api.get(`/user/${this.user.userID}/collection`)
             .then(async (res: any) => {
+                console.info("refreshed collection", res);
                 const purchased: BookInfo[] = [];
                 const wishlist: BookInfo[] = [];
-                if (res.data) {
+                if (res) {
                     const promises: Promise<void>[] = [];
-                    if (res.data.purchased) {
-                        res.data.purchased.forEach((book: any) => {
+                    await this.db.delete(PurchasedTable);
+                    await this.db.delete(WishlistTable);
+                    if (res.purchased) {
+                        res.purchased.forEach((book: any) => {
                             purchased.push(ParseBookDb(book));
-                            promises.push(this.db.update(Purchased, {
+                            promises.push(this.db.insert(PurchasedTable, {
                                 BookId: book.BookId
                             }));
                         });
                     }
 
-                    if (res.data.wishlist) {
-                        res.data.wishlist.forEach((book: any) => {
+                    if (res.wishlist) {
+                        res.wishlist.forEach((book: any) => {
                             wishlist.push(ParseBookDb(book));
-                            promises.push(this.db.update(Wishlist, {
+                            promises.push(this.db.insert(WishlistTable, {
                                 BookId: book.BookId
                             }));
                         });
                     }
 
+                    console.log("new purch and wish", purchased, wishlist);
                     await Promise.all(promises);
                 }
 
-                this.db.updateLastUpdateTime();
-                resolve({
+                this.db.updateLastUpdateTime(PurchasedTable);
+                this.db.updateLastUpdateTime(WishlistTable);
+                const collection = {
                     purchased: purchased,
                     wishlist: wishlist,
-                });
+                };
+
+                this.user.collection = collection;
+                resolve(collection);
             })
             .catch(error => {
-                console.error("Error fetching user collection", error)
+                console.error("Error fetching user collection:", error)
                 reject(error);
             })
         });  
+    }
+
+    private async loginIfloggedOut(): Promise<string> {
+        const sub = new Subject<string>();
+        const res = await this.db.fetch(UserTable);
+        console.debug("TEST loginUser data", res);
+        if (res) {
+            return res[0].UserId;
+        }
+
+        return '';
     }
 }

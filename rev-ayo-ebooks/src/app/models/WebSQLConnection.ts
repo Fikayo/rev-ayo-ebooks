@@ -1,9 +1,9 @@
-export const User: string = "User";
-export const Purchased: string = "Purchased";
-export const Wishlist: string = "Wishlist";
-export const BookProgress: string = "BookProgress";
-export const Books: string = "Books";
-const TableNames: string[] = [User, Purchased, Wishlist, BookProgress, Books];
+export const UserTable: string = "User";
+export const PurchasedTable: string = "Purchased";
+export const WishlistTable: string = "Wishlist";
+export const BookProgressTable: string = "BookProgress";
+export const BooksTable: string = "Books";
+const TableNames: string[] = [UserTable, PurchasedTable, WishlistTable, BookProgressTable, BooksTable];
 
 export const BookTable = {
     BookId: "BookId",
@@ -11,7 +11,8 @@ export const BookTable = {
     DisplayName: "DisplayName",
     Author: "Author",
     Description: "Description",
-    DataSource: "DataSource",
+    ImageSource: "ImageSource",
+    FileSource: "FileSource",
     ProductId: "ProductId",
     PriceNaira: "PriceNaira",
     PriceWorld: "PriceWorld",
@@ -19,34 +20,35 @@ export const BookTable = {
 
 const TABLES: string[] = [
 
-    `CREATE TABLE IF NOT EXISTS [${User}] (
+    `CREATE TABLE IF NOT EXISTS [${UserTable}] (
         [UserId] varchar(50) NOT NULL UNIQUE,
         PRIMARY KEY (UserId)
     );`,
     
-    `CREATE TABLE IF NOT EXISTS [${Purchased}] (
+    `CREATE TABLE IF NOT EXISTS [${PurchasedTable}] (
         [BookId] varchar(50) NOT NULL UNIQUE,
-        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
+        FOREIGN KEY (BookId) REFERENCES [${BooksTable}] (${BookTable.BookId})
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [${Wishlist}] (
+    `CREATE TABLE IF NOT EXISTS [${WishlistTable}] (
         [BookId] varchar(50) NOT NULL UNIQUE,
-        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
+        FOREIGN KEY (BookId) REFERENCES [${BooksTable}] (${BookTable.BookId})
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [${BookProgress}] (
+    `CREATE TABLE IF NOT EXISTS [${BookProgressTable}] (
         [BookId] STRING NOT NULL UNIQUE,
         [CurrentPage] INT NOT NULL,
-        FOREIGN KEY (BookId) REFERENCES [${Books}] (${BookTable.BookId})
+        FOREIGN KEY (BookId) REFERENCES [${BooksTable}] (${BookTable.BookId})
     );`,
 
-    `CREATE TABLE IF NOT EXISTS [${Books}] (
+    `CREATE TABLE IF NOT EXISTS [${BooksTable}] (
         [${BookTable.BookId}] varchar(50) NOT NULL,
         [${BookTable.Title}] STRING NOT NULL,
         [${BookTable.DisplayName}] STRING NOT NULL,
         [${BookTable.Author}] STRING NOT NULL,
         [${BookTable.Description}] STRING NOT NULL,
-        [${BookTable.DataSource}] STRING NOT NULL,
+        [${BookTable.ImageSource}] STRING NOT NULL,
+        [${BookTable.FileSource}] STRING,
         [${BookTable.ProductId}] STRING NOT NULL,
         [${BookTable.PriceNaira}] STRING NOT NULL,
         [${BookTable.PriceWorld}] STRING NOT NULL,
@@ -64,6 +66,10 @@ export class SQLQuery
         this.sql = sql;
         this.params = params;
     }
+
+    public toString(): string {
+        return `[SQLQuery] Query: '${this.sql}'  Params: [${this.params}]`;
+    }
 }
 
 export type SQLCallback = (tx: any, result: any) => void;
@@ -74,7 +80,7 @@ export interface Transaction {
 
 abstract class WebSQLConnection
 {
-    private readonly name = "ayo.ebooks.database";
+    protected readonly dbName = "ayo.ebooks.database";
     private readonly version = "1.01";
     private readonly displayName = "Ayo Odunayo Ebooks DB";
     private readonly estimatedSize = 2 * 1024 * 1024;
@@ -83,12 +89,13 @@ abstract class WebSQLConnection
     
     constructor() {
         this.openDB();
+        // this.deleteTables();
         this.createTables();
     }
 
     private openDB() {
-        this.db = (<any>window).openDatabase(this.name, this.version, this.displayName, this.estimatedSize);
-        console.log("opened db, ", this.db);
+        this.db = (<any>window).openDatabase(this.dbName, this.version, this.displayName, this.estimatedSize);
+        console.debug("opened db, ", this.db);
     }
 
     protected abstract deleteTables(): void;
@@ -125,13 +132,10 @@ export class EbooksSQL extends WebSQLConnection {
     }
 
     protected createTables(): void {
-        this.deleteTables();
         TABLES.forEach(t => {
             this.execute(new SQLQuery(t), undefined, 
                 (_, error) => console.error(`Error creating table with query: "${t}"`, error)
             );
-
-            console.log(t);
         });        
     }
 

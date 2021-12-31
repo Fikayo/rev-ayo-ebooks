@@ -25,4 +25,8 @@ if (typeof window['cordova' as any] !== 'undefined') {
 function deviceReady() {
     console.log("device is ready");
     bootstrap();
+
+    // const sql = new EbooksSQL();
+    // const userID = "2259d5fe-cea4-4547-9681-03cc5fb72d8auser";
+    // sql.execute(new SQLQuery(`INSERT INTO User (UserId) Values (?)`, userID));
 }

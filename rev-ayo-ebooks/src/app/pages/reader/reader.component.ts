@@ -48,12 +48,15 @@ export class ReaderComponent implements OnInit, OnDestroy {
             let bookID = params['isbn'];
             this.bookID = bookID;
 
-            this.bookstore.fetchBookPDF(bookID)
-            .subscribe({
-                next: (b) => this.srcUrl = URL.createObjectURL(b),
-                error: () => console.log("failed to fetch book from bookstore")
+            this.bookstore.fetchBookPDFPath(bookID).subscribe({
+                next: (path) => {
+                    this.srcUrl = path
+                },
+                error: (err) => {
+                    console.error(`failed to fetch ${bookID} PDF url from bookstore`, err)
+                }
             });
-
+                        
             this.user.fetchBookCurrentPage(bookID)
             .subscribe({
                 next: (page) => {

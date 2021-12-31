@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
-const API = "https://ebooksserver-jnueslq6ba-ez.a.run.app"
+const API = "https://ebooksserver-jnueslq6ba-nw.a.run.app"
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +13,9 @@ export class ApiService {
 
     public async get(path: string): Promise<any> {
         path = path[0] == '/' ? path.slice(1) : path;
-        await this.http.get(`${API}/${path}`).toPromise()
+        return this.http.get(`${API}/${path}`).toPromise()
         .then((res: any) => {
+            console.info(`GET ${path} response`, res);
             if (res.status > 299 || res.status < 200)
                 return Promise.reject(res.data);
 
@@ -27,17 +28,20 @@ export class ApiService {
     }
 
     public async post(path: string, body: any): Promise<any> {
-        path = path[0] == '/' ? path.slice(1) : path;
-        await this.http.post(`${API}/${path}`, body).toPromise()
-        .then((res: any) => {
-            if (res.status > 299 || res.status < 200)
-                return Promise.reject(res.data);
+        return new Promise(async (resolve, reject) => {
+            path = path[0] == '/' ? path.slice(1) : path;
+            this.http.post(`${API}/${path}`, body).toPromise()
+            .then((res: any) => {
+                console.info(`POST ${path} response`, res);
+                if (res.status > 299 || res.status < 200)
+                    return reject(res.data);
 
-            return res.data;
-        })
-        .catch(error => {
-            console.error(`Error during POST request to '${path}': ${error}`);
-            return Promise.reject(error);
+                resolve(res.data);
+            })
+            .catch(error => {
+                console.error(`Error during POST request to '${path}': ${error}`);
+                reject(error);
+            });
         });
     }
 
@@ -45,6 +49,7 @@ export class ApiService {
         path = path[0] == '/' ? path.slice(1) : path;
         await this.http.delete(`${API}/${path}`, options).toPromise()
         .then((res: any) => {
+            console.info(`DELETE ${path} response`, res);
             if (res.status > 299 || res.status < 200)
                 return Promise.reject(res.data);
 
