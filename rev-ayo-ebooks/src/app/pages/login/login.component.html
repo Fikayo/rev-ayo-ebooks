@@ -1,0 +1,30 @@
+<ion-content>
+
+   <div class="login">
+        
+    <ebook-logo></ebook-logo>
+
+        <h1 class="heading">Login</h1>
+        <div class="info">
+            Login to get access to your library and wishlist
+        </div>
+
+        <form>
+            <ion-list>
+                <ion-item>
+                    <ion-text [ngClass]="{'ion-hide': !failure}" color="danger" position="stacked">An uexpected error occured. Please try again after a few moments.</ion-text>
+                    <ion-text [ngClass]="{'ion-hide': !notFound}" color="danger" position="stacked">Email {{userEmail}} was not found. Please check the spelling and try again</ion-text>
+                    <ion-label position="stacked">Email</ion-label>
+                    <ion-input type="email" id="email" name="email" #email></ion-input>
+                </ion-item>
+
+                <ion-button (click)="login(email.value)" expand="block" shape="round" color="success" class="ion-margin-top" >Login</ion-button>
+            </ion-list>
+        </form>
+
+        <div class="registerCue">
+            <ion-text color="primary" (click)="register();">Don't have an account? Register</ion-text>
+        </div>
+
+   </div>
+</ion-content>

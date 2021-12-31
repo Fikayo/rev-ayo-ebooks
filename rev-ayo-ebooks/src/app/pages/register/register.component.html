@@ -1,0 +1,31 @@
+<ion-content>
+
+    <div class="register">
+         
+     <ebook-logo></ebook-logo>
+ 
+        <h1 class="heading">Register!</h1>
+        <div class="info">
+            All we need is your email to make sure we can link your books to you.
+            Your email is not stored or shared with anyone including us!
+        </div>
+
+        <form>
+            <ion-list>
+                <ion-item>
+                    <ion-text [ngClass]="{'ion-hide': !failure}" color="danger" position="stacked">An uexpected error occured. Please try again after a few moments.</ion-text>
+                    <ion-text [ngClass]="{'ion-hide': !exists}" color="danger" position="stacked">Email {{userEmail}} already exists. Please try a different email</ion-text>
+                    <ion-label position="stacked">Email</ion-label>
+                    <ion-input type="email" id="email" name="email" #email></ion-input>
+                </ion-item>
+
+                <ion-button (click)="register(email.value)" expand="block" shape="round" color="secondary" class="ion-margin-top" >Register</ion-button>
+            </ion-list>
+        </form>
+
+        <div class="loginCue">
+            <ion-text color="primary" (click)="login();">Already have an account? Login</ion-text>
+        </div>
+ 
+    </div>
+ </ion-content>

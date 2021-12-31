@@ -3,6 +3,7 @@ import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { LoadingController, Platform } from '@ionic/angular';
 import { PaymentService } from './services/payment/payment.service';
+import { UserService } from './services/user/user.service';
 
 @Component({
   selector: 'app-root',
@@ -17,14 +18,16 @@ export class AppComponent {
         private payment: PaymentService,
         loadingCtrl: LoadingController,
         platform: Platform,
+        user: UserService,
     ) {
+        this.router.navigate(['/welcome']);
         this.monitorNavigation();
         // this.fixReload();
 
         platform.ready().then(async () => {
             
-            const loading = await loadingCtrl.create();
-            await loading.present();
+            // const loading = await loadingCtrl.create();
+            // await loading.present();
             
             this.payment.initStore();
             this.payment.ready.asObservable().subscribe({
@@ -32,13 +35,22 @@ export class AppComponent {
                     if(pReady) {
                         console.log("AppStore Ready!");
                         this.setStatusBar();
-                        loading.dismiss();
+                        // loading.dismiss();
                     }
                 }
+            }); 
+                        
+            user.isLoggedIn().subscribe({
+                next: (loggedIn) => {
+                    if(loggedIn) {    
+                        // loading.dismiss();                
+                        this.router.navigate(['/books/store']);
+                    }
+                },
+                error: (err) => console.error("Error trying to read login ID", err)
             });
-            
-           
         });        
+
     }
 
     private async setStatusBar() {
@@ -51,7 +63,7 @@ export class AppComponent {
         this.router.events.subscribe({ 
             next: (event) => {
                 if (event instanceof NavigationEnd) {
-                    console.log("router url", this.router.url);                    
+                    console.info("router url", this.router.url);                    
                     
                     // trick the Router into believing it's last link wasn't previously loaded
                     this.router.navigated = false;
@@ -61,7 +73,7 @@ export class AppComponent {
 
                 if (event instanceof NavigationError) {
                     // Present error to user
-                    console.log("navigation error", event.error);
+                    console.error("navigation error", event.error);
                 }
             },
         });

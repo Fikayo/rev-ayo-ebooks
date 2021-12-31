@@ -19,24 +19,36 @@ export class UserService {
     constructor(
         private api: ApiService,
         private db: DatabaseService) {
+    }
 
-            this.loginIfloggedOut()
+    public isLoggedIn(): Observable<boolean> {
+        const sub = new Subject<boolean>();
+
+        if(this.user.userID) {
+            sub.next(true);
+            return sub.asObservable();
+        }
+
+        this.loginIfloggedOut()
             .then(id => {
-                if (!id) {
-                    this.loginUser(TESTEMAIL)
-                    .then(id => this.user.userID = id);
+                if (!id) {                    
+                    console.log("user not logged in");
+                    // this.loginUser(TESTEMAIL)
+                    // .then(id => this.user.userID = id);
+                    sub.next(false);
+                    return;
                 }
 
+                console.log("user logged in");
                 this.user.userID = id;
+                sub.next(true);
             })
             .catch(error => {
                 console.error(`Error logging in`, error);
             });
-    }
 
-    public get isLoggedIn(): boolean {
-        if(this.user.userID) return true;
-        return false;
+
+        return sub.asObservable();
     }
 
     /**
@@ -186,6 +198,38 @@ export class UserService {
         }
     }
 
+    public async registerUser(email: string): Promise<string> {
+        const res = await this.api.post(`/user/register`, {
+            email: email
+        });
+
+        let userID: string = '';
+        try {
+            console.debug("registerUser data", res);
+            if (res) {
+
+                if (res.Email != email) {
+                    console.error(`Registered email don't match user input. got '${res.Email}', want ${email}`);
+                    return Promise.reject("Rgistered email don't match");
+                }
+
+                userID = res.UserId;
+                await this.db.insert(UserTable, {UserId: userID});
+            }
+
+            this.user.userID = userID;
+            return userID;
+        } catch (error: any) {
+            console.log("Error from register", error);
+            if (error.code && error.code === 6) {
+                // Unique constraint. Id already in DB - return the userID
+                return userID;
+            }
+
+            return Promise.reject(error);
+        }
+    }
+
     private async refreshCollection(): Promise<UserCollection> {
         if(!this.user.userID) {
             return {purchased: [], wishlist: []};
@@ -244,7 +288,7 @@ export class UserService {
     private async loginIfloggedOut(): Promise<string> {
         const sub = new Subject<string>();
         const res = await this.db.fetch(UserTable);
-        console.debug("TEST loginUser data", res);
+        console.debug("trying to log in data", res);
         if (res) {
             return res[0].UserId;
         }

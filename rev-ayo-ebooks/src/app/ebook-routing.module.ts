@@ -10,15 +10,8 @@ import { BottomMenuComponent } from './components/bottom-menu/bottom-menu.compon
 
 const routes: Routes = [
 
-    // { path: 'store', component: StoreComponent},
-    // { path: 'details/:isbn', component:BookDetailsComponent},
-    // { path: 'read/:isbn', component:ReaderComponent},
-    // { path: 'personal', component:PersonalBooksComponent},
     { path: 'searchpage', loadChildren:() => import('./pages/searchpage/searchpage.module').then(m => m.SearchpageModule) },
-    // { path: 'settings', component:SettingsComponent},
-    // { path: 'home/', redirectTo: 'store' },
-    // { path: '**', redirectTo: 'store' },
-
+    { path: 'welcome', loadChildren:() => import('./pages/welcome/welcome.module').then(m => m.WelcomeModule) },
     { path: '', loadChildren: () => import('./components/bottom-menu/bottom-menu.module').then(m => m.BottomMenuModule) }
 ];
 
