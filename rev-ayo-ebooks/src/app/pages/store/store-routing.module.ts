@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { BookDetailsComponent } from '../book-details/book-details.component';
-import { StoreComponent } from './store.component';
+import { BookDetailsPage } from '../book-details/book-details.component';
+import { StorePage } from './store.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: StoreComponent,
+    component: StorePage,
     // children: [
     //     {
     //         path: 'details/:isbn',

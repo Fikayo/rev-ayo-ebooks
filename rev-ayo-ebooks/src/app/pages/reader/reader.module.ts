@@ -5,7 +5,7 @@ import { IonicModule } from "@ionic/angular";
 import { PdfViewerModule } from "ng2-pdf-viewer";
 import { NgxExtendedPdfViewerModule } from "ngx-extended-pdf-viewer";
 import { ReaderRoutingModule } from "./reader-routing.module";
-import { ReaderComponent } from "./reader.component";
+import { ReaderPage } from "./reader.component";
 
 @NgModule({
     imports: [
@@ -16,7 +16,7 @@ import { ReaderComponent } from "./reader.component";
         PdfViewerModule,
         ReaderRoutingModule,
     ],
-    declarations: [ReaderComponent],
+    declarations: [ReaderPage],
     // exports: [ReaderComponent]
   })
   export class ReaderModule {}

@@ -7,7 +7,7 @@ import { UserService } from 'src/app/services/user/user.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
 })
-export class RegisterComponent implements OnInit {
+export class RegisterPage implements OnInit {
 
     public userEmail: string = "";
     public exists: boolean = false;

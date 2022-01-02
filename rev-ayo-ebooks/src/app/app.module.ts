@@ -5,11 +5,11 @@ import * as hammer from 'hammerjs';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { StoreComponent } from './pages/store/store.component';
+import { StorePage } from './pages/store/store.component';
 import { EbookRoutingModule } from './ebook-routing.module';
 import { MatGridListModule } from '@angular/material/grid-list';
 import {MatIconModule} from '@angular/material/icon';
-import { ReaderComponent } from './pages/reader/reader.component';
+import { ReaderPage } from './pages/reader/reader.component';
 
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
@@ -26,17 +26,17 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { BookstoreService } from './services/bookstore/bookstore.service';
 import {MatListModule} from '@angular/material/list';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BookDetailsComponent } from './pages/book-details/book-details.component';
+import { BookDetailsPage } from './pages/book-details/book-details.component';
 import {MatToolbarModule} from '@angular/material/toolbar';
-import { PersonalBooksComponent } from './pages/personal-books/personal-books.component';
+import { PersonalBooksPage } from './pages/personal-books/personal-books.component';
 import {MatTabsModule} from '@angular/material/tabs';
 import { UserService } from './services/user/user.service';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import { HammerModule } from '@angular/platform-browser';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
-import { SearchpageComponent } from './pages/searchpage/searchpage.component';
+import { SearchPage } from './pages/searchpage/searchpage.component';
 import {MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS} from '@angular/material/dialog';
-import { SettingsComponent } from './pages/settings/settings.component';
+import { SettingsPage } from './pages/settings/settings.component';
 import { PaymentModal } from './components/payment-modal/payment-modal.component';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
@@ -49,7 +49,7 @@ import { SuperTabsModule } from '@ionic-super-tabs/angular';
 @NgModule({
     declarations: [
         AppComponent,
-        SettingsComponent,
+        SettingsPage,
     ],
     entryComponents: [],
     imports: [ 

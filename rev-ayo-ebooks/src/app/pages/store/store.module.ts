@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
 import { StoreRoutingModule } from "./store-routing.module";
-import { StoreComponent } from "./store.component";
+import { StorePage } from "./store.component";
 
 @NgModule({
     imports: [
@@ -14,7 +14,7 @@ import { StoreComponent } from "./store.component";
         BooksetComponentModule,
         StoreRoutingModule,
     ],
-    declarations: [StoreComponent],
+    declarations: [StorePage],
     // exports: [StoreComponent]
   })
   export class StoreModule {}

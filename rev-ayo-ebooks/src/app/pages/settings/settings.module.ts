@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
-import { SettingsComponent } from "./settings.component";
+import { SettingsPage } from "./settings.component";
 
 @NgModule({
     imports: [
@@ -10,7 +10,7 @@ import { SettingsComponent } from "./settings.component";
         CommonModule, 
         FormsModule,
     ],
-    declarations: [SettingsComponent],
+    declarations: [SettingsPage],
     // exports: [SettingsComponent]
   })
   export class SettingsComponentModule {}

@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ReaderComponent } from './reader.component';
+import { ReaderPage } from './reader.component';
 
 const routes: Routes = [
   {
     path: '',
-    component: ReaderComponent,
+    component: ReaderPage,
   }
 ];
 

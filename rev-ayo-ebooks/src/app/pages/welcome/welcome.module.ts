@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { ComponentsModule } from "src/app/components/components.module";
 import { WelcomeRoutingModule } from "./welcome-routing.module";
-import { WelcomeComponent } from "./welcome.component";
+import { WelcomePage } from "./welcome.component";
 
 @NgModule({
     imports: [
@@ -14,7 +14,7 @@ import { WelcomeComponent } from "./welcome.component";
         ComponentsModule,
         WelcomeRoutingModule
     ],
-    declarations: [WelcomeComponent]
+    declarations: [WelcomePage]
   })
   export class WelcomeModule {}
   

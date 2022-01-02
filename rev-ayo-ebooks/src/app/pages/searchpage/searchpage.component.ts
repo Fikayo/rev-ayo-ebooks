@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
     templateUrl: './searchpage.component.html',
     styleUrls: ['./searchpage.component.scss']
   })
-export class SearchpageComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
 
     public filteredOptions!: Observable<string[]>;
     public allTitles: BookInfo[] = [];

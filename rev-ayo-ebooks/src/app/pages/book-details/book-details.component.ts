@@ -16,7 +16,7 @@ import { UserCollection } from 'src/app/models/User';
   templateUrl: './book-details.component.html',
   styleUrls: ['./book-details.component.scss']
 })
-export class BookDetailsComponent implements OnInit {
+export class BookDetailsPage implements OnInit {
     
     public book!: BookInfo;
     public suggestions: BookInfo[] = [];

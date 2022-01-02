@@ -7,7 +7,7 @@ import { UserService } from 'src/app/services/user/user.service';
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.scss']
 })
-export class WelcomeComponent implements OnInit {
+export class WelcomePage implements OnInit {
 
     constructor(
         private user: UserService,

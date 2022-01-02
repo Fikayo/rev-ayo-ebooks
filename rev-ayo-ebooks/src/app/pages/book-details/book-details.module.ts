@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
 import { PaymentModule } from "src/app/components/payment-modal/paymet.module";
-import { BookDetailsComponent } from "./book-details.component";
+import { BookDetailsPage } from "./book-details.component";
 import { DetailsRoutingModule } from "./details-routing.module";
 
 @NgModule({
@@ -17,7 +17,7 @@ import { DetailsRoutingModule } from "./details-routing.module";
         DetailsRoutingModule,
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    declarations: [BookDetailsComponent],
+    declarations: [BookDetailsPage],
     // exports: [BookDetailsComponent]
   })
   export class BookDetailsModule {}

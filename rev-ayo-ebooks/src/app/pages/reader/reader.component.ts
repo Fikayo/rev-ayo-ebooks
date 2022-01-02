@@ -12,7 +12,7 @@ import { UserService } from 'src/app/services/user/user.service';
   templateUrl: './reader.component.html',
   styleUrls: ['./reader.component.scss']
 })
-export class ReaderComponent implements OnInit, OnDestroy {
+export class ReaderPage implements OnInit, OnDestroy {
     public enablePinchOnMobile = true;
     public mobileFriendlyZoom = "150%"
     public showSecondaryToolbarButton = true;  

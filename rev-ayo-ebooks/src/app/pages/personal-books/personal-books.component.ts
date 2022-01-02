@@ -11,7 +11,7 @@ import { takeUntil } from 'rxjs/operators';
   templateUrl: './personal-books.component.html',
   styleUrls: ['./personal-books.component.scss']
 })
-export class PersonalBooksComponent implements OnInit, OnDestroy {
+export class PersonalBooksPage implements OnInit, OnDestroy {
     @ViewChild(MatTabGroup) group!: any;
     @ViewChildren(MatTab) tabs!: any;
 

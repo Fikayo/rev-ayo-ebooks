@@ -10,7 +10,7 @@ import { Subject } from 'rxjs';
   templateUrl: './store.component.html',
   styleUrls: ['./store.component.scss']
 })
-export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
+export class StorePage implements OnInit, AfterViewInit, OnDestroy {
 
     public popularBooks: BookInfo[] = [];
     public featuredBooks: BookInfo[] = [];
