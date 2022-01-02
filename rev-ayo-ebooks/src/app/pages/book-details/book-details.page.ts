@@ -13,8 +13,8 @@ import { UserCollection } from 'src/app/models/User';
 
 @Component({
   selector: 'app-book-details',
-  templateUrl: './book-details.component.html',
-  styleUrls: ['./book-details.component.scss']
+  templateUrl: './book-details.page.html',
+  styleUrls: ['./book-details.page.scss']
 })
 export class BookDetailsPage implements OnInit {
     

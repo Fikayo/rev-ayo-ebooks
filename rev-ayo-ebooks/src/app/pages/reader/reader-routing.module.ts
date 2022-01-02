@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ReaderPage } from './reader.component';
+import { ReaderPage } from './reader.page';
 
 const routes: Routes = [
   {

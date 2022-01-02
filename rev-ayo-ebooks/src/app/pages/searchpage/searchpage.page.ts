@@ -10,8 +10,8 @@ import { Router } from '@angular/router';
 
 @Component({
     selector: 'ebook-searchpage',
-    templateUrl: './searchpage.component.html',
-    styleUrls: ['./searchpage.component.scss']
+    templateUrl: './searchpage.page.html',
+    styleUrls: ['./searchpage.page.scss']
   })
 export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
 

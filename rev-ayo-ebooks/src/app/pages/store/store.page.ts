@@ -7,8 +7,8 @@ import { Subject } from 'rxjs';
 
 @Component({
   selector: 'ebook-store',
-  templateUrl: './store.component.html',
-  styleUrls: ['./store.component.scss']
+  templateUrl: './store.page.html',
+  styleUrls: ['./store.page.scss']
 })
 export class StorePage implements OnInit, AfterViewInit, OnDestroy {
 

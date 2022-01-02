@@ -4,8 +4,8 @@ import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'ebook-register',
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  templateUrl: './register.page.html',
+  styleUrls: ['./register.page.scss']
 })
 export class RegisterPage implements OnInit {
 

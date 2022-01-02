@@ -9,12 +9,12 @@ import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'ebook-reader',
-  templateUrl: './reader.component.html',
-  styleUrls: ['./reader.component.scss']
+  templateUrl: './reader.page.html',
+  styleUrls: ['./reader.page.scss']
 })
 export class ReaderPage implements OnInit, OnDestroy {
     public enablePinchOnMobile = true;
-    public mobileFriendlyZoom = "150%"
+    public mobileFriendlyZoom = "150%";
     public showSecondaryToolbarButton = true;  
     public showPrintButton = false;
     public showOpenFileButton = false;

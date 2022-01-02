@@ -8,8 +8,8 @@ import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'ebook-personal-books',
-  templateUrl: './personal-books.component.html',
-  styleUrls: ['./personal-books.component.scss']
+  templateUrl: './personal-books.page.html',
+  styleUrls: ['./personal-books.page.scss']
 })
 export class PersonalBooksPage implements OnInit, OnDestroy {
     @ViewChild(MatTabGroup) group!: any;

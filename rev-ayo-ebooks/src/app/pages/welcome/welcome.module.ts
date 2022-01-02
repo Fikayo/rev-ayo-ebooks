@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { ComponentsModule } from "src/app/components/components.module";
 import { WelcomeRoutingModule } from "./welcome-routing.module";
-import { WelcomePage } from "./welcome.component";
+import { WelcomePage } from "./welcome.page";
 
 @NgModule({
     imports: [

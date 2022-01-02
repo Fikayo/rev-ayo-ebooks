@@ -4,8 +4,8 @@ import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'ebook-welcome',
-  templateUrl: './welcome.component.html',
-  styleUrls: ['./welcome.component.scss']
+  templateUrl: './welcome.page.html',
+  styleUrls: ['./welcome.page.scss']
 })
 export class WelcomePage implements OnInit {
 

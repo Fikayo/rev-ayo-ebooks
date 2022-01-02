@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { IonicModule } from "@ionic/angular";
 import { ComponentsModule } from "src/app/components/components.module";
-import { RegisterPage } from "./register.component";
+import { RegisterPage } from "./register.page";
 
 @NgModule({
     imports: [

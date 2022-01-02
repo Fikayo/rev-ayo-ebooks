@@ -4,8 +4,8 @@ import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'ebook-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  templateUrl: './login.page.html',
+  styleUrls: ['./login.page.scss']
 })
 export class LoginPage implements OnInit {
 

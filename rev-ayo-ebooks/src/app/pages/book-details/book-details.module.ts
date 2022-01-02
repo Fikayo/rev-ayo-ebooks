@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
 import { PaymentModule } from "src/app/components/payment-modal/paymet.module";
-import { BookDetailsPage } from "./book-details.component";
+import { BookDetailsPage } from "./book-details.page";
 import { DetailsRoutingModule } from "./details-routing.module";
 
 @NgModule({
