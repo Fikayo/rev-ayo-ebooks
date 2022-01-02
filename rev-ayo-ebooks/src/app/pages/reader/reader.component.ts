@@ -2,7 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PDFDocumentProxy, PDFProgressData } from 'ng2-pdf-viewer';
 import { pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -32,8 +33,10 @@ export class ReaderComponent implements OnInit, OnDestroy {
     public srcUrl!: string;
     public currentPage: number = 1;
 
-    private routeSub!: Subscription;
     private bookID!: string;
+
+    
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -44,11 +47,15 @@ export class ReaderComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.routeSub = this.activatedRoute.params.subscribe(params => {
+        this.activatedRoute.params
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(params => {
             let bookID = params['isbn'];
             this.bookID = bookID;
 
-            this.bookstore.fetchBookPDFPath(bookID).subscribe({
+            this.bookstore.fetchBookPDFPath(bookID)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
                 next: (path) => {
                     this.srcUrl = path
                 },
@@ -58,6 +65,7 @@ export class ReaderComponent implements OnInit, OnDestroy {
             });
                         
             this.user.fetchBookCurrentPage(bookID)
+            .pipe(takeUntil(this.destroy$))            
             .subscribe({
                 next: (page) => {
                     this.currentPage = page;
@@ -68,15 +76,10 @@ export class ReaderComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnDestroy(): void {            
-        if(this.routeSub) {
-            this.routeSub.unsubscribe();
-        }
-
-        this.user.updateBookProgress(this.bookID, this.currentPage)
-        .subscribe({
-           error: () => console.error(`Failed to update current page for book ${this.bookID}`) 
-        });
+    ngOnDestroy(): void {
+        this.user.updateBookProgress(this.bookID, this.currentPage);
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     public onPageChange(page: number) {

@@ -12,6 +12,8 @@ export class RegisterComponent implements OnInit {
     public userEmail: string = "";
     public exists: boolean = false;
     public failure: boolean = false;
+    public emptyEmail: boolean = false;
+    public emptyRegion: boolean = false;
 
     constructor(
         private router: Router,
@@ -25,13 +27,26 @@ export class RegisterComponent implements OnInit {
         this.router.navigate(['welcome/login']);
     }
 
-    public register(email: string) {
+    public register(email: any | string, region: any | string) {
         this.userEmail = email;
         this.exists = false;
         this.failure = false;
 
-        console.log("register email:", email)
-        this.user.registerUser(email)
+        if(!email) {
+            this.emptyEmail = true;
+            return;
+        }
+
+        
+        if(!region) {
+            this.emptyRegion = true;
+            return;
+        }
+
+        this.emptyEmail = false;
+        this.emptyRegion = false;
+        console.log("register email, region:", email, region)
+        this.user.registerUser(email, region)
         .then(id => {
             console.log("Register successful. Id:", id);
             this.router.navigate(['books/store']);

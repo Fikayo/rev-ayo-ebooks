@@ -58,10 +58,26 @@ export class DatabaseService {
             query += conds.join(" AND ")
         }
 
+        // try {
+        //     const results = await this.query(query, [...condValues]);
+        //     console.debug(`DB fetch ${query} results`, results);
+        //     let data: any | undefined;
+        //     if (results.rows && results.rows.length > 0) {
+        //         data = [];
+        //         for (const b of results.rows) {
+        //             data.push(b);
+        //         }
+        //     }
+
+        //     return data;
+        // } catch (error) {
+        //     console.error(`Error fetching data from local db: query: ${query}`, error);
+        //     return Promise.reject(error);
+        // }
         return new Promise((resolve, reject) => {
             this.sql.execute(new SQLQuery(query, ...condValues),
                 (_, results: any) => {
-                    console.debug("fetch results", results);
+                    console.debug(`DB fetch ${query} results`, results);
                     let data: any | undefined;
                     if (results.rows && results.rows.length > 0) {
                         data = [];
@@ -108,14 +124,14 @@ export class DatabaseService {
             conds.push(`${col}=?`);
         });
 
-        let query = `UPDATE ${table} SET ${pairs.join(",")} WHERE ${conds.join(" AND ")};`;
+        let query = new SQLQuery(`UPDATE ${table} SET ${pairs.join(",")} WHERE ${conds.join(" AND ")};`, ...values, ...condValues);
 
         return new Promise(async (resolve, reject) => {            
-            this.updatedb(new SQLQuery(query, ...values, ...condValues))
+            this.updatedb(query)
             .then(_ => resolve())
             .catch(error => {
-                console.debug(`update error during ${query}:`, error);
-                // Try to insert instead
+                console.error(`update error during ${query}:`, error);
+                // Try to insert instead.
                 this.insert(table, data)
                 .then(_ => resolve())
                 .catch(err => reject(err));
@@ -125,18 +141,42 @@ export class DatabaseService {
 
     public async delete(table: string, conditions?: any): Promise<void> {        
         let query = `DELETE FROM ${table}`;
+        let condValues: any[] = [];
         if (conditions) {
             query += " WHERE "
             const columns = Object.keys(conditions);
+            condValues = Object.values(conditions);
             const conds: string[] = [];
             columns.forEach(col => {
-                conds.push(`{${col}=${conditions[col]}}`);
+                const val = conditions[col];
+                if (Array.isArray(val)) {
+                    conds.push(`${col} IN (?)`);
+                } else {
+                    conds.push(`${col}=?`);
+                }
             });
         
             query += conds.join(" AND ")
         }
 
-        return this.updatedb(new SQLQuery(query), true);
+        return this.updatedb(new SQLQuery(query, ...condValues), true);
+    }
+
+    public async query(sql: string, params: any[] | undefined): Promise<any> {
+        let query = new SQLQuery(sql, params);
+        return new Promise((resolve, reject) => {            
+            this.sql.execute(query, 
+                (_, results: any) => {  
+                    console.debug(`direct query ${query} results`, results);                 
+                    resolve(results);
+                },
+
+                (_, error) => {
+                    console.error(`Error while performing query: ${query}: `, error, query);
+                    reject(error);
+                }
+            );
+        });
     }
 
     private fetchLastUpdateTime(): Map<string, Date> {
@@ -158,10 +198,22 @@ export class DatabaseService {
     }
 
     private async updatedb(query: SQLQuery, ignoreAffectedRows = false): Promise<void> {
+        // try {
+        //     const results = await this.query(query.sql, query.params);
+        //     console.debug(`updatedb ${query} results`, results, "ignore affected rows", ignoreAffectedRows);
+        //     if (ignoreAffectedRows) return;
+            
+        //     if (results.rowsAffected <= 0) {
+        //         return Promise.reject('no rows updated');
+        //     } 
+        // } catch (error) {
+        //     console.error(`Error while updating table: ${query}: `, error);
+        //     return Promise.reject(error);
+        // }
         return new Promise((resolve, reject) => {            
             this.sql.execute(query, 
                 (_, results: any) => {
-                    console.debug("updatedb results", results, "ignore affected rows", ignoreAffectedRows);
+                    console.debug(`updatedb ${query} results`, results, "ignore affected rows", ignoreAffectedRows);
                     if (ignoreAffectedRows) resolve();
                     
                     if (results.rowsAffected <= 0) {

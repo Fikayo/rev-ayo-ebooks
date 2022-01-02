@@ -18,7 +18,6 @@ export class AppComponent {
         private payment: PaymentService,
         loadingCtrl: LoadingController,
         platform: Platform,
-        user: UserService,
     ) {
         this.router.navigate(['/welcome']);
         this.monitorNavigation();
@@ -39,16 +38,6 @@ export class AppComponent {
                     }
                 }
             }); 
-                        
-            user.isLoggedIn().subscribe({
-                next: (loggedIn) => {
-                    if(loggedIn) {    
-                        // loading.dismiss();                
-                        this.router.navigate(['/books/store']);
-                    }
-                },
-                error: (err) => console.error("Error trying to read login ID", err)
-            });
         });        
 
     }

@@ -10,14 +10,17 @@ import { UserService } from '../user/user.service';
   providedIn: 'root'
 })
 export class PaymentService {
-    private productInfos: ProductInfo[] = [{ISBN: "unknwon", productID: "test_id_1"}];
+    private readonly productInfos: Map<string, ProductInfo[]>;
     private paymentReady = new BehaviorSubject(false);
 
     constructor(
         private user: UserService,
         private bookstore: BookstoreService,
         private store: InAppPurchase2) 
-    { }
+    { 
+        this.productInfos = new Map();
+        this.productInfos.set("unknwon", [{ISBN: "unknwon", productID: "test_id_1"}, {ISBN: "unknwon", productID: "test_id_1"}]);
+    }
 
     public get ready(): BehaviorSubject<boolean> {
         return this.paymentReady;
@@ -26,7 +29,7 @@ export class PaymentService {
     public initStore() {
         this.bookstore.fetchProdutinfo().subscribe({
             next: (info: ProductInfo[]) => {
-                const prods: ProductInfo[] = [];
+                this.productInfos.clear();
                 info.forEach(p => {
                     const naira: ProductInfo = {
                         ISBN: p.ISBN,
@@ -38,11 +41,9 @@ export class PaymentService {
                         productID: this.getWorldProductId(p.productID)
                     }
 
-                    prods.push(naira);
-                    prods.push(world);
+                    this.productInfos.set(p.ISBN, [naira, world]);
                 });
 
-                this.productInfos = prods;
                 this.prepareStore();
             }
         });
@@ -59,27 +60,41 @@ export class PaymentService {
         });
     }
 
+    public async orderBook(bookID: string) {
+        console.log("attempting to purchase", bookID);
+        if(!this.productInfos.has(bookID)) return;
+        
+        const prods = this.productInfos.get(bookID) as ProductInfo[];
+        const regionProd = this.user.region == "nigeria" ? prods[0] : prods[1];
+
+        console.log("calling store with ", regionProd)
+        const data = await this.store.order(regionProd.productID)
+        console.log('order success : ' + JSON.stringify(data));
+    }
+
     private prepareStore() {
         console.info("store product infos", this.productInfos);
         const storeEvents = this.store.when('') as any
-        if (storeEvents.error) {
-            console.error("Cordova likely not avaiable - try on a device. Error: ", storeEvents.error);
+        if (storeEvents.error && storeEvents.error == "cordova_not_available") {
+            console.error("Cordova likely not avaiable - try on a device. Error: ", storeEvents);
             this.paymentReady.next(true);
             return;
         }
 
         this.store.verbosity = this.store.DEBUG;
-        this.productInfos.forEach(p => {
-            this.store.register({
-                id:    p.productID,
-                type:  this.store.NON_CONSUMABLE,
-                alias: p.ISBN
+        this.productInfos.forEach(pair => {
+            pair.forEach(p => {
+                this.store.register({
+                    id:    p.productID,
+                    type:  this.store.NON_CONSUMABLE,
+                    alias: p.ISBN
+                });
+    
+                this.store.when(p.productID).approved(this.productApproved.bind(this));
+                this.store.when(p.productID).cancelled(this.productCancelled.bind(this));        
+                this.store.when(p.productID).error(this.productError.bind(this));        
+                this.store.when(p.productID).updated(this.productUpdated.bind(this));
             });
-
-            this.store.when(p.productID).approved(this.productApproved.bind(this));
-            this.store.when(p.productID).cancelled(this.productCancelled.bind(this));        
-            this.store.when(p.productID).error(this.productError.bind(this));        
-            this.store.when(p.productID).updated(this.productUpdated.bind(this));
         });
 
         this.store.error(function(error: any) {

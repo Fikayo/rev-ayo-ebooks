@@ -2,12 +2,14 @@ import { Component, NgZone, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { ToastController } from '@ionic/angular';
-import { Subscription } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BottomMenuComponent } from 'src/app/components/bottom-menu/bottom-menu.component';
 import { PaymentModal } from 'src/app/components/payment-modal/payment-modal.component';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
+import { UserCollection } from 'src/app/models/User';
 
 @Component({
   selector: 'app-book-details',
@@ -22,7 +24,7 @@ export class BookDetailsComponent implements OnInit {
     public bookInWishList!: boolean;
     public bookIsPurchased!: boolean;
 
-    private routeSub!: Subscription;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
 
     constructor(
@@ -37,11 +39,16 @@ export class BookDetailsComponent implements OnInit {
 
     ngOnInit(): void {
         console.log("in book details")
-        this.routeSub = this.activatedRoute.params.subscribe(params => {
+        this.activatedRoute.params
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((params) => {
             let bookID = params['isbn'];
 
-            this.bookstore.fetchBook(bookID).subscribe({
+            this.bookstore.fetchBook(bookID)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
                 next: (book) => {
+                    console.log("returned book detail", book);
                     if(!book) return;
                     this.zone.run(() => {                 
                         this.book = book as BookInfo;
@@ -51,11 +58,14 @@ export class BookDetailsComponent implements OnInit {
                 error: (err) => console.error(`failed to fetch book {${bookID}} from bookstore`, err)
             });
             
-            this.user.fetchCollection().subscribe({
-                next: (collection) => {
+            this.user.fetchCollection()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (collection: UserCollection) => {
+                    console.info("col", collection);
                     if(!collection) return;
-                    const bookPurchased = collection.purchased.filter((book: BookInfo) => book.BookId == bookID).length > 0;
-                    const bookWishful = collection.wishlist.filter((book: BookInfo) => book.BookId == bookID).length > 0;
+                    const bookPurchased = collection.purchased.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
+                    const bookWishful = collection.wishlist.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
                     this.zone.run(() => {                            
                         this.setPurchasedBook(bookPurchased);
                         this.bookInWishList = bookWishful;
@@ -65,23 +75,24 @@ export class BookDetailsComponent implements OnInit {
                 error: (err) => console.error("Error fetching collection:", err),
             });
 
-            this.bookstore.fetchAllBooks().subscribe({
-                next: (books) => {
+            this.bookstore.fetchAllBooks()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (books: BookInfo[]) => {
+                    console.info("all all books", books);
                     if(!books) return;
                     this.zone.run(() => {                 
                         this.suggestions = books;
                     });
                 },
                 error: (err) => console.error("failed to fetch titles from bookstore:", err),
-            });
-            
+            });            
         });
     }
 
-    ngOnDestroy(): void {            
-        if(this.routeSub) {
-            this.routeSub.unsubscribe();
-        }
+    ngOnDestroy(): void {   
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     public openSearch() {
@@ -103,8 +114,14 @@ export class BookDetailsComponent implements OnInit {
                 cssClass: 'payment-modal'
             });
 
-            presentModal.onWillDismiss().then((data) => {
+            presentModal.onWillDismiss().then((data: any) => {
                 console.log("dismiss data", data);
+                if(data.role == 'success') {
+                    this.zone.run(() => {
+                        this.setPurchasedBook(true);
+                    });
+
+                }
             });
 
             return await presentModal.present();
@@ -134,7 +151,9 @@ export class BookDetailsComponent implements OnInit {
     }
 
     public toggleBookInList() {
-        this.user.toggleInWishList(this.book.ISBN).subscribe({
+        this.user.toggleInWishList(this.book.ISBN)        
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
             next: (inList) => {
                 
                 this.zone.run(async () => {

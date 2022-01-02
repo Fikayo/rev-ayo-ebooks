@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { BooksTable, PurchasedTable, UserTable , WishlistTable,  } from 'src/app/models/WebSQLConnection';
-import { ParseBookDb } from 'src/app/util';
-import { BookInfo } from "../../models/BookInfo";
+import { BookInfo, BookInfoBe, ParseBookDb } from "../../models/BookInfo";
 import { User, UserCollection } from '../../models/User';
 import { DatabaseService } from '../database/database.service';
 import { ApiService } from '../api/api.service';
@@ -14,11 +13,16 @@ const TESTEMAIL = "test@email.com"
 })
 export class UserService {
 
-    private user: User = {};
+    private readonly user: User;
 
     constructor(
         private api: ApiService,
         private db: DatabaseService) {
+            this.user = {userID: '', region: ''};
+    }
+
+    public get region(): string {
+        return this.user.region;
     }
 
     public isLoggedIn(): Observable<boolean> {
@@ -30,23 +34,24 @@ export class UserService {
         }
 
         this.loginIfloggedOut()
-            .then(id => {
-                if (!id) {                    
-                    console.log("user not logged in");
-                    // this.loginUser(TESTEMAIL)
-                    // .then(id => this.user.userID = id);
-                    sub.next(false);
-                    return;
-                }
+        .then(user => {
+            if (!user || !user.userID) {                    
+                console.log("user not logged in");
+                // this.loginUser(TESTEMAIL)
+                // .then(id => this.user.userID = id);
+                sub.next(false);
+                return;
+            }
 
-                console.log("user logged in");
-                this.user.userID = id;
-                sub.next(true);
-            })
-            .catch(error => {
-                console.error(`Error logging in`, error);
-            });
-
+            console.log("user logged in");
+            this.user.userID = user.userID;
+            this.user.region = user.region;
+            sub.next(true);
+        })
+        .catch(error => {
+            console.error(`Error logging in`, error);
+            sub.error(error);
+        });
 
         return sub.asObservable();
     }
@@ -58,6 +63,10 @@ export class UserService {
      */
     public purchaseBook(bookID: string): Observable<void> {
         const sub = new Subject<void>();
+        if(!this.user.userID) {
+            return throwError("User not logged in. Aborting call");
+        }
+
         this.api.post(`/user/${this.user.userID}/buy?bookId=${bookID}`, {})
         .then(_ => {
             sub.next();
@@ -73,6 +82,10 @@ export class UserService {
 
     public toggleInWishList(bookID: string): Observable<boolean> {
         const sub = new Subject<boolean>();
+        if(!this.user.userID) {
+            return throwError("User not logged in. Aborting call");
+        }
+
         sub.next(true);
         return sub.asObservable();
     }
@@ -80,6 +93,10 @@ export class UserService {
 
     public fetchBookCurrentPage(bookID: string): Observable<number> {
         const sub = new Subject<number>();
+        if(!this.user.userID) {
+            return throwError("User not logged in. Aborting call");
+        }
+
         this.api.get(`/user/${this.user.userID}/progress/${bookID}`)
         .then((res: any) => {
             let page: number = 1;
@@ -97,33 +114,35 @@ export class UserService {
         return sub.asObservable();
     }
 
-    public updateBookProgress(bookID: string, currentPage: number): Observable<number> {
-        let sub = new Subject<number>();
-        this.api.post(`/user/${this.user.userID}/progress/${bookID}`, {
-            userId: this.user.userID,
-            bookID: bookID,
-            page: currentPage
-        })
-        .then((res: any) => {;
+    public async updateBookProgress(bookID: string, currentPage: number): Promise<number> {
+        try {
+            if(!this.user.userID) {
+                return Promise.reject("User not logged in. Aborting call");
+            }
+
+            const res = await this.api.post(`/user/${this.user.userID}/progress/${bookID}`, {
+                userId: this.user.userID,
+                bookID: bookID,
+                page: currentPage
+            })
+
             if (res.page != currentPage) {
                 let msg = `Unexpected result after updating page in ${bookID} to ${currentPage}`;
                 console.error(msg);
-                sub.error(msg);;
-                return;
             }
-
-            sub.next(currentPage);
-        })
-        .catch(error => {
+        } catch(error) {
             console.error(`error updating book page in ${bookID} to ${currentPage}`);
-            sub.next(error);
-        });
-       
-        return sub.asObservable();
+        }
+            
+        return currentPage;
     }
     
     public fetchCollection(): Observable<UserCollection> {
         const sub = new Subject<UserCollection>();
+        if(!this.user.userID) {
+            return of();
+        }
+
         const refreshRequired = this.db.expired(WishlistTable);
         
         if (refreshRequired) {
@@ -139,8 +158,7 @@ export class UserService {
         
 
         if(this.user.collection) {
-            sub.next(this.user.collection);
-            return sub.asObservable();
+            return of(this.user.collection);
         }
 
         const purchProm = this.db.fetch(`${PurchasedTable} p JOIN ${BooksTable} b ON b.BookId = p.BookId`)      
@@ -151,18 +169,20 @@ export class UserService {
             const purchased: BookInfo[] = [];
             const wishlist: BookInfo[] = [];
             if (collection[0]) {
-                collection[0].forEach((book: any) => {
-                    purchased.push(ParseBookDb(book));
+                collection[0].forEach((book: BookInfoBe) => {
+                    purchased.push(this.parseBook(book));
                 });
             }
 
             if (collection[1]) {
-                collection[1].forEach((book: any) => {
-                    wishlist.push(ParseBookDb(book));
+                collection[1].forEach((book: BookInfoBe) => {
+                    wishlist.push(this.parseBook(book));
                 });
             }
 
-            sub.next({purchased: purchased, wishlist: wishlist});
+            const userCol: UserCollection = {purchased: purchased, wishlist: wishlist};
+            this.user.collection = userCol;
+            sub.next(userCol);
         })
         .catch(err => {
             console.error("Error fetching collecton from db", err);
@@ -178,14 +198,17 @@ export class UserService {
         });
 
         let userID: string = '';
+        let region: string = '';
         try {
             console.debug("loginUser data", res);
             if (res) {
                 userID = res.UserId;
-                await this.db.insert(UserTable, {UserId: userID});
+                region = res.Region;
+                await this.db.insert(UserTable, {UserId: userID, Region: region});
             }
 
             this.user.userID = userID;
+            this.user.region = region;
             return userID;
         } catch (error: any) {
             console.log("Error from login", error);
@@ -198,9 +221,10 @@ export class UserService {
         }
     }
 
-    public async registerUser(email: string): Promise<string> {
+    public async registerUser(email: string, region: string): Promise<string> {
         const res = await this.api.post(`/user/register`, {
-            email: email
+            email: email,
+            region: region
         });
 
         let userID: string = '';
@@ -214,10 +238,11 @@ export class UserService {
                 }
 
                 userID = res.UserId;
-                await this.db.insert(UserTable, {UserId: userID});
+                await this.db.insert(UserTable, {UserId: userID, Region: region});
             }
 
             this.user.userID = userID;
+            this.user.region = region;
             return userID;
         } catch (error: any) {
             console.log("Error from register", error);
@@ -247,8 +272,8 @@ export class UserService {
                     await this.db.delete(PurchasedTable);
                     await this.db.delete(WishlistTable);
                     if (res.purchased) {
-                        res.purchased.forEach((book: any) => {
-                            purchased.push(ParseBookDb(book));
+                        res.purchased.forEach((book: BookInfoBe) => {
+                            purchased.push(this.parseBook(book));
                             promises.push(this.db.insert(PurchasedTable, {
                                 BookId: book.BookId
                             }));
@@ -256,8 +281,8 @@ export class UserService {
                     }
 
                     if (res.wishlist) {
-                        res.wishlist.forEach((book: any) => {
-                            wishlist.push(ParseBookDb(book));
+                        res.wishlist.forEach((book: BookInfoBe) => {
+                            wishlist.push(this.parseBook(book));
                             promises.push(this.db.insert(WishlistTable, {
                                 BookId: book.BookId
                             }));
@@ -285,14 +310,21 @@ export class UserService {
         });  
     }
 
-    private async loginIfloggedOut(): Promise<string> {
+    private async loginIfloggedOut(): Promise<User> {
         const sub = new Subject<string>();
         const res = await this.db.fetch(UserTable);
         console.debug("trying to log in data", res);
+        
+        let user: User = {userID: '', region: ''};
         if (res) {
-            return res[0].UserId;
+           user.userID = res[0].UserId;
+           user.region = res[0].Region;
         }
 
-        return '';
+        return user;
+    }
+    
+    private parseBook(book: BookInfoBe): BookInfo {
+        return ParseBookDb(book, this.user.region);
     }
 }

@@ -1,7 +1,8 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
-import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
-import { LoadingController, ToastController } from '@ionic/angular';
+import { LoadingController, ModalController, ToastController } from '@ionic/angular';
+import { ViewController } from '@ionic/core';
 import { BookInfo } from "src/app/models/BookInfo";
+import { PaymentService } from 'src/app/services/payment/payment.service';
 
 @Component({
   selector: 'ebook-payment-modal',
@@ -11,44 +12,55 @@ import { BookInfo } from "src/app/models/BookInfo";
 export class PaymentModal implements OnInit {
 
 	@Input() public book!: BookInfo;
+	private paymentTimeout!: any;
 
 	constructor(
-        private store: InAppPurchase2,
+        private payment: PaymentService,
 		private loadingCtrl: LoadingController,
-		private toastCtrl: ToastController) 
+		private toastCtrl: ToastController,
+		private modalCtrl: ModalController) 
 	{
 	}
 
 	ngOnInit(): void {
 	}
 
-	public makeOrder() {
-		this.showLoader();
+	public async makeOrder() {
+		console.log("Ordering book", this.book);
+		await this.showLoader();
 		this.orderTimer();
-		this.store.order(this.book.productID).then((data: any) => {
-			console.log('order success : ' + JSON.stringify(data));
+		this.payment.orderBook(this.book.ISBN).then(_ => {
 			this.hideLoader();
-		}, (error: any) => {
+			this.successfulPurchase();
+		})
+		.catch(error => {
 			this.hideLoader();
-
-			console.debug(`Failed to order book ${this.book.ISBN}`, error);
+			console.error(`Failed to order book ${this.book.ISBN}`, error);
 			this.showError("An unexpected error occured. Please try again.");
 		});
 
 	}
 
-	private showLoader() {
-		this.loadingCtrl.create({
+	private async showLoader() {
+		const loader = await this.loadingCtrl.create({
 			backdropDismiss: false,
 			translucent: true,
 			cssClass:'ion-loading-class',
-		}).then((res) => {
-			res.present();
 		});
+
+		loader.present();
 	}
 
 	private hideLoader() {
+		if(this.paymentTimeout) {
+			clearTimeout(this.paymentTimeout);
+		}
+
 		this.loadingCtrl.dismiss();
+	}
+
+	private successfulPurchase() {
+		this.modalCtrl.dismiss({}, "success");
 	}
 
 	private async showError(message: string) {
@@ -62,8 +74,8 @@ export class PaymentModal implements OnInit {
 	}
 
 	private orderTimer() {
-		const timeout = 60000 * 5; // 5 minutes
-		setTimeout(() => {
+		const timeout = 60000 * (45/60); // 45 seconds
+		this.paymentTimeout = setTimeout(() => {
 			this.hideLoader();
 			this.showError("The order took too long to process. Please try again.");
 		}, timeout);

@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
-import { Observable, Subject } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { BooksTable } from 'src/app/models/WebSQLConnection';
-import { ParseBookDb } from 'src/app/util';
 import { ApiService } from '../api/api.service';
 import { DatabaseService } from '../database/database.service';
-import { BookInfo } from '../../models/BookInfo';
-import { ProductInfo } from '../../models/ProductInfo';
+import { BookInfo, BookInfoBe, ParseBookDb } from '../../models/BookInfo';
+import { ProductInfo, ProductInfoBe } from '../../models/ProductInfo';
+import { UserService } from '../user/user.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,8 @@ export class BookstoreService {
 
     constructor(
         private api: ApiService,
-        private db: DatabaseService) { 
+        private db: DatabaseService,
+        private user: UserService) { 
     }
 
     public fetchAllBooks(): Observable<BookInfo[]> {
@@ -34,21 +35,30 @@ export class BookstoreService {
         }
         
         if(this.allBooks.size > 0) {
-            sub.next(Array.from(this.allBooks.values()));
-            return sub.asObservable();
+            const bookVals = Array.from(this.allBooks.values());
+            console.log("returning cached books", bookVals);
+            return of(bookVals);
         }
 
+        console.info("fetching books directly from table");
         this.db.fetch(BooksTable)
-        .then(booksResponse => {
+        .then((booksResponse: BookInfoBe[]) => {
             console.info("all books data", booksResponse);
             const books: BookInfo[] = [];
             if (booksResponse) {
-                booksResponse.forEach((book: any) => {
-                    books.push(ParseBookDb(book));
+                booksResponse.forEach((book: BookInfoBe) => {
+                    const b:BookInfo = this.parseBook(book);
+                    books.push(b);
+                    this.allBooks.set(book.BookId, b);
                 });
             }
     
+            console.info("books from table", this.allBooks);
             sub.next(books);
+        })
+        .catch(err => {
+            console.error(`Error fetching books directly from table:`, err);
+            sub.next(err);
         });
         return sub.asObservable();
     }
@@ -57,32 +67,46 @@ export class BookstoreService {
         const sub = new Subject<BookInfo>();
         const refreshRequired = this.db.expired(BooksTable);
         
+        console.info(`fetching book ${bookID}. Refresh required:`, refreshRequired);
         if (refreshRequired) {
             this.refreshAllBooks()
-            .then(books => books.filter((book: BookInfo) => book.BookId == bookID)[0])
-            .catch(err => console.error("Error refreshing books", err));
+            .then(books => {
+                console.debug("refreshed books for book", bookID, books);
+                sub.next(books.filter((book: BookInfo) => book.ISBN == bookID)[0])
+            })
+            .catch(err => {
+                console.error("Error refreshing books", err);
+                sub.error(err);
+            });
             return sub.asObservable();
         } 
 
         if(this.allBooks.size > 0 && this.allBooks.has(bookID)) {
-            sub.next(this.allBooks.get(bookID) as BookInfo);
-            return sub.asObservable();
+            const b: BookInfo = this.allBooks.get(bookID) as BookInfo;
+            console.info("cached book", b);
+            return of(b);
         }
         
+        console.info(`fetching book ${bookID} from DB`);
         this.db.fetch(BooksTable, {BookId: bookID})
-        .then(booksResponse => {
+        .then((booksResponse: BookInfoBe[]) => {
             let book!: BookInfo;
             if (booksResponse) {
 
                 let bookResp = booksResponse[0];
                 if(refreshRequired) {
-                    bookResp = booksResponse.filter((book: any) => book.BookId == bookID)[0];
+                    bookResp = booksResponse.filter((book: BookInfoBe) => book.BookId == bookID)[0];
                 }
 
-                book = ParseBookDb(bookResp);
+                book = this.parseBook(bookResp);
+                this.allBooks.set(bookID, book);
             }
 
             sub.next(book);
+        })
+        .catch(err => {
+            console.error(`Error fetching book ${bookID} directly from table:`, err);
+            sub.next(err);
         });
         return sub.asObservable();
     }
@@ -99,7 +123,7 @@ export class BookstoreService {
         }
 
         this.api.get(`/books/${bookID}/pdf?duration=${this.db.expiryDuration}`)
-        .then(path => {
+        .then((path: string) => {
             if(this.allBooks.has(bookID)) {
                 const book = this.allBooks.get(bookID) as BookInfo;
                 book.pdfPath = path;
@@ -120,6 +144,7 @@ export class BookstoreService {
         const sub = new Subject<ProductInfo[]>();
         const refreshRequired = this.db.expired(BooksTable);
         
+        console.log("fetching product info");
         let results: Promise<any>;
         if (refreshRequired) {
             results = this.refreshAllBooks();
@@ -131,7 +156,7 @@ export class BookstoreService {
         .then(res => {
             const products: ProductInfo[] = [];
             if (res) {
-                res.forEach((p: any) => {
+                res.forEach((p: ProductInfoBe) => {
                     products.push({
                         ISBN: p.BookId, 
                         productID: p.ProductId
@@ -197,33 +222,72 @@ export class BookstoreService {
     }
     
     private async refreshAllBooks(): Promise<BookInfo[]> {      
-        console.info("Regreshing all books");  
+        console.info("Refreshing all books");  
         return new Promise((resolve, reject) => {
             this.api.get(`/bookstore?duration=${this.db.expiryDuration}`)    
-            .then(async res => {
-                console.debug("refreshbooks response", res);
-                const books: BookInfo[] = [];
+            .then(async (books: BookInfoBe[]) => {
+                console.debug("refreshbooks response", books);                
                 this.allBooks.clear();
-                if (res) {    
-                    const promises: Promise<void>[] = [];
-                    res.forEach((book: any) => {                        
-                        promises.push(this.db.update(BooksTable, book, {BookId: book.BookId}));
-                        books.push(book);
-                        this.allBooks.set(book.BookId, book);
-                    });
+
+                // const books: BookInfo[] = [];
+                // if (res) {    
+                    // const promises: Promise<void>[] = [];
+                    // res.forEach((book: any) => {                        
+                        // promises.push(this.db.update(BooksTable, book, {BookId: book.BookId}));
+                        // const b = ParseBookDb(book);
+                        // books.push(b);
+                        // this.allBooks.set(book.BookId, b);
+                    // });
     
-                    console.debug("waiting for book updates");
-                    await Promise.all(promises);
-                    console.debug("finished waiting");
+                    // console.debug("waiting for book updates");
+                    // await Promise.all(promises);
+                    // console.debug("finished waiting");                    
+                // }
+                
+                const delConds: string[] = [];
+                // const bookIds: string[] = [];
+                if (books) { 
+                    books.forEach((book: BookInfoBe) => {
+                        delConds.push(`BookId <> '${book.BookId}'`);
+                        // bookIds.push(book.BookId)  
+                        this.allBooks.set(book.BookId, this.parseBook(book));
+                    });                 
+                                
+                    const query = `DELETE FROM ${BooksTable} WHERE ${delConds.join(" AND ")};`;
+                    await this.db.query(query, undefined);
+
+                    const promises: Promise<void>[] = [];
+                    books.forEach((book: BookInfoBe) => {      
+                        promises.push(this.db.update(BooksTable, book, {BookId: book.BookId}));
+                    });
                 }
+                
+                // if (books) { 
+                //     await this.db.delete(BooksTable); 
+                //     const promises: Promise<void>[] = [];
+                //     books.forEach((book: BookInfoBe) => {      
+                //         this.allBooks.set(book.BookId, this.parseBook(book));
+                //         promises.push(this.db.insert(BooksTable, book));
+                //     });
+
+                //     console.debug("waiting for book updates");
+                //     await Promise.all(promises);
+                //     console.debug("finished waiting");
+                // }
+
     
                 this.db.updateLastUpdateTime(BooksTable);
-                resolve(books);
+                // resolve(books);
+                resolve(Array.from(this.allBooks.values()));
             })
             .catch(error => {
                 console.error("Error refreshing books from api:", error);
                 reject(error);
             });
         });        
+    }
+
+    private parseBook(book: BookInfoBe): BookInfo {
+        return ParseBookDb(book, this.user.region);
     }
 }

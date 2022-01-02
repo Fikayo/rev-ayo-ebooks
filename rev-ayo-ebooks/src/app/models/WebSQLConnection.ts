@@ -22,6 +22,7 @@ const TABLES: string[] = [
 
     `CREATE TABLE IF NOT EXISTS [${UserTable}] (
         [UserId] varchar(50) NOT NULL UNIQUE,
+        [Region] varchar(20) NOT NULL,
         PRIMARY KEY (UserId)
     );`,
     
@@ -59,16 +60,16 @@ const TABLES: string[] = [
 
 export class SQLQuery
 {
-    public sql: string;
-    public params: any[] | undefined = [];
+    public readonly sql: string;
+    public readonly params: any[] | undefined;
 
     constructor(sql: string, ...params: any[]) {
         this.sql = sql;
-        this.params = params;
+        this.params = params[0] == undefined ? undefined : params;
     }
 
     public toString(): string {
-        return `[SQLQuery] Query: '${this.sql}'  Params: [${this.params}]`;
+        return `[SQLQuery] Query: '${this.sql}'  Params(${this.params?.length}): [${this.params}]`;
     }
 }
 
@@ -125,6 +126,7 @@ export class EbooksSQL extends WebSQLConnection {
    
     protected deleteTables(): void {        
         TableNames.forEach(t => {
+            // if (t != UserTable) return;
             this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`), undefined, 
                 (_, error) => console.error(`Error deleting table "${t}"`, error)
             );

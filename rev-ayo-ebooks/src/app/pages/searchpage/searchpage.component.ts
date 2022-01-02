@@ -1,5 +1,7 @@
-import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
@@ -11,11 +13,13 @@ import { Router } from '@angular/router';
     templateUrl: './searchpage.component.html',
     styleUrls: ['./searchpage.component.scss']
   })
-export class SearchpageComponent implements OnInit, AfterViewInit {
+export class SearchpageComponent implements OnInit, AfterViewInit, OnDestroy {
 
     public filteredOptions!: Observable<string[]>;
     public allTitles: BookInfo[] = [];
     public autoCompleteList!: any[];
+
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     @ViewChild('autocompleteInput')
     public autocompleteInput!: ElementRef;
@@ -29,7 +33,9 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
-        this.bookstore.fetchAllBooks().subscribe({
+        this.bookstore.fetchAllBooks()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
             next: (books) => {
                 this.allTitles = books;
             },
@@ -43,6 +49,11 @@ export class SearchpageComponent implements OnInit, AfterViewInit {
         // });
     }
     
+    ngOnDestroy(): void {   
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+
     ngAfterViewInit() {
         this.focusOnPlaceInput();
     }

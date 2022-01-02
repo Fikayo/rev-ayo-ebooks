@@ -2,7 +2,8 @@ import { BookInfo } from "./BookInfo";
 
 
 export interface User {
-    userID?: string;
+    userID: string;
+    region: string;
     collection?: UserCollection;
 }
 

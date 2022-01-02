@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['welcome/register']);
     }
 
-    public login(email: string) {
+    public login(email: any | string) {
         this.userEmail = email;
         this.notFound = false;
         this.failure = false;

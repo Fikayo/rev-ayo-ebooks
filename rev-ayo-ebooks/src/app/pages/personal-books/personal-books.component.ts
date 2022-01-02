@@ -1,15 +1,17 @@
-import { Component, OnInit, ViewChild, ViewChildren, NgZone } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewChildren, NgZone, OnDestroy } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'ebook-personal-books',
   templateUrl: './personal-books.component.html',
   styleUrls: ['./personal-books.component.scss']
 })
-export class PersonalBooksComponent implements OnInit {
+export class PersonalBooksComponent implements OnInit, OnDestroy {
     @ViewChild(MatTabGroup) group!: any;
     @ViewChildren(MatTab) tabs!: any;
 
@@ -18,6 +20,8 @@ export class PersonalBooksComponent implements OnInit {
 
     public tab_num: number = 0;
     public selectedIndex: number = 0;
+
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private router: Router,
@@ -28,12 +32,19 @@ export class PersonalBooksComponent implements OnInit {
         this.init();
     }
     
+    ngOnDestroy(): void {   
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+    
     // ionViewWillEnter() {
     //     this.init();
     // }
 
     private init(): void {        
-        this.user.fetchCollection().subscribe({
+        this.user.fetchCollection()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
             next: (collection) => {
                 if(!collection) return;
                 this.zone.run(() => {

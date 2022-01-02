@@ -21,45 +21,45 @@
 
 <ion-content [fullscreen]="true">
     <div id="details" *ngIf="book">
-    <div id="top">
-        <!-- <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div> -->
-        <!-- <div id="shade"></div> -->
-        <div class="cover-container">
-            <img class="cover" src="{{book.cover}}" alt="{{book.title}}">      
-            
-            <div class="cover-info">
-                <div class="title">
-                    {{book.displayName}}
-                    <span class="author">{{book.author}}</span>
-                    <span class="meta">ISBN: {{book.ISBN}}</span>
+        <div id="top">
+            <!-- <div id="book-info" class="bg-image" style="background-image: url('{{book.cover}}');"></div> -->
+            <!-- <div id="shade"></div> -->
+            <div class="cover-container">
+                <img class="cover" src="{{book.cover}}" alt="{{book.title}}">      
+                
+                <div class="cover-info">
+                    <div class="title">
+                        {{book.displayName}}
+                        <span class="author">{{book.author}}</span>
+                        <span class="meta">ISBN: {{book.ISBN}}</span>
+                    </div>
                 </div>
             </div>
+
+            
+            <ion-button *ngIf="!bookIsPurchased" class="icon" fill="clear" size="small" aria-label="Bookmark" (click)="toggleBookInList()">
+                <ion-icon *ngIf="bookInWishList" slot="icon-only" name="bookmark" color="primary"></ion-icon>
+                <ion-icon *ngIf="!bookInWishList" slot="icon-only" name="bookmark-outline" ></ion-icon>
+            </ion-button>
+            
         </div>
 
-        
-        <ion-button *ngIf="!bookIsPurchased" class="icon" fill="clear" size="small" aria-label="Bookmark" (click)="toggleBookInList()">
-            <ion-icon *ngIf="bookInWishList" slot="icon-only" name="bookmark" color="primary"></ion-icon>
-            <ion-icon *ngIf="!bookInWishList" slot="icon-only" name="bookmark-outline" ></ion-icon>
-        </ion-button>
-         
-    </div>
-
-    <div class="action-container">
-        <ion-button (click)="onActionClick(book)" id="main-action" color="primary">{{actionText}}</ion-button>
-    </div>
-
-    <div class="ebook-divider"></div>
-
-    <div id="bottom">
-        <div class="about">
-            <span class="title">About this book</span>
-            <p>
-                {{book.description}}
-            </p>
+        <div class="action-container">
+            <ion-button (click)="onActionClick(book)" id="main-action" color="primary">{{actionText}}</ion-button>
         </div>
 
-        <ebook-bookset [title]="'You might also like'" [books]="suggestions"></ebook-bookset>
-    </div>
+        <div class="ebook-divider"></div>
 
-</div>
+        <div id="bottom">
+            <div class="about">
+                <span class="title">About this book</span>
+                <p>
+                    {{book.description}}
+                </p>
+            </div>
+
+            <ebook-bookset [title]="'You might also like'" [books]="suggestions"></ebook-bookset>
+        </div>
+
+    </div>
 </ion-content>

@@ -1,14 +1,16 @@
-import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo } from "src/app/models/BookInfo";
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'ebook-store',
   templateUrl: './store.component.html',
   styleUrls: ['./store.component.scss']
 })
-export class StoreComponent implements OnInit {
+export class StoreComponent implements OnInit, AfterViewInit, OnDestroy {
 
     public popularBooks: BookInfo[] = [];
     public featuredBooks: BookInfo[] = [];
@@ -20,6 +22,7 @@ export class StoreComponent implements OnInit {
     private allBooks: BookInfo[] = [];
 
 
+    private destroy$: Subject<boolean> = new Subject<boolean>();
     // public showFeatures = true;
     // public noResults = false;
 
@@ -36,10 +39,29 @@ export class StoreComponent implements OnInit {
         //     this.filterList(param['filter']);
         // });
 
-        this.bookstore.fetchAllBooks().subscribe({
+        // this.bookstore.fetchAllBooks()
+        // .pipe(takeUntil(this.destroy$))
+        // .subscribe({
+        //     next: (books) => {
+        //         this.zone.run(() => {                
+        //             this.allBooks = books; 
+        //             console.log("fetched: ", this.allBooks);
+
+        //             this.popularBooks = this.allBooks;
+        //             this.featuredBooks = this.allBooks;
+        //             this.otherBooks = this.allBooks;
+        //         });
+        //     },
+        //     error: (err) => console.error("failed to fetch titles from bookstore:", err),
+        // });
+    }
+
+    ngAfterViewInit(): void {
+        this.bookstore.fetchAllBooks()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
             next: (books) => {
-                this.zone.run(() => {
-                
+                this.zone.run(() => {                
                     this.allBooks = books; 
                     console.log("fetched: ", this.allBooks);
 
@@ -50,6 +72,11 @@ export class StoreComponent implements OnInit {
             },
             error: (err) => console.error("failed to fetch titles from bookstore:", err),
         });
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();        
     }
 
     get showFeatures(): boolean {

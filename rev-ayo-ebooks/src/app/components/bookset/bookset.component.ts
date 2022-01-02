@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BookInfo } from "src/app/models/BookInfo";
 
@@ -7,7 +7,7 @@ import { BookInfo } from "src/app/models/BookInfo";
   templateUrl: './bookset.component.html',
   styleUrls: ['./bookset.component.scss']
 })
-export class BooksetComponent implements OnInit {
+export class BooksetComponent implements OnInit, AfterViewInit {
     // const styles = ["carousel", "grid"];
 
     @Input() title: string = "";
@@ -35,11 +35,15 @@ export class BooksetComponent implements OnInit {
     constructor(private router: Router) { }
 
     ngOnInit(): void {
+        
+    }
+
+    ngAfterViewInit(): void {
         if (this.title.trim() === "" || this.title == null) {
             this.showTitle = false;
         }
     }
-    
+
     selectBook(book: BookInfo) {
         if(this.onSelect) {
             this.onSelect(book);
