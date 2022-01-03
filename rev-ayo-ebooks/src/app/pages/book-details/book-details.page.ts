@@ -155,17 +155,19 @@ export class BookDetailsPage implements OnInit {
     }
 
     public toggleBookInList() {
+        const bookID = this.book.ISBN;
         this.user.toggleInWishList(this.book.ISBN)        
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (inList) => {
+            next: (success) => {
+                if(!success) return;
                 
                 this.zone.run(async () => {
-                    this.bookInWishList = inList;
-                    console.info("book toggled in wishlist: ", inList);
+                    this.bookInWishList = this.user.inWishlist(bookID);
+                    console.info("book toggled in wishlist: ", this.bookInWishList);
                     
                     let message = "Added to Wishlist";
-                    if (!inList) message = "Remove from Wishlist";
+                    if (!this.bookInWishList) message = "Remove from Wishlist";
                     const toast = await this.toastCtrl.create({
                         message: message,
                         duration: 1500

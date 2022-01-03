@@ -24,7 +24,17 @@ export class UserService {
     public get region(): string {
         return this.user.region;
     }
+    
+    public inWishlist(bookID: string): boolean {
+        if(this.user.collection) {
+            const found = this.user.collection.wishlist.find(b => b.ISBN == bookID);
+            if(found) {
+                return true;
+            }
+        }
 
+        return false;
+    }
     public isLoggedIn(): Observable<boolean> {
         const sub = new Subject<boolean>();
 
@@ -79,14 +89,73 @@ export class UserService {
         return sub.asObservable();
     }
 
-
     public toggleInWishList(bookID: string): Observable<boolean> {
-        const sub = new Subject<boolean>();
         if(!this.user.userID) {
             return throwError("User not logged in. Aborting call");
         }
 
-        sub.next(true);
+        if (!this.user.collection) {
+            return throwError("User has no collection");
+        }
+
+        const found = this.user.collection.wishlist.find(b => b.ISBN == bookID);
+        if(found) {
+            return this.removeFromWishList(bookID);
+        }
+
+        return this.addToWishList(bookID);
+    }
+
+    private addToWishList(bookID: string): Observable<boolean> {
+        const sub = new Subject<boolean>();
+        this.api.post(`/user/${this.user.userID}/wishlist/add`, {
+            wishlist: [bookID]
+        })
+        .then(async _ => {
+            const bookProm = this.db.fetch(BooksTable, {BookId: bookID});
+            const insertProm = this.db.insert(WishlistTable, {BookId: bookID});
+            const results = await Promise.all([bookProm, insertProm]);
+            const book = results[0][0] as BookInfoBe;
+            this.user.collection?.wishlist.push(this.parseBook(book));
+            sub.next(true);
+        })
+        .catch(error => {
+            console.error(`Error adding book to wishlist ${bookID}`, error);
+            sub.error(error);
+        });
+
+        return sub.asObservable();
+    }
+    
+    private removeFromWishList(bookID: string): Observable<boolean> {
+        const sub = new Subject<boolean>();
+        this.api.post(`/user/${this.user.userID}/wishlist/delete`, {
+            wishlist: [bookID]
+        })
+        .then(async _ => {
+            await this.db.delete(WishlistTable, {BookId: bookID});
+            if (!this.user.collection) {
+                sub.next(true);
+                return;
+            }
+
+            let idx = 0;            
+            for (const b of this.user.collection.wishlist) {                
+                if(b.ISBN == bookID) {
+                    break; 
+                }
+
+                idx++;
+            }
+
+            this.user.collection.wishlist.splice(idx, 1);
+            sub.next(true);
+        })
+        .catch(error => {
+            console.error(`Error removing book to wishlist ${bookID}`, error);
+            sub.error(error);
+        });
+
         return sub.asObservable();
     }
 
@@ -158,9 +227,11 @@ export class UserService {
         
 
         if(this.user.collection) {
+            console.debug("Fetchiing cached collection");
             return of(this.user.collection);
         }
 
+        console.debug("Fetchiing collection from DB");
         const purchProm = this.db.fetch(`${PurchasedTable} p JOIN ${BooksTable} b ON b.BookId = p.BookId`)      
         const wishProm = this.db.fetch(`${WishlistTable} p JOIN ${BooksTable} b ON b.BookId = p.BookId`)      
         

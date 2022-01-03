@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { EbooksSQL, SQLQuery } from 'src/app/models/WebSQLConnection';
 
-const DBExpiry = 1000 * 60 * 30 // 30 mninutes;
+const DBExpiry = 1000 * 3600 * 24 // 24 hours;
 
 @Injectable({
   providedIn: 'root'
@@ -15,9 +15,11 @@ export class DatabaseService {
         this.lastTableUpdate = this.fetchLastUpdateTime();
     }
 
-    public get expiryDuration(): number {
-        return DBExpiry;
+    public get maxDuration(): number {
+        const oneDay = 1000 * 3600 * 24;
+        return oneDay * 6;
     }
+
 
     public expired(table: string): boolean {
         const now = new Date();

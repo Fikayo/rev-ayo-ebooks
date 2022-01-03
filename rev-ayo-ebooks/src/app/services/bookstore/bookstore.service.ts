@@ -122,7 +122,8 @@ export class BookstoreService {
             }
         }
 
-        this.api.get(`/books/${bookID}/pdf?duration=${this.db.expiryDuration}`)
+        // Path should last a long time in case the db isn't revisited.
+        this.api.get(`/books/${bookID}/pdf?duration=${this.db.maxDuration}`)
         .then((path: string) => {
             if(this.allBooks.has(bookID)) {
                 const book = this.allBooks.get(bookID) as BookInfo;
@@ -224,7 +225,9 @@ export class BookstoreService {
     private async refreshAllBooks(): Promise<BookInfo[]> {      
         console.info("Refreshing all books");  
         return new Promise((resolve, reject) => {
-            this.api.get(`/bookstore?duration=${this.db.expiryDuration}`)    
+            
+            // Book should last a long time in case the db isn't revisited.
+            this.api.get(`/bookstore?duration=${this.db.maxDuration}`)    
             .then(async (books: BookInfoBe[]) => {
                 console.debug("refreshbooks response", books);                
                 this.allBooks.clear();

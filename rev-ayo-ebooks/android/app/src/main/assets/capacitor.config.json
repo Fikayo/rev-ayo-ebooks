@@ -1,9 +1,6 @@
 {
-	"appId": "io.ionic.starter",
+	"appId": "com.ebooks.store",
 	"appName": "rev-ayo-ebooks",
 	"webDir": "www",
-	"bundledWebRuntime": false,
-	"server": {
-		"url": "http://192.168.2.19:8100"
-	}
+	"bundledWebRuntime": false
 }
