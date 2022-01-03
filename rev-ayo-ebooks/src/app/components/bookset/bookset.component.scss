@@ -97,6 +97,10 @@
                 // height: $bookWidth/$imgRatio;
                 border-radius: $bookCoverRadius;
                 overflow: hidden;
+                
+                &.fake {
+                    min-height: 90px;
+                }
             }
     
             .info {
@@ -109,7 +113,7 @@
                     // font-weight: 500;
 
                     &.fake {
-                        width: 130px;
+                        max-width: 130px;
                         height: 10px;
                         display: block;
                         margin: 10px;
@@ -138,6 +142,26 @@
             &.active {
                 font-weight: bold;
             }
+
+            // &.fake {
+
+            //     .cover {
+            //         min-width: 90px;
+            //     }
+
+            //     .title {
+            //         height: 10px;
+            //         display: block;
+            //         margin: 10px;
+            //         margin-left: 0;
+            //     }
+
+            //     .price {
+            //         width: 40px;
+            //         display: block;
+            //         height: 10px;
+            //     }
+            // }
         }
 
         &.small {

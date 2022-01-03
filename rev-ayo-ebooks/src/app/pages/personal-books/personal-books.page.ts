@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, ViewChildren, NgZone, OnDestroy } from '@angular/core';
 import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { Router } from '@angular/router';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
 import { Subject } from 'rxjs';
@@ -24,7 +24,7 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
-        private router: Router,
+        private transition: TransitionService,
         private user: UserService,
         private zone: NgZone) {}
 
@@ -59,10 +59,10 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
     }
 
     public openShop() {
-        this.router.navigate([`books/store`]);
+        this.transition.fade(`books/store`);
     }
 
     public openSearch() {
-        this.router.navigate(['/searchpage']);
+        this.transition.slide('/searchpage', {direction: 'left', duration: 400, slowdownfactor: -1, iosdelay: 50});
     }
 }

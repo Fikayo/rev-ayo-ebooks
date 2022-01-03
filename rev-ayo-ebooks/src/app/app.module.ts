@@ -10,6 +10,8 @@ import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { RouteReuseStrategy } from '@angular/router';
 import { SuperTabsModule } from '@ionic-super-tabs/angular';
+import { NativePageTransitions } from '@awesome-cordova-plugins/native-page-transitions/ngx';
+import { TransitionService } from './services/transition/transition.service';
 
 @NgModule({
     declarations: [
@@ -32,7 +34,9 @@ import { SuperTabsModule } from '@ionic-super-tabs/angular';
     providers: [
         BookstoreService,
         UserService,
+        TransitionService,
         InAppPurchase2,
+        NativePageTransitions,
         { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
     ],
     bootstrap: [AppComponent],

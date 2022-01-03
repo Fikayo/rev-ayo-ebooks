@@ -6,7 +6,7 @@ import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo } from "src/app/models/BookInfo";
-import { Router } from '@angular/router';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 
 @Component({
     selector: 'ebook-searchpage',
@@ -28,7 +28,7 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
     public onSelectedOption = new EventEmitter();
 
     constructor(
-        private router: Router,
+        private transition: TransitionService,
         private location: Location,
         public bookstore: BookstoreService) { }
 

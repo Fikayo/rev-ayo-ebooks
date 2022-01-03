@@ -3,6 +3,7 @@ import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { LoadingController, Platform } from '@ionic/angular';
 import { PaymentService } from './services/payment/payment.service';
+import { TransitionService } from './services/transition/transition.service';
 import { UserService } from './services/user/user.service';
 
 @Component({
@@ -15,11 +16,12 @@ export class AppComponent {
 
     constructor(
         private router: Router,
+        private transition: TransitionService,
         private payment: PaymentService,
         loadingCtrl: LoadingController,
         platform: Platform,
     ) {
-        this.router.navigate(['/welcome']);
+        this.transition.fade('/welcome', {duration: 300});
         this.monitorNavigation();
         // this.fixReload();
 

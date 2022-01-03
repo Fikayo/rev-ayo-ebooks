@@ -1,41 +1,44 @@
 import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 import { BookInfo } from "src/app/models/BookInfo";
+import { trigger, state, style, animate, transition, keyframes } from '@angular/animations';
 
 @Component({
-  selector: 'ebook-bookset',
-  templateUrl: './bookset.component.html',
-  styleUrls: ['./bookset.component.scss']
+    selector: 'ebook-bookset',
+    templateUrl: './bookset.component.html',
+    styleUrls: ['./bookset.component.scss'],
+    animations: [
+        trigger('fadeBook', [
+            transition('void => show', animate(600, keyframes([
+                style({opacity: 0}),
+                style({opacity: 1}),
+            ]))),
+        ])
+    ]
 })
 export class BooksetComponent implements OnInit, AfterViewInit {
     // const styles = ["carousel", "grid"];
 
     @Input() title: string = "";
-    @Input() books: BookInfo[] = [];    
+    @Input() books!: BookInfo[];    
     @Input() onSelect!: (book: BookInfo) => void;
     @Input() style: string = "carousel";
     @Input() showTitle: boolean = true;
     @Input() showPrice: boolean = true;
     @Input() size: string = "xlarge";
 
-    slideOpts = {
-        slidesPerView: 'auto',
-        freeMode: false,
-        zoom: false,
-        grabCursor: true,
-        coverflowEffect: {
-          rotate: 50,
-          stretch: 0,
-          depth: 100,
-          modifier: 1,
-          slideShadows: true,
-        }
-      }
-
-    constructor(private router: Router) { }
+    constructor(private transition: TransitionService) { }
 
     ngOnInit(): void {
         
+    }
+
+    public get showBooks(): string {
+        return this.books == undefined || this.books.length <= 0 ? 'hide' : 'show';
+    }
+
+    public get showFakes(): string {
+        return this.books == undefined || this.books.length <= 0 ? 'show' : 'hide';
     }
 
     ngAfterViewInit(): void {
@@ -48,7 +51,7 @@ export class BooksetComponent implements OnInit, AfterViewInit {
         if(this.onSelect) {
             this.onSelect(book);
         } else {
-            this.router.navigate([`books/store/details/${book.ISBN}/`]);
+            this.transition.fade(`books/store/details/${book.ISBN}/`);
         }
     }
 }

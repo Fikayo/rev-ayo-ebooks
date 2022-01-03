@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -14,7 +14,7 @@ export class LoginPage implements OnInit {
     public failure: boolean = false;
 
     constructor(
-        private router: Router,
+        private transition: TransitionService,
         private user: UserService) {
         }
 
@@ -22,7 +22,7 @@ export class LoginPage implements OnInit {
     }
 
     public register() {
-        this.router.navigate(['welcome/register']);
+        this.transition.fade('welcome/register');
     }
 
     public login(email: any | string) {
@@ -33,7 +33,7 @@ export class LoginPage implements OnInit {
         this.user.loginUser(email)
         .then(id => {
             console.log("Sign in successful. Id:", id);
-            this.router.navigate(['books/store']);
+            this.transition.fade('books/store');
         })
         .catch(err => {
             console.error(`'${email}' sign in failed:`, err);

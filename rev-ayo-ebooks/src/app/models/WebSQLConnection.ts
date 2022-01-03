@@ -51,8 +51,8 @@ const TABLES: string[] = [
         [${BookTable.ImageSource}] STRING NOT NULL,
         [${BookTable.FileSource}] STRING,
         [${BookTable.ProductId}] STRING NOT NULL,
-        [${BookTable.PriceNaira}] STRING NOT NULL,
-        [${BookTable.PriceWorld}] STRING NOT NULL,
+        [${BookTable.PriceNaira}] STRING,
+        [${BookTable.PriceWorld}] STRING,
         PRIMARY KEY (${BookTable.BookId})
     );`,
 

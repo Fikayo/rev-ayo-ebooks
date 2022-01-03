@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 
 @Component({
   selector: 'ebook-start',
@@ -8,17 +8,17 @@ import { Router } from '@angular/router';
 })
 export class StartComponent implements OnInit {
 
-    constructor(private router: Router) { }
+    constructor(private transition: TransitionService) { }
 
     ngOnInit(): void {
     }
 
     public register() {
-        this.router.navigate(['/welcome/register']);
+        this.transition.slide('/welcome/register', {direction: 'left'});
     }
 
     public login() {
-        this.router.navigate(['/welcome/login']);
+        this.transition.slide('/welcome/login', {direction: 'right'});
     }
 
 }

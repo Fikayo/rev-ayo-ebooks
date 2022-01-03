@@ -10,6 +10,7 @@ import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
 import { UserCollection } from 'src/app/models/User';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 
 @Component({
   selector: 'app-book-details',
@@ -28,6 +29,7 @@ export class BookDetailsPage implements OnInit {
 
 
     constructor(
+        private transition: TransitionService,
         private router: Router,
         private activatedRoute: ActivatedRoute,
         private bookstore: BookstoreService,
@@ -96,13 +98,15 @@ export class BookDetailsPage implements OnInit {
     }
 
     public openSearch() {
-        this.router.navigate(['/searchpage']);
+        this.transition.flip('/searchpage', {duration: 100, direction: 'left'});
     }
 
     public async onActionClick(book: BookInfo) {
         if (this.bookIsPurchased) {
             console.log("reading");
-            this.router.navigate([`../../read/${book.ISBN}/`], {relativeTo: this.activatedRoute});
+            // this.router.navigate([`../../read/${book.ISBN}/`], {relativeTo: this.activatedRoute});
+            this.transition.curl(`../../read/${book.ISBN}/`, undefined, {relativeTo: this.activatedRoute});
+            // this.router.navigate([`../../read/${book.ISBN}/`]);
         } else {
             console.log("opening sheet");
             const presentModal = await this.modalCtrl.create({

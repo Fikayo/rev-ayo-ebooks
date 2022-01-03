@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -11,7 +11,8 @@ export class WelcomePage implements OnInit {
 
     constructor(
         private user: UserService,
-        private router: Router) {    
+        private transition: TransitionService
+        ) {    
             this.checkLogin(); 
     }
 
@@ -24,11 +25,10 @@ export class WelcomePage implements OnInit {
         this.user.isLoggedIn().subscribe({
             next: (loggedIn) => {
                 if(loggedIn) {
-                    this.router.navigate(['/books/store']);
+                    this.transition.slide('/books/store');
                 }
             },
             error: (err) => console.error("Error trying to read login ID", err)
         });
     }
-
 }

@@ -6,7 +6,7 @@
     </div>
 
     <div *ngIf="style!='list'" class="set {{size}} {{style}}">
-        <div [hidden]="books == undefined" *ngFor="let book of books" class="book" (click)="selectBook(book)">
+        <div [@fadeBook]="showBooks" *ngFor="let book of books" class="book" (click)="selectBook(book)">
             <ion-img style="pointer-events:none" class="cover" src="{{book.cover}}" alt="{{book.title}}"></ion-img>
             <div class="info">
                 <span class="title">{{book.title}}</span>
@@ -14,7 +14,8 @@
             </div>
         </div>
         
-        <div [hidden]="books !== undefined" *ngFor="let book of [1,2,3]" class="book">
+        <div [hidden]="showFakes == 'hide'" *ngFor="let book of [1,2,3]" class="book">
+        <!-- <div [@fadeBook]="hideFakes" *ngFor="let book of [1,2,3]" class="book"> -->
             <div style="pointer-events:none" class="cover fake"></div>
             <div class="info">
                 <span class="title fake"></span>

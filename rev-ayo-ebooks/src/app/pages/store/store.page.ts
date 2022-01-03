@@ -4,6 +4,7 @@ import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo } from "src/app/models/BookInfo";
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { TransitionService } from 'src/app/services/transition/transition.service';
 
 @Component({
   selector: 'ebook-store',
@@ -27,7 +28,7 @@ export class StorePage implements OnInit, AfterViewInit, OnDestroy {
     // public noResults = false;
 
     constructor(
-        private router: Router,        
+        private transtion: TransitionService,        
         private activatedRoute: ActivatedRoute,
         private zone: NgZone,
         private bookstore: BookstoreService) {
@@ -88,11 +89,11 @@ export class StorePage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     public openSearch() {
-        this.router.navigate(['/searchpage']);
+        this.transtion.fade('/searchpage', {duration: 200});
     }
 
     // private selectBook(book: BookTitle) {
-    //     this.router.navigate([`/details/${book.ISBN}/`]);
+    //     this.transition.fade(`/details/${book.ISBN}/`);
     // }
     
     // private filterList(filter: string) {
