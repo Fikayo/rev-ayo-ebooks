@@ -16,8 +16,7 @@ import { ReaderPage } from "./reader.page";
         PdfViewerModule,
         ReaderRoutingModule,
     ],
-    declarations: [ReaderPage],
-    // exports: [ReaderComponent]
+    declarations: [ReaderPage]
   })
   export class ReaderModule {}
   
