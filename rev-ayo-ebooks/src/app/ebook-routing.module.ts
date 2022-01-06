@@ -3,9 +3,18 @@ import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
 const routes: Routes = [
 
-    { path: 'searchpage', loadChildren:() => import('./pages/searchpage/searchpage.module').then(m => m.SearchpageModule) },
-    { path: 'welcome', loadChildren:() => import('./pages/welcome/welcome.module').then(m => m.WelcomeModule) },
-    { path: '', loadChildren: () => import('./components/bottom-menu/bottom-menu.module').then(m => m.BottomMenuModule) }
+    { 
+        path: '', 
+        loadChildren:() => import('./pages/welcome/welcome.module').then(m => m.WelcomeModule) 
+    },
+    { 
+        path: 'books', 
+        loadChildren: () => import('./pages/home/home.module').then(m => m.HomeModule) 
+    },    
+    { 
+        path: 'searchpage', 
+        loadChildren:() => import('./pages/searchpage/searchpage.module').then(m => m.SearchpageModule) 
+    }
 ];
 
 @NgModule({

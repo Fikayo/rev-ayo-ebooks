@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { BottomMenuComponent } from './bottom-menu.component';
+import { HomePage } from './home.page';
 
-describe('BottomMenuComponent', () => {
-  let component: BottomMenuComponent;
-  let fixture: ComponentFixture<BottomMenuComponent>;
+describe('HomeComponent', () => {
+  let component: HomePage;
+  let fixture: ComponentFixture<HomePage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BottomMenuComponent ]
+      declarations: [ HomePage ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(BottomMenuComponent);
+    fixture = TestBed.createComponent(HomePage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

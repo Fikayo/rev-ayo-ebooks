@@ -14,11 +14,11 @@ export class StartComponent implements OnInit {
     }
 
     public register() {
-        this.transition.slide('/welcome/register', {direction: 'left'});
+        this.transition.slide('/register', {direction: 'left'});
     }
 
     public login() {
-        this.transition.slide('/welcome/login', {direction: 'right'});
+        this.transition.slide('/login', {direction: 'right'});
     }
 
 }

@@ -1,4 +1,5 @@
 @import "_variables";
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 
 
 :root {
@@ -6,10 +7,14 @@
     --st-indicator-color: $my-primary;
 }
 
+:host {
+    font-family: "Open Sans", Roboto, "Helvetica Neue", sans-serif; 
+}
+
 html, body { height: 100%; }
 body {
     margin: 0; 
-    font-family: Roboto, "Helvetica Neue", sans-serif; 
+    font-family: "Open Sans", Roboto, "Helvetica Neue", sans-serif; 
     color: #555;
 }
 

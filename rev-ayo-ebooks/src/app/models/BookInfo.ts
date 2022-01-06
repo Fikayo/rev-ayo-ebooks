@@ -21,7 +21,7 @@ export interface BookInfoBe {
     FileSource: string;
     PriceNaira: string;
     PriceWorld: string;
-    ProductID: string;
+    ProductId: string;
 }
 
 export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {   
@@ -35,7 +35,7 @@ export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {
         description: b.Description,    
         cover: b.ImageSource,
         price: price,
-        productID: b.ProductID
+        productID: b.ProductId
     }
 
     return book;

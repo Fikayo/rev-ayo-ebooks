@@ -22,7 +22,7 @@ export class LoginPage implements OnInit {
     }
 
     public register() {
-        this.transition.fade('welcome/register');
+        this.transition.fade('register');
     }
 
     public login(email: any | string) {

@@ -4,7 +4,19 @@
         <div class="text">
             <h2 class="heading">Welcome</h2>
             <h4>To Bishop Ayo Odunayo's Library</h4>
-        </div>        
-        <ebook-start></ebook-start>
+        </div>      
+        <div class="interact" [@storeReady]="allowEntry">
+            <ebook-start></ebook-start>
+        </div>  
+        <div [@loadingDone]="showSpinner" class="interact loading">
+            <img class="spinner" src="assets/images/nice-loading.gif" alt="Loading...">
+            <h4 class="loading-text">Please wait while we prepare the store</h4>
+        </div>
+        <div [@storeError]="showError" class="interact">            
+            <ion-text color="danger">
+                <h4 class="loading-text">Unfortunately, the store took too long to respond. Please try again later.</h4>
+            </ion-text>            
+        </div>
     </div>
+
 </ion-content>

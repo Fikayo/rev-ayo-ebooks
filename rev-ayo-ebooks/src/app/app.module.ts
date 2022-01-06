@@ -5,7 +5,6 @@ import { EbookRoutingModule } from './ebook-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { BookstoreService } from './services/bookstore/bookstore.service';
 import { UserService } from './services/user/user.service';
-import { SettingsPage } from './pages/settings/settings.page';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { RouteReuseStrategy } from '@angular/router';
@@ -16,7 +15,6 @@ import { TransitionService } from './services/transition/transition.service';
 @NgModule({
     declarations: [
         AppComponent,
-        SettingsPage,
     ],
     entryComponents: [],
     imports: [ 

@@ -10,6 +10,23 @@
     .text {
         margin-bottom: 50px;
     }
+
+    .interact {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .loading {
+
+        .spinner {
+            max-height: 150px;
+        }
+
+        .loading-text {
+            margin-top: -40px;
+        }
+    }
 }
 
 ebook-start {

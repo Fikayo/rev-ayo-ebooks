@@ -2,18 +2,19 @@ import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
-import { BottomMenuRoutingModule } from "./bottom-menu-routing.module";
-import { BottomMenuComponent } from "./bottom-menu.component";
+import { ComponentsModule } from "src/app/components/components.module";
+import { HomeRoutingModule } from "./home-routing.module";
+import { HomePage } from "./home.page";
 
 @NgModule({
     imports: [
         IonicModule,
         CommonModule, 
         FormsModule,
-        BottomMenuRoutingModule,
+        ComponentsModule,
+        HomeRoutingModule
     ],
-    declarations: [BottomMenuComponent],
-    // exports: [BottomMenuComponent]
+    declarations: [HomePage]
   })
-  export class BottomMenuModule {}
+  export class HomeModule {}
   

@@ -1,7 +1,7 @@
 {
     "books": [        
         {
-            "ISBN": "unknown",
+            "ISBN": "978-978-123-456-7",
             "title": "Becoming a better you",
             "displayName": "Becoming a Better You: A Guide to Personal Development",
             "author": "Bishop Ayo Odunayo",
@@ -17,7 +17,7 @@
             "title": "How to be Happy and Stay Happy",
             "displayName": "How to be Happy and Stay Happy: Secrets of True Happiness",
             "author": "Bishop Ayo Odunayo",
-            "description": " The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan. A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally bred for hunting.",
+            "description": "A guide on how to place your joy on things above. A great read on discovering the true meaning of happiness.",
             "productID": "test_id_1",
             "price": {
                 "naira": 300,
@@ -25,12 +25,12 @@
             }
         },
         {
-            "ISBN": "unknown",
-            "title": "Becoming a better you",
+            "ISBN": "978-978-123-456-7",
+            "title": "Becoming a Better You",
             "displayName": "Becoming a Better You: A Guide to Personal Development",
             "author": "Bishop Ayo Odunayo",
-            "description": " The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan. A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally bred for hunting.",
-            "productID": "test_id_1",
+            "description": "A guide on self development and growth. A great read for all ages.",
+            "productID": "test_id_2",
             "price": {
                 "naira": 300,
                 "world": 15.6

@@ -1,47 +1,41 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { LoadingController, Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular';
 import { PaymentService } from './services/payment/payment.service';
-import { TransitionService } from './services/transition/transition.service';
-import { UserService } from './services/user/user.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
     title = 'rev-ayo-ebooks';
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private router: Router,
-        private transition: TransitionService,
         private payment: PaymentService,
-        loadingCtrl: LoadingController,
-        platform: Platform,
+        private platform: Platform,
     ) {
-        this.transition.fade('/welcome', {duration: 300});
+        // this.fixReload();    
+    }
+
+    ngOnInit(): void {
+        console.debug("initialising main app");
         this.monitorNavigation();
-        // this.fixReload();
+        this.platform.ready().then(async () => {
+                
+            this.setStatusBar();
+        }); 
+    }
 
-        platform.ready().then(async () => {
-            
-            // const loading = await loadingCtrl.create();
-            // await loading.present();
-            
-            this.payment.initStore();
-            this.payment.ready.asObservable().subscribe({
-                next: (pReady) => {
-                    if(pReady) {
-                        console.log("AppStore Ready!");
-                        this.setStatusBar();
-                        // loading.dismiss();
-                    }
-                }
-            }); 
-        });        
-
+    ngOnDestroy(): void {
+        console.debug("destroying main app");
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();        
     }
 
     private async setStatusBar() {
@@ -51,7 +45,9 @@ export class AppComponent {
     }
 
     private monitorNavigation() {
-        this.router.events.subscribe({ 
+        this.router.events
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ 
             next: (event) => {
                 if (event instanceof NavigationEnd) {
                     console.info("router url", this.router.url);                    

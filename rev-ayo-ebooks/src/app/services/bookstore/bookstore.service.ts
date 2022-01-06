@@ -146,15 +146,28 @@ export class BookstoreService {
         const refreshRequired = this.db.expired(BooksTable);
         
         console.log("fetching product info");
-        let results: Promise<any>;
         if (refreshRequired) {
-            results = this.refreshAllBooks();
-        } else {
-            results = this.db.fetch(BooksTable);
+            this.refreshAllBooks()
+            .then(books => {
+                const products: ProductInfo[] = [];
+                books.forEach(book => {
+                    products.push({
+                        ISBN: book.ISBN, 
+                        productID: book.productID
+                    });
+                });
+
+                sub.next(products);
+            })
+            .catch(err => console.error("Error refreshing books", err));
+
+            return sub.asObservable();
         }
 
-        results
-        .then(res => {
+        console.log("fetching products directly from db");
+        this.db.fetch(BooksTable)
+        .then((res: ProductInfoBe[]) => {
+            console.debug("product info response", res)
             const products: ProductInfo[] = [];
             if (res) {
                 res.forEach((p: ProductInfoBe) => {
@@ -200,9 +213,10 @@ export class BookstoreService {
             this.allBooks.set(bookID, book);
         }
 
+        console.log(`updating product ${prodID} to`, {prodID, price, region});
         this.api.post(`/product/${prodID}`, {
             ProductId: prodID,
-            price: iapproduct.price,
+            price: price,
             region: region
         })
         .then(res => {           

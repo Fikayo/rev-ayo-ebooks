@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IAPProduct, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
-import { Platform } from '@ionic/angular';
-import { BehaviorSubject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { BookstoreService } from '../bookstore/bookstore.service';
 import { ProductInfo } from "../../models/ProductInfo";
 import { UserService } from '../user/user.service';
@@ -12,6 +12,8 @@ import { UserService } from '../user/user.service';
 export class PaymentService {
     private readonly productInfos: Map<string, ProductInfo[]>;
     private paymentReady = new BehaviorSubject(false);
+    
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private user: UserService,
@@ -19,7 +21,6 @@ export class PaymentService {
         private store: InAppPurchase2) 
     { 
         this.productInfos = new Map();
-        this.productInfos.set("unknwon", [{ISBN: "unknwon", productID: "test_id_1"}, {ISBN: "unknwon", productID: "test_id_1"}]);
     }
 
     public get ready(): BehaviorSubject<boolean> {
@@ -27,7 +28,9 @@ export class PaymentService {
     }
 
     public initStore() {
-        this.bookstore.fetchProdutinfo().subscribe({
+        this.bookstore.fetchProdutinfo()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
             next: (info: ProductInfo[]) => {
                 this.productInfos.clear();
                 info.forEach(p => {
@@ -47,17 +50,6 @@ export class PaymentService {
                 this.prepareStore();
             }
         });
-
-        this.store.ready(() => {
-            console.info("Store ready");
-            this.store.products.forEach((p: IAPProduct) => {
-                let isbn: string = p.alias??"";
-                this.bookstore.updateProduct(isbn, p);
-            });
-            
-            console.info('Store Products: ' + JSON.stringify(this.store.products));
-            this.paymentReady.next(true);
-        });
     }
 
     public async orderBook(bookID: string) {
@@ -72,8 +64,13 @@ export class PaymentService {
         console.log('order success : ' + JSON.stringify(data));
     }
 
+    public destroy() {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+
     private prepareStore() {
-        console.info("store product infos", this.productInfos);
+        console.info("preparing store", this.productInfos);
         const storeEvents = this.store.when('') as any
         if (storeEvents.error && storeEvents.error == "cordova_not_available") {
             console.error("Cordova likely not avaiable - try on a device. Error: ", storeEvents);
@@ -82,6 +79,28 @@ export class PaymentService {
         }
 
         this.store.verbosity = this.store.DEBUG;
+        this.registerProducts();
+        this.setupStoreEvents();
+      
+        this.store.ready(() => {
+            console.info("Store ready - products", this.store.products);
+            this.store.products.forEach((p: IAPProduct) => {
+                console.log("updating store product", p);
+                let isbn: string = p.alias??"";
+                this.bookstore.updateProduct(isbn, p);
+            });
+            
+            console.info('Store Products: ' + JSON.stringify(this.store.products));
+            this.paymentReady.next(true);
+        });
+
+        
+        this.store.error(function(error: any) {
+            console.log('ERROR ' + error.code + ': ' + error.message);
+        });
+    }
+
+    private registerProducts() {
         this.productInfos.forEach(pair => {
             pair.forEach(p => {
                 this.store.register({
@@ -89,27 +108,31 @@ export class PaymentService {
                     type:  this.store.NON_CONSUMABLE,
                     alias: p.ISBN
                 });
-    
+            });
+        });
+        
+        console.debug("Store Refreshed!");
+        this.store.refresh();
+    }
+
+    private setupStoreEvents() {
+        this.productInfos.forEach(pair => {
+            pair.forEach(p => {    
                 this.store.when(p.productID).approved(this.productApproved.bind(this));
                 this.store.when(p.productID).cancelled(this.productCancelled.bind(this));        
                 this.store.when(p.productID).error(this.productError.bind(this));        
                 this.store.when(p.productID).updated(this.productUpdated.bind(this));
+                this.store.when(p.productID).finished(this.productFinished.bind(this));
             });
         });
-
-        this.store.error(function(error: any) {
-            console.log('ERROR ' + error.code + ': ' + error.message);
-        });
-
-        this.store.refresh();
     }
 
     private getNairaProductId(prodID: string): string {
-        return `${prodID}_NAIRA`;
+        return `${prodID}_naira`;
     }
 
     private getWorldProductId(prodID: string): string {
-        return `${prodID}_WORLD`;
+        return `${prodID}_world`;
     }
 
     private productApproved(product: IAPProduct) {
@@ -117,7 +140,9 @@ export class PaymentService {
 
         // Ensure to download book if needed
         let isbn: any = product.alias;
-        this.user.purchaseBook(isbn).subscribe({
+        this.user.purchaseBook(isbn)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
             next: () => {
                 product.finish();
             }
@@ -129,10 +154,14 @@ export class PaymentService {
     }
     
     private productError(product: IAPProduct) {
-        console.log("product error", product);
+        console.error("product error", product);
     }
     
     private productUpdated(product: IAPProduct) {
         console.log("product updated", product);
+    }
+
+    private productFinished(product: IAPProduct) {
+        console.log("product finished", product);
     }
 }

@@ -1,0 +1,9 @@
+.logo {
+    background-image: url('../../../assets/icon/logo.svg');
+    width: 200px;
+    height: 200px;
+    background-size: contain;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+}

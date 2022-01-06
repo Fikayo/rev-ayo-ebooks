@@ -1,19 +1,19 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { BottomMenuComponent } from './bottom-menu.component';
+import { HomePage } from './home.page';
 
 const routes: Routes = [    
     { 
-        path: 'books',
-        component: BottomMenuComponent,
+        path: '',
+        component: HomePage,
         children: [
             {
                 path: 'store',
-                loadChildren: () => import('../../pages/store/store.module').then(m => m.StoreModule)
+                loadChildren: () => import('../store/store.module').then(m => m.StoreModule)
             },
             {
                 path: 'personal',
-                loadChildren: () => import('../../pages/personal-books/personal-books.module').then(m => m.PersonalBooksModule)
+                loadChildren: () => import('../personal-books/personal-books.module').then(m => m.PersonalBooksModule)
             }
         ],
     },
@@ -27,4 +27,4 @@ const routes: Routes = [
 @NgModule({
     imports: [RouterModule.forChild(routes)],
 })
-export class BottomMenuRoutingModule { }
+export class HomeRoutingModule { }

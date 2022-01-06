@@ -4,7 +4,6 @@ import { ModalController } from '@ionic/angular';
 import { ToastController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { BottomMenuComponent } from 'src/app/components/bottom-menu/bottom-menu.component';
 import { PaymentModal } from 'src/app/components/payment-modal/payment-modal.component';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo } from "src/app/models/BookInfo";

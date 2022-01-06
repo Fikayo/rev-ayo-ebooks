@@ -128,6 +128,11 @@ export class DatabaseService {
 
         let query = new SQLQuery(`UPDATE ${table} SET ${pairs.join(",")} WHERE ${conds.join(" AND ")};`, ...values, ...condValues);
 
+        console.log(`UPDATE QUERY: ${query.sql}, ${query.params}`, query);
+        console.log(`UPDATE QUERY data and conds: `, data, conditions);
+        console.log(`UPDATE QUERY values: `, values);
+        console.log(`UPDATE QUERY cond values: `, condValues);
+        console.log(`UPDATE QUERY all values spread: `, ...values, ...condValues);
         return new Promise(async (resolve, reject) => {            
             this.updatedb(query)
             .then(_ => resolve())
@@ -199,7 +204,7 @@ export class DatabaseService {
         return updates;
     }
 
-    private async updatedb(query: SQLQuery, ignoreAffectedRows = false): Promise<void> {
+    private async updatedb(query: SQLQuery, ignoreAffectedRows = true): Promise<void> {
         // try {
         //     const results = await this.query(query.sql, query.params);
         //     console.debug(`updatedb ${query} results`, results, "ignore affected rows", ignoreAffectedRows);

@@ -24,7 +24,7 @@ export class RegisterPage implements OnInit {
     }
 
     public login() {
-        this.transition.fade('welcome/login');
+        this.transition.fade('/login');
     }
 
     public register(email: any | string, region: any | string) {
