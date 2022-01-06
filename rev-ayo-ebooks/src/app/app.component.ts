@@ -2,9 +2,10 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/co
 import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform } from '@ionic/angular';
-import { PaymentService } from './services/payment/payment.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+declare const NavigationBar: any;
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
     constructor(
         private router: Router,
-        private payment: PaymentService,
         private platform: Platform,
     ) {
         // this.fixReload();    
@@ -39,7 +39,9 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     private async setStatusBar() {
-        StatusBar.setBackgroundColor({color:"#ffffff"});
+        const hex = "#ffffff";
+        NavigationBar.backgroundColorByHexString(hex);
+        StatusBar.setBackgroundColor({color: hex});
         await StatusBar.setStyle({ style: Style.Light });
         StatusBar.show();
     }

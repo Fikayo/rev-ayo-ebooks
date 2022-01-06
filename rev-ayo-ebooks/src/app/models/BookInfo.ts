@@ -26,7 +26,8 @@ export interface BookInfoBe {
 
 export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {   
     
-    const price = userRegion == "nigeria" ? `₦${b.PriceNaira}` : `$${b.PriceWorld}`;
+    // const price = userRegion == "nigeria" ? `₦${b.PriceNaira}` : `$${b.PriceWorld}`;
+    const price = userRegion == "nigeria" ? `${b.PriceNaira}` : `${b.PriceWorld}`;
     const book: BookInfo = {
         ISBN: b.BookId,
         title: b.Title,

@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { PDFDocumentProxy, PDFProgressData } from 'ng2-pdf-viewer';
-import { pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
+import { PDFDocumentProxy } from 'ng2-pdf-viewer';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
@@ -42,8 +41,6 @@ export class ReaderPage implements OnInit, OnDestroy {
         private activatedRoute: ActivatedRoute,
         private user: UserService,
         private bookstore: BookstoreService) {
-        pdfDefaultOptions.defaultZoomValue = 'page-fit';
-        pdfDefaultOptions.doubleTapZoomFactor = "125%";
     }
 
     ngOnInit(): void {

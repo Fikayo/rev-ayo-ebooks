@@ -62,6 +62,7 @@ export class WelcomePage implements OnInit, OnDestroy {
                 if(pReady) {
                     console.log("AppStore Ready!");
                     this.entryAllowed = true;
+                    this.storeError = false;
                     
                     if(this.storeTimeout) {
                         clearTimeout(this.storeTimeout);
@@ -90,6 +91,14 @@ export class WelcomePage implements OnInit, OnDestroy {
 
     public get showError(): string {
         return this.storeError ? 'show' : 'hide';
+    }
+
+    public tryAgain() {
+        this.storeError = false;
+        this.storeInitWatchdog();
+        if(this.entryAllowed) {
+            clearTimeout(this.storeTimeout);
+        }
     }
 
     private checkLogin() {

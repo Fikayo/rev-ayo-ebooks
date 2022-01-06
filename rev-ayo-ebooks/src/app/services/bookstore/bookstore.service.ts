@@ -226,6 +226,12 @@ export class BookstoreService {
                 sub.error('update failed');
             }
             
+            if(this.allBooks.has(bookID)) {
+                const currentBook = this.allBooks.get(bookID) as BookInfo;
+                currentBook.price = price;
+                this.allBooks.set(bookID, currentBook);
+            }
+            
             this.db.update(BooksTable, dbupdate, {BookId: bookID}).then(_ => sub.next(true)).catch(err => sub.error(err));
         })
         .catch(error => {

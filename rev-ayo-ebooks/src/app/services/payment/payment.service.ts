@@ -82,9 +82,14 @@ export class PaymentService {
         this.registerProducts();
         this.setupStoreEvents();
       
-        this.store.ready(() => {
+        InAppPurchase2.getPlugin().ready(() => {
             console.info("Store ready - products", this.store.products);
             this.store.products.forEach((p: IAPProduct) => {
+                if (p.price == null) {
+                    console.debug("skipping product with null price", p);
+                    return;
+                }
+
                 console.log("updating store product", p);
                 let isbn: string = p.alias??"";
                 this.bookstore.updateProduct(isbn, p);
@@ -98,6 +103,9 @@ export class PaymentService {
         this.store.error(function(error: any) {
             console.log('ERROR ' + error.code + ': ' + error.message);
         });
+
+        console.debug("Store Refreshed!");
+        this.store.refresh();
     }
 
     private registerProducts() {
@@ -109,10 +117,7 @@ export class PaymentService {
                     alias: p.ISBN
                 });
             });
-        });
-        
-        console.debug("Store Refreshed!");
-        this.store.refresh();
+        });        
     }
 
     private setupStoreEvents() {

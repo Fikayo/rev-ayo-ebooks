@@ -15,6 +15,7 @@
         <div [@storeError]="showError" class="interact">            
             <ion-text color="danger">
                 <h4 class="loading-text">Unfortunately, the store took too long to respond. Please try again later.</h4>
+                <ion-button (click)="tryAgain()" shape="round">Try again</ion-button>
             </ion-text>            
         </div>
     </div>

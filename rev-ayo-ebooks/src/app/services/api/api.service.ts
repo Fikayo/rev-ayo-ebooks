@@ -39,7 +39,7 @@ export class ApiService {
                 resolve(res.data);
             })
             .catch(error => {
-                console.error(`Error during POST request to '${path}': ${error}`);
+                console.error(`Error during POST request to '${path}'`, body, error);
                 reject(error);
             });
         });

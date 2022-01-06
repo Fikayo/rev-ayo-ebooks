@@ -110,7 +110,7 @@ export class DatabaseService {
         await this.updatedb(query);
     }
 
-    public async update(table: string, data: any, conditions: any): Promise<void> {
+    public async update(table: string, data: any, conditions: any, ignoreAffectedRows = false): Promise<void> {
         const columns = Object.keys(data);
         const values = Object.values(data);
         const pairs: any[] = [];
@@ -128,13 +128,13 @@ export class DatabaseService {
 
         let query = new SQLQuery(`UPDATE ${table} SET ${pairs.join(",")} WHERE ${conds.join(" AND ")};`, ...values, ...condValues);
 
-        console.log(`UPDATE QUERY: ${query.sql}, ${query.params}`, query);
-        console.log(`UPDATE QUERY data and conds: `, data, conditions);
-        console.log(`UPDATE QUERY values: `, values);
-        console.log(`UPDATE QUERY cond values: `, condValues);
-        console.log(`UPDATE QUERY all values spread: `, ...values, ...condValues);
+        // console.debug(`UPDATE QUERY: ${query.sql}, ${query.params}`, query);
+        // console.debug(`UPDATE QUERY data and conds: `, data, conditions);
+        // console.debug(`UPDATE QUERY values: `, values);
+        // console.debug(`UPDATE QUERY cond values: `, condValues);
+        // console.debug(`UPDATE QUERY all values spread: `, ...values, ...condValues);
         return new Promise(async (resolve, reject) => {            
-            this.updatedb(query)
+            this.updatedb(query, ignoreAffectedRows)
             .then(_ => resolve())
             .catch(error => {
                 console.error(`update error during ${query}:`, error);
@@ -204,7 +204,7 @@ export class DatabaseService {
         return updates;
     }
 
-    private async updatedb(query: SQLQuery, ignoreAffectedRows = true): Promise<void> {
+    private async updatedb(query: SQLQuery, ignoreAffectedRows = false): Promise<void> {
         // try {
         //     const results = await this.query(query.sql, query.params);
         //     console.debug(`updatedb ${query} results`, results, "ignore affected rows", ignoreAffectedRows);

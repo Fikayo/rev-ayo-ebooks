@@ -128,28 +128,6 @@ export class BookDetailsPage implements OnInit {
             });
 
             return await presentModal.present();
-
-            // this.user.addToMyBooks(this.book.ISBN).subscribe({
-            //     next: () => {
-                    
-            //         this.zone.run(() => {
-            //             this.snackbar.open("Added to book list", 'Dismiss', {
-            //                 duration: 1500,
-            //             });
-                        
-            //             this.setPurchasedBook(true);
-            //         });
-            //     },
-    
-            //     error: () => {
-            //         this.zone.run(() => {
-            //             console.error("failed to buy book");
-            //             this.snackbar.open("Unfortunately, an error occured. Please try again", 'Dismiss', {
-            //                 duration: 2000,
-            //             });                    
-            //         });
-            //     },
-            // });
         }
     }
 
