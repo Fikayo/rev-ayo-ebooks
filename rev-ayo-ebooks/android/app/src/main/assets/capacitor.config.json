@@ -1,6 +1,9 @@
 {
-	"appId": "com.ebooks.store",
+	"appId": "org.cvi.bookstore",
 	"appName": "rev-ayo-ebooks",
 	"webDir": "www",
-	"bundledWebRuntime": false
+	"bundledWebRuntime": false,
+	"server": {
+		"url": "http://192.168.2.19:8100"
+	}
 }

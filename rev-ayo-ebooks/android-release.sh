@@ -1,7 +1,7 @@
 export KEYSTORE_ALIAS=ebookskeystore
 export KEYSTORE_PASSWORD=ebooks@keystore 
 
-ng build
+npm run build
 cordova build --release android
 keytool -importkeystore -srckeystore ebooks.keystore -destkeystore ebooks.keystore -deststoretype pkcs12
 cp ebooks.keystore ./platforms/android/app/build/outputs/apk/
