@@ -1,0 +1,42 @@
+@import "/src/styles/_variables.scss";
+
+#author {
+
+    height: 100%;
+    padding: 0 $pageSidePadding;
+
+       
+    margin-top: 20px;
+    
+    img {
+        width: 100px;
+        height: auto;
+        border-radius: 50%;
+
+        float: left;
+        margin-right: 10px;
+    }
+
+    .content {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .social-media {
+        text-align: center;
+
+        .social {
+            margin: 20px 0;
+            display: block;
+
+            .icon {
+                margin-right: 10px;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+        }
+    }
+}

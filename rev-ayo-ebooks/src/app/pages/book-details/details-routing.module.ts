@@ -1,13 +1,16 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ReaderPage } from '../reader/reader.page';
 import { BookDetailsPage } from './book-details.page';
 
 const routes: Routes = [
-  {
-    path: '',
-    component: BookDetailsPage,
-  }
+    {
+        path: '',
+        component: BookDetailsPage,
+    },
+    {
+        path: 'author',
+        loadChildren: () => import('../author/author.module').then(m => m.AuthorModule)
+    }
 ];
 
 @NgModule({
