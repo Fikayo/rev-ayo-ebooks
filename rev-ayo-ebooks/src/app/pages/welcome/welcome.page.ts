@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { StoreService } from 'src/app/services/store/store.service';
 import { TransitionService } from 'src/app/services/transition/transition.service';
 import { UserService } from 'src/app/services/user/user.service';
@@ -50,6 +50,7 @@ export class WelcomePage implements OnInit, OnDestroy {
         private user: UserService,
         private transition: TransitionService,
         private store: StoreService,
+        private zone: NgZone
         ) {    
     }
 
@@ -93,17 +94,19 @@ export class WelcomePage implements OnInit, OnDestroy {
         this.store.ready.asObservable()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (pReady) => {
+            next: (pReady: boolean) => {
                 if(pReady) {
-                    console.log("AppStore Ready!");
-                    this.entryAllowed = true;
-                    this.storeError = false;
-                    
-                    if(this.storeTimeout) {
-                        clearTimeout(this.storeTimeout);
-                    }
-
-                    this.checkLogin();
+                    this.zone.run(() => {
+                        console.log("AppStore Ready!");
+                        this.entryAllowed = true;
+                        this.storeError = false;
+                        
+                        if(this.storeTimeout) {
+                            clearTimeout(this.storeTimeout);
+                        }
+    
+                        this.checkLogin();
+                    });
                 }
             }
         }); 

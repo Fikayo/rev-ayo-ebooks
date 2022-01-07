@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { NavigationEnd, NavigationError, Router } from '@angular/router';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { Platform } from '@ionic/angular';
@@ -27,7 +27,7 @@ export class AppComponent implements OnInit, OnDestroy {
         console.debug("initialising main app");
         this.monitorNavigation();
         this.platform.ready().then(() => {                
-            this.setStatusBar();    
+            this.setStatusBar();
         }); 
     }
 

@@ -10,6 +10,8 @@ import { RouteReuseStrategy } from '@angular/router';
 import { SuperTabsModule } from '@ionic-super-tabs/angular';
 import { NativePageTransitions } from '@awesome-cordova-plugins/native-page-transitions/ngx';
 import { TransitionService } from './services/transition/transition.service';
+import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { StoreService } from './services/store/store.service';
 
 @NgModule({
     declarations: [
@@ -28,9 +30,8 @@ import { TransitionService } from './services/transition/transition.service';
     
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     providers: [
-        BookstoreService,
-        UserService,
-        TransitionService,
+        StoreService,
+        InAppPurchase2,
         NativePageTransitions,
         { provide: RouteReuseStrategy, useClass: IonicRouteStrategy }
     ],

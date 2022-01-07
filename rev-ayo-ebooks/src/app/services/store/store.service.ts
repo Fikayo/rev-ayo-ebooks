@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IAPProduct, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
+import { IAPProduct, IAPProducts, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { BookstoreService } from '../bookstore/bookstore.service';
@@ -28,27 +28,6 @@ export class StoreService {
     public initStore() {
         console.info("initialising store service");
         this.bookstore.fetchProdutinfo()
-        // .toPromise()
-        // .then((info: ProductInfo[]) => {
-        //     console.log("fetched product info", info);
-        //     this.productInfos.clear();
-        //     info.forEach(p => {
-        //         const naira: ProductInfo = {
-        //             ISBN: p.ISBN,
-        //             productID: this.getNairaProductId(p.productID)
-        //         }
-
-        //         const world: ProductInfo = {
-        //             ISBN: p.ISBN,
-        //             productID: this.getWorldProductId(p.productID)
-        //         }
-
-        //         this.productInfos.set(p.ISBN, [naira, world]);
-        //     });
-
-        //     this.prepareStore();
-        // })
-        // .catch(e => console.error("Failed to fetch product info from backend", e))
         // .pipe(takeUntil(this.destroy$))
         .subscribe({
             next: (info: ProductInfo[]) => {
@@ -120,11 +99,11 @@ export class StoreService {
             console.info("Store ready by callback - products", this.iap.products);
             const prod = this.iap.get('test_id_1_naira')
             console.log("gotten p", prod);
-            this.tryStoreReady();
+            this.tryStoreReady(this.iap.products);
         });
 
         this.refresh();
-        this.tryStoreReady();
+        this.tryStoreReady(this.iap.products);
     }
 
     private registerProduct(p: ProductInfo) { 
@@ -144,14 +123,14 @@ export class StoreService {
         this.iap.when(p.productID).finished(this.productFinished.bind(this));
     }
 
-    private tryStoreReady() {
+    private tryStoreReady(storeProducts: IAPProducts) {
         console.log("checking if store is ready");
-        if (!this.iap.products) return;
+        if (!storeProducts) return;
 
         let productsExist = false;
-        this.iap.products.forEach((p: IAPProduct) => {
-            if (p.price === null) {
-                console.debug("skipping product with null price", p);
+        storeProducts.forEach((p: IAPProduct) => {
+            if (p.price == null) {
+                console.debug("skipping product with null price", JSON.stringify(p), p);
                 return;
             }
 
@@ -166,7 +145,7 @@ export class StoreService {
             console.log("PRODUCTS EXIST!!");
         });
                 
-        console.info('Store Products: ', this.iap.products);
+        console.info('Store Products: ', storeProducts);
         if (productsExist) {
             this.paymentReady.next(true);
         } else {
@@ -204,7 +183,7 @@ export class StoreService {
     
     private productUpdated(product: IAPProduct) {
         if(product.price == null) {
-            console.debug("product price is null, returning", product);
+            console.debug("product price is null, returning", JSON.stringify(product), product);
             return;
         }
 
