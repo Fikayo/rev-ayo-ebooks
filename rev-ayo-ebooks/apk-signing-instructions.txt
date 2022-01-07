@@ -54,6 +54,8 @@ Now we have our final release binary called ebooks.apk and we can release this o
 Transfer to phone via 
 adb install ./platforms/android/app/build/outputs/apk/release/ebooks.apk
 
+adb install ./android/app/release/app-release.apk
+
 
 For reference see
 https://stackoverflow.com/questions/26449512/how-to-create-a-signed-apk-file-using-cordova-command-line-interface

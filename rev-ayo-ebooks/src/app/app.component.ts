@@ -20,15 +20,14 @@ export class AppComponent implements OnInit, OnDestroy {
         private router: Router,
         private platform: Platform,
     ) {
-        // this.fixReload();    
+        // this.fixReload();
     }
 
     ngOnInit(): void {
         console.debug("initialising main app");
         this.monitorNavigation();
-        this.platform.ready().then(async () => {
-                
-            this.setStatusBar();
+        this.platform.ready().then(() => {                
+            this.setStatusBar();    
         }); 
     }
 

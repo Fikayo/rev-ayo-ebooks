@@ -30,7 +30,7 @@
                 <div class="cover-info">
                     <div class="title">
                         {{book.displayName}}
-                        <span class="author">{{book.author}}</span>
+                        <span [routerLink]="['author']" class="author">{{book.author}}</span>
                         <span class="meta">ISBN: {{book.ISBN}}</span>
                     </div>
                 </div>

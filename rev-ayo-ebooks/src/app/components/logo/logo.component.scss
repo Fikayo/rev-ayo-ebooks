@@ -1,10 +1,18 @@
 .logo {
     background-image: url('../../../assets/icon/ebooks-splash-logo.png');
     background-repeat: no-repeat;
-    width: 400px;
-    height: 400px;
     background-size: contain;
     position: relative;
     left: 50%;
     transform: translateX(-50%);
+
+    &.large {
+        width: 400px;
+        height: 400px;
+    }
+
+    &.small {        
+        width: 200px;
+        height: 200px;
+    }
 }

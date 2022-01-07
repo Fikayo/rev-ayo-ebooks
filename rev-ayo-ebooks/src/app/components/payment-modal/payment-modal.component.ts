@@ -2,7 +2,7 @@ import { Component, Inject, Input, OnInit } from '@angular/core';
 import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { ViewController } from '@ionic/core';
 import { BookInfo } from "src/app/models/BookInfo";
-import { PaymentService } from 'src/app/services/payment/payment.service';
+import { StoreService } from 'src/app/services/store/store.service';
 
 @Component({
   selector: 'ebook-payment-modal',
@@ -15,7 +15,7 @@ export class PaymentModal implements OnInit {
 	private paymentTimeout!: any;
 
 	constructor(
-        private payment: PaymentService,
+        private store: StoreService,
 		private loadingCtrl: LoadingController,
 		private toastCtrl: ToastController,
 		private modalCtrl: ModalController) 
@@ -29,7 +29,7 @@ export class PaymentModal implements OnInit {
 		console.log("Ordering book", this.book);
 		await this.showLoader();
 		this.orderTimer();
-		this.payment.orderBook(this.book.ISBN).then(_ => {
+		this.store.orderBook(this.book.ISBN).then(_ => {
 			this.hideLoader();
 			this.successfulPurchase();
 		})

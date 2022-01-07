@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { PaymentService } from 'src/app/services/payment/payment.service';
+import { StoreService } from 'src/app/services/store/store.service';
 import { TransitionService } from 'src/app/services/transition/transition.service';
 import { UserService } from 'src/app/services/user/user.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { trigger, state, style, animate, transition, keyframes } from '@angular/animations';
+import { Platform } from '@ionic/angular';
 
 @Component({
     selector: 'ebook-welcome',
@@ -45,38 +46,27 @@ export class WelcomePage implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
+        private platform: Platform,
         private user: UserService,
         private transition: TransitionService,
-        private payment: PaymentService,
+        private store: StoreService,
         ) {    
     }
 
     ngOnInit(): void {          
         console.info("Welcome page initialised");
-        
-        this.payment.initStore();
-        this.payment.ready.asObservable()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-            next: (pReady) => {
-                if(pReady) {
-                    console.log("AppStore Ready!");
-                    this.entryAllowed = true;
-                    this.storeError = false;
-                    
-                    if(this.storeTimeout) {
-                        clearTimeout(this.storeTimeout);
-                    }
-
-                    this.checkLogin();
-                }
-            }
-        }); 
-
-        this.storeInitWatchdog();
+        this.platform.ready()
+        .then(() => {
+            console.info("platform ready");
+            this.init();
+        })
+        .catch(e => {
+            console.error("Platform could not get ready", e);
+        })
     }
 
     ngOnDestroy(): void {
+        console.debug("destroying welcome page");
         this.destroy$.next(true);
         this.destroy$.unsubscribe();        
     }
@@ -95,10 +85,30 @@ export class WelcomePage implements OnInit, OnDestroy {
 
     public tryAgain() {
         this.storeError = false;
+        this.store.refresh();
+    }
+
+    private init() {        
+        this.store.initStore();
+        this.store.ready.asObservable()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+            next: (pReady) => {
+                if(pReady) {
+                    console.log("AppStore Ready!");
+                    this.entryAllowed = true;
+                    this.storeError = false;
+                    
+                    if(this.storeTimeout) {
+                        clearTimeout(this.storeTimeout);
+                    }
+
+                    this.checkLogin();
+                }
+            }
+        }); 
+
         this.storeInitWatchdog();
-        if(this.entryAllowed) {
-            clearTimeout(this.storeTimeout);
-        }
     }
 
     private checkLogin() {

@@ -188,23 +188,23 @@ export class BookstoreService {
         return sub.asObservable();
     }
 
-    public updateProduct(bookID: string, iapproduct: IAPProduct): Observable<boolean> { 
+    public updateProduct(bookID: string, product: IAPProduct): Observable<boolean> { 
         const sub = new Subject<boolean>();
 
-        const prodID = iapproduct.id.slice(0, -6);
-        const isNaira = iapproduct.id.toLowerCase().indexOf("naira") != -1;
+        const prodID = product.id.slice(0, -6);
+        const isNaira = product.id.toLowerCase().indexOf("naira") != -1;
         const region = isNaira ? "nigeria" : "world";
-        const price = iapproduct.price;
+        const price = product.price;
        
-        let dbupdate: any = {};
+        let dbObject: any = {
+            Title: product.title,
+            Description: product.description
+        }
+
         if (isNaira) {
-            dbupdate = {
-                PriceNaira: price
-            }
+            dbObject.PriceNaira = price;
         } else {
-            dbupdate = {
-                PriceWorld: price
-            }
+            dbObject.PriceWorld = price;
         }
 
         if(this.allBooks.has(bookID)) {
@@ -215,27 +215,32 @@ export class BookstoreService {
 
         console.log(`updating product ${prodID} to`, {prodID, price, region});
         this.api.post(`/product/${prodID}`, {
-            ProductId: prodID,
+            productId: prodID,
+            bookId: bookID,
             price: price,
-            region: region
+            region: region,
+            title: product.title,
+            description: product.description
         })
         .then(res => {           
             if (res.affectedRows  == 0) {
-                let msg = `no rows updated while updating book ${bookID} to ${JSON.stringify(iapproduct)}`;
+                let msg = `no rows updated while updating book ${bookID} to ${JSON.stringify(product)}`;
                 console.error(msg);
                 sub.error('update failed');
             }
             
             if(this.allBooks.has(bookID)) {
                 const currentBook = this.allBooks.get(bookID) as BookInfo;
+                currentBook.title = product.title;
+                currentBook.description = product.description;
                 currentBook.price = price;
                 this.allBooks.set(bookID, currentBook);
             }
-            
-            this.db.update(BooksTable, dbupdate, {BookId: bookID}).then(_ => sub.next(true)).catch(err => sub.error(err));
+
+            this.db.update(BooksTable, dbObject, {BookId: bookID}).then(_ => sub.next(true)).catch(err => sub.error(err));
         })
         .catch(error => {
-            console.error(`error updating book ${bookID} to ${JSON.stringify(iapproduct)}`);
+            console.error(`error updating book ${bookID} to ${JSON.stringify(product)}`);
             sub.error(error);
         });
 
