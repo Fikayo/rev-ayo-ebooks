@@ -10,7 +10,7 @@
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 7,
+      "versionCode": 8,
       "versionName": "ebooks app bundle",
       "outputFile": "app-release.apk"
     }

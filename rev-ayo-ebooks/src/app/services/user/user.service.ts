@@ -6,7 +6,7 @@ import { emptyCollection, emptyUser, User, UserCollection } from '../../models/U
 import { DatabaseService } from '../database/database.service';
 import { ApiService } from '../api/api.service';
 
-const ALLOW_FAKE_LOGIN = true
+const ALLOW_FAKE_LOGIN = false
 const TESTEMAIL = "test@email.com"
 
 @Injectable({
