@@ -3,7 +3,6 @@ import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
-import { PaymentModule } from "src/app/components/payment-modal/paymet.module";
 import { BookDetailsPage } from "./book-details.page";
 import { DetailsRoutingModule } from "./details-routing.module";
 
@@ -13,12 +12,10 @@ import { DetailsRoutingModule } from "./details-routing.module";
         CommonModule, 
         FormsModule,
         BooksetComponentModule,
-        PaymentModule,
         DetailsRoutingModule,
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
     declarations: [BookDetailsPage],
-    // exports: [BookDetailsComponent]
   })
   export class BookDetailsModule {}
   
