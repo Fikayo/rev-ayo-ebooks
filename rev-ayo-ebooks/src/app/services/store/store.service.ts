@@ -6,6 +6,7 @@ import { BookstoreService } from '../bookstore/bookstore.service';
 import { ProductInfo } from "../../models/ProductInfo";
 import { UserService } from '../user/user.service';
 import { flatten } from '@angular/compiler';
+import { User } from 'src/app/models/User';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,9 @@ export class StoreService {
     private readonly productInfos: Map<string, ProductInfo[]> = new Map();
     private paymentReady = new BehaviorSubject(false);
     
+    private userRegion: string = '';
+    private destroy$: Subject<boolean> = new Subject<boolean>();
+
     constructor(
         private user: UserService,
         private bookstore: BookstoreService,
@@ -28,32 +32,41 @@ export class StoreService {
     public initStore() {
         console.info("initialising store service");
         this.bookstore.fetchProdutinfo()
-        // .pipe(takeUntil(this.destroy$))
+        .then((info: ProductInfo[]) => {
+            console.log("fetched product info", info);
+            this.productInfos.clear();
+            info.forEach(p => {
+                const naira: ProductInfo = {
+                    ISBN: p.ISBN,
+                    productID: this.getNairaProductId(p.productID)
+                }
+
+                const world: ProductInfo = {
+                    ISBN: p.ISBN,
+                    productID: this.getWorldProductId(p.productID)
+                }
+
+                this.productInfos.set(p.ISBN, [naira, world]);
+            });
+
+            this.prepareStore();
+        })
+        .catch((err) => console.error("Failed to fetch product info from backend", err));
+
+        this.user.user
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (info: ProductInfo[]) => {
-                console.log("fetched product info", info);
-                this.productInfos.clear();
-                info.forEach(p => {
-                    const naira: ProductInfo = {
-                        ISBN: p.ISBN,
-                        productID: this.getNairaProductId(p.productID)
-                    }
-
-                    const world: ProductInfo = {
-                        ISBN: p.ISBN,
-                        productID: this.getWorldProductId(p.productID)
-                    }
-
-                    this.productInfos.set(p.ISBN, [naira, world]);
-                });
-
-                this.prepareStore();
+            next: (u: User) => {
+                console.log("USER UPDATED: ", u);
+                this.userRegion = u.region;                
             },
-            error: () => console.error("Failed to fetch product info from backend")
+            error: (err) => console.error(`failed to subscribe to user`, err)
         });
     }
 
-    public destroy(): void {     
+    public destroy(): void {   
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();         
     }
 
     public async orderBook(bookID: string): Promise<void> {
@@ -63,7 +76,7 @@ export class StoreService {
         return new Promise((resolve, reject) => {
             try {
                 const prods = this.productInfos.get(bookID) as ProductInfo[];
-                const regionProd = this.user.region == "nigeria" ? prods[0] : prods[1];
+                const regionProd = this.userRegion == "nigeria" ? prods[0] : prods[1];
     
                 console.log("calling store with ", regionProd)
                 this.iap.order(regionProd.productID)
@@ -147,9 +160,7 @@ export class StoreService {
             console.log("updating ready store product", p);
             let isbn: string = p.alias ?? "";
             this.bookstore.updateProduct(isbn, p)
-            .subscribe({
-                error: () => console.error("Failed to update product", p),
-            })
+            .catch((err) => console.error("Failed to update product", p, err))
 
             productsExist = true
             console.log("PRODUCTS EXIST!!");
@@ -177,10 +188,8 @@ export class StoreService {
         // Ensure to download book if needed
         let isbn: any = product.alias;
         this.user.purchaseBook(isbn)
-        .subscribe({
-            next: () => product.verify(),
-            error: () => console.error("Failed to acquire purchased book")
-        });
+        .then(() => product.verify())
+        .catch((err) => console.error("Failed to acquire purchased book", err))
     }
 
     private productCancelled(product: IAPProduct) {
@@ -199,10 +208,8 @@ export class StoreService {
 
         const isbn = product.alias ?? "";
         this.bookstore.updateProduct(isbn, product)
-        .subscribe({
-            next: () => console.log("product updated", product),
-            error: () => console.error("Failed to update product")
-        })
+        .then(() => console.log("product updated", product))
+        .catch((err) => console.error("Failed to update product", err));
     }
     
     private productVerified(product: IAPProduct) {

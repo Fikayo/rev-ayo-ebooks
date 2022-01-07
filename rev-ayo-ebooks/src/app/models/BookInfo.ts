@@ -1,3 +1,8 @@
+export interface BookStore {
+    books: BookInfo[];
+    byID: Map<string, BookInfo>;
+}
+
 
 export interface BookInfo {
     ISBN: string;
@@ -40,4 +45,8 @@ export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {
     }
 
     return book;
+}
+
+export function emptyStore(): BookStore {
+    return {books: [], byID: new Map<string, BookInfo>()};
 }

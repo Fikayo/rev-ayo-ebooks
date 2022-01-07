@@ -68,6 +68,7 @@ export class WelcomePage implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         console.debug("destroying welcome page");
+        this.store.destroy();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();        
     }
@@ -116,15 +117,13 @@ export class WelcomePage implements OnInit, OnDestroy {
 
     private checkLogin() {
         this.user.isLoggedIn()
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-            next: (loggedIn) => {
-                if(loggedIn) {
-                    this.transition.slide('/books/store');
-                }
-            },
-            error: (err) => console.error("Error trying to read login ID", err)
-        });
+        .then((loggedIn) => {
+            if(loggedIn) {
+                console.log("logged in. Going to bookstore");
+                this.transition.slide('/books/store');
+            }
+        })
+        .catch((err) => console.error("Error trying to read login ID", err))
     }
 
     private storeInitWatchdog() {

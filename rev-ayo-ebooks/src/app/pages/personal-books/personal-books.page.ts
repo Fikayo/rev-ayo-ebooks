@@ -5,6 +5,7 @@ import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { User } from 'src/app/models/User';
 
 @Component({
   selector: 'ebook-personal-books',
@@ -37,25 +38,26 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
         this.destroy$.unsubscribe();
     }
     
-    // ionViewWillEnter() {
-    //     this.init();
-    // }
-
     private init(): void {        
-        this.user.fetchCollection()
+        this.user.user
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (collection) => {
-                if(!collection) return;
-                this.zone.run(() => {
-                    this.myBooks = collection.purchased;
-                    this.wishlist = collection.wishlist;
-                    console.debug("fetched collection", collection, this.myBooks, this.wishlist);
+            next: (u: User) => {
+                console.log("USER UPDATED: ", u);
+                if(!u.collection) return;
+
+                const purchased = u.collection.purchased;
+                const wishlist = u.collection.wishlist;
+                this.zone.run(() => {                            
+                    this.myBooks = purchased;
+                    this.wishlist = wishlist;
                 });
             },
-
-            error: (err) => console.error("Error fetching collection:", err),
+            error: (err) => console.error(`failed to subscribe to user`, err)
         });
+
+        this.user.fetchCollection()
+        .catch(err => console.error("Error fetching collection", err))
     }
 
     public openShop() {

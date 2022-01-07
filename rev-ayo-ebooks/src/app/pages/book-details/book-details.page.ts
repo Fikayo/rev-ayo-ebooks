@@ -1,14 +1,12 @@
 import { Component, NgZone, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
 import { ToastController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { PaymentModal } from 'src/app/components/payment-modal/payment-modal.component';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
-import { BookInfo } from "src/app/models/BookInfo";
+import { BookInfo, BookStore } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
-import { UserCollection } from 'src/app/models/User';
+import { emptyUser, User, UserCollection } from 'src/app/models/User';
 import { TransitionService } from 'src/app/services/transition/transition.service';
 import { StoreService } from 'src/app/services/store/store.service';
 
@@ -18,7 +16,7 @@ import { StoreService } from 'src/app/services/store/store.service';
   styleUrls: ['./book-details.page.scss']
 })
 export class BookDetailsPage implements OnInit {
-    
+
     public book!: BookInfo;
     public suggestions: BookInfo[] = [];
     public actionText!: string;  
@@ -26,6 +24,7 @@ export class BookDetailsPage implements OnInit {
     public bookIsPurchased!: boolean;
     public orderInProgress = false;
 
+    private _user: User = emptyUser();
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
@@ -45,49 +44,41 @@ export class BookDetailsPage implements OnInit {
         .subscribe((params) => {
             let bookID = params['isbn'];
 
-            this.bookstore.fetchBook(bookID)
+            this.bookstore.bookstore
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (book) => {
-                    console.log("returned book detail", book);
-                    if(!book) return;
+                next: (store: BookStore) => {
+                    console.log("BOOKS UPDATED: ", store);
+                    if(!store.byID || !store.byID.has(bookID)) return;
+                    const book = store.byID.get(bookID);
+                    
                     this.zone.run(() => {                 
                         this.book = book as BookInfo;
-                        this.actionText = `Buy ${this.book.price}`
+                        this.actionText = `Buy ${this.book.price}`;
+                        this.suggestions = store.books;
                     });
                 },
-                error: (err) => console.error(`failed to fetch book {${bookID}} from bookstore`, err)
+
+                error: (err) => console.error("failed to subscribe to bookstore:", err),
             });
             
-            this.user.fetchCollection()
+            this.user.user
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (collection: UserCollection) => {
-                    console.info("col", collection);
-                    if(!collection) return;
-                    const bookPurchased = collection.purchased.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
-                    const bookWishful = collection.wishlist.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
+                next: (u: User) => {
+                    console.log("USER UPDATED: ", u);
+                    this._user = u;
+                    if(!u.collection) return;
+
+                    const bookPurchased = u.collection.purchased.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
+                    const bookWishful = u.collection.wishlist.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
                     this.zone.run(() => {                            
                         this.setPurchasedBook(bookPurchased);
                         this.bookInWishList = bookWishful;
                     });
                 },
-
-                error: (err) => console.error("Error fetching collection:", err),
+                error: (err) => console.error(`failed to subscribe to user`, err)
             });
-
-            this.bookstore.fetchAllBooks()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (books: BookInfo[]) => {
-                    console.info("all all books", books);
-                    if(!books) return;
-                    this.zone.run(() => {                 
-                        this.suggestions = books;
-                    });
-                },
-                error: (err) => console.error("failed to fetch titles from bookstore:", err),
-            });            
         });
     }
 
@@ -113,29 +104,25 @@ export class BookDetailsPage implements OnInit {
 
     public toggleBookInList() {
         const bookID = this.book.ISBN;
-        this.user.toggleInWishList(this.book.ISBN)        
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-            next: (success) => {
-                if(!success) return;
-                
-                this.zone.run(async () => {
-                    this.bookInWishList = this.user.inWishlist(bookID);
-                    console.info("book toggled in wishlist: ", this.bookInWishList);
-                    
-                    let message = "Added to Wishlist";
-                    if (!this.bookInWishList) message = "Remove from Wishlist";
-                    this.showToast(message);
-                });
-            },
+        this.user.toggleInWishList(this.book.ISBN)
+        .then((success: boolean) => {
+            if(!success) return;              
+            if(!this._user.collection) return;
 
-            error: () => {
-                this.zone.run(async () => {
-                    console.error("failed to toggle wishlist");
-                    this.showToast("Unfortunately, an error occured. Please try again");               
-                });
-            },
-        });
+            const bookWishful = this._user.collection.wishlist.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
+            console.info("book toggled in wishlist: ", bookWishful);
+            this.zone.run(async () => {                
+                let message = "Added to Wishlist";
+                if (!bookWishful) message = "Remove from Wishlist";
+                this.showToast(message);
+            });
+        })
+        .catch((error) => {
+            this.zone.run(async () => {
+                console.error("failed to toggle wishlist", error);
+                this.showToast("Unfortunately, an error occured. Please try again");               
+            });
+        })
     }
 
     private setPurchasedBook(purchased: boolean) {

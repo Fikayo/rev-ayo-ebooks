@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { PDFDocumentProxy } from 'ng2-pdf-viewer';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { BookInfo, BookStore } from 'src/app/models/BookInfo';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -50,26 +51,19 @@ export class ReaderPage implements OnInit, OnDestroy {
             let bookID = params['isbn'];
             this.bookID = bookID;
 
-            this.bookstore.fetchBookPDFPath(bookID)
+            this.bookstore.bookstore
             .pipe(takeUntil(this.destroy$))
             .subscribe({
-                next: (path) => {
-                    this.srcUrl = path
+                next: (store: BookStore) => {
+                    if(!store.byID || !store.byID.has(bookID)) return;
+                    const book = store.byID.get(bookID) as BookInfo;
+                    if (book.pdfPath) {
+                        this.srcUrl = book.pdfPath;
+                    }
                 },
-                error: (err) => {
-                    console.error(`failed to fetch ${bookID} PDF url from bookstore`, err)
-                }
-            });
-                        
-            this.user.fetchBookCurrentPage(bookID)
-            .pipe(takeUntil(this.destroy$))            
-            .subscribe({
-                next: (page) => {
-                    this.currentPage = page;
-                },
-                error: () => console.log(`failed to fetch current page for book ${bookID}`)
-            });
 
+                error: (err) => console.error("failed to subscribe to bookstore:", err),
+            });
         });
     }
 
@@ -77,6 +71,31 @@ export class ReaderPage implements OnInit, OnDestroy {
         this.user.updateBookProgress(this.bookID, this.currentPage);
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
+    }
+
+    ionViewDidEnter() {  
+        this.bookstore.fetchBookPDFPath(this.bookID)
+        .then((path) => {
+            this.srcUrl = path
+        })
+        .catch((err) => {
+            console.error(`failed to fetch ${this.bookID} PDF url from bookstore`, err)
+        })
+
+        this.user.fetchBookCurrentPage(this.bookID)
+        .pipe(takeUntil(this.destroy$))            
+        .subscribe({
+            next: (page) => {
+                console.log("current page: ", page);
+                this.currentPage = page;
+            },
+            error: () => console.log(`failed to fetch current page for book ${this.bookID}`)
+        });
+    }
+
+    ionViewWillLeave() {
+        console.info("reader page leaving");
+        this.user.updateBookProgress(this.bookID, this.currentPage);
     }
 
     public onPageChange(page: number) {

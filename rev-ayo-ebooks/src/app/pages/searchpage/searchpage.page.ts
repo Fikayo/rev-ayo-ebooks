@@ -1,12 +1,10 @@
 import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { Location } from '@angular/common';
 import { Observable } from 'rxjs';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
-import { BookInfo } from "src/app/models/BookInfo";
-import { TransitionService } from 'src/app/services/transition/transition.service';
+import { BookInfo, BookStore } from "src/app/models/BookInfo";
 
 @Component({
     selector: 'ebook-searchpage',
@@ -28,25 +26,18 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
     public onSelectedOption = new EventEmitter();
 
     constructor(
-        private transition: TransitionService,
         private location: Location,
         public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
-        this.bookstore.fetchAllBooks()
+        this.bookstore.bookstore
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (books) => {
-                this.allTitles = books;
+            next: (store: BookStore) => {
+                this.allTitles = store.books;
             },
             error: (err) => console.error("failed to fetch titles from bookstore:", err),
         });
-
-        // Detect input changes
-        // this.searchBox.valueChanges.subscribe(userInput => {
-        //     console.log("new input");
-        //     this.autoCompleteSearchList(userInput);
-        // });
     }
     
     ngOnDestroy(): void {   
