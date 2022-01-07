@@ -10,6 +10,7 @@ import { BookInfo } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
 import { UserCollection } from 'src/app/models/User';
 import { TransitionService } from 'src/app/services/transition/transition.service';
+import { StoreService } from 'src/app/services/store/store.service';
 
 @Component({
   selector: 'app-book-details',
@@ -23,18 +24,17 @@ export class BookDetailsPage implements OnInit {
     public actionText!: string;  
     public bookInWishList!: boolean;
     public bookIsPurchased!: boolean;
+    public orderInProgress = false;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
-
     constructor(
         private transition: TransitionService,
-        private router: Router,
         private activatedRoute: ActivatedRoute,
         private bookstore: BookstoreService,
         private user: UserService,
         private toastCtrl: ToastController,
-        private modalCtrl: ModalController,
+        private store: StoreService,
         private zone: NgZone) {
     }
 
@@ -92,6 +92,7 @@ export class BookDetailsPage implements OnInit {
     }
 
     ngOnDestroy(): void {   
+        console.log("book details destroyed");
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
     }
@@ -100,35 +101,14 @@ export class BookDetailsPage implements OnInit {
         this.transition.flip('/searchpage', {duration: 100, direction: 'left'});
     }
 
-    public async onActionClick(book: BookInfo) {
+    public async onActionClick() {
         if (this.bookIsPurchased) {
             console.log("reading");
-            // this.router.navigate([`../../read/${book.ISBN}/`], {relativeTo: this.activatedRoute});
-            this.transition.curl(`../../read/${book.ISBN}/`, undefined, {relativeTo: this.activatedRoute});
-            // this.router.navigate([`../../read/${book.ISBN}/`]);
-        } else {
-            console.log("opening sheet");
-            const presentModal = await this.modalCtrl.create({
-                component: PaymentModal,
-                componentProps: {
-                    book: this.book,
-                },
-                showBackdrop: true,
-                cssClass: 'payment-modal'
-            });
+            this.transition.curl(`../../read/${this.book.ISBN}/`, undefined, {relativeTo: this.activatedRoute});
+            return;
+        } 
 
-            presentModal.onWillDismiss().then((data: any) => {
-                console.log("dismiss data", data);
-                if(data.role == 'success') {
-                    this.zone.run(() => {
-                        this.setPurchasedBook(true);
-                    });
-
-                }
-            });
-
-            return await presentModal.present();
-        }
+        this.buyBook();       
     }
 
     public toggleBookInList() {
@@ -145,24 +125,14 @@ export class BookDetailsPage implements OnInit {
                     
                     let message = "Added to Wishlist";
                     if (!this.bookInWishList) message = "Remove from Wishlist";
-                    const toast = await this.toastCtrl.create({
-                        message: message,
-                        duration: 1500
-                    });
-                    
-                    toast.present();                    
+                    this.showToast(message);
                 });
             },
 
             error: () => {
                 this.zone.run(async () => {
                     console.error("failed to toggle wishlist");
-                    const toast = await this.toastCtrl.create({
-                        message: "Unfortunately, an error occured. Please try again",
-                        duration: 2000
-                    });
-
-                    toast.present();                  
+                    this.showToast("Unfortunately, an error occured. Please try again");               
                 });
             },
         });
@@ -171,6 +141,7 @@ export class BookDetailsPage implements OnInit {
     private setPurchasedBook(purchased: boolean) {
         if (!this.book) return;
         
+        this.orderInProgress = false;
         console.log(`${this.book.title} purchased: ${purchased}`);
         this.bookIsPurchased = purchased;
         if(this.bookIsPurchased) {
@@ -179,4 +150,30 @@ export class BookDetailsPage implements OnInit {
             this.actionText = `Buy ${this.book.price}`;
         }
     }
+
+    private async buyBook() {
+        if (!this.book) return;
+
+		console.log("Ordering book", this.book);
+		this.store.orderBook(this.book.ISBN)
+        .then(_ => {
+			// Show spinner till book is acquired
+            this.orderInProgress = true;
+		})
+		.catch(error => {
+			console.error(`Failed to order book '${this.book.ISBN}'`, error);
+			this.showToast("An unexpected error occured. Please try again.");
+		});
+
+	}
+    
+	private async showToast(message: string) {
+		console.info("showing toast message: " + message);
+		const toast = await this.toastCtrl.create({
+			message: message,
+			duration: 3000
+		});
+		
+		toast.present();
+	}
 }

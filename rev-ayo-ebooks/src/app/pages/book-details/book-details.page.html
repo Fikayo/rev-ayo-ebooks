@@ -45,7 +45,10 @@
         </div>
 
         <div class="action-container">
-            <ion-button (click)="onActionClick(book)" id="main-action" color="primary">{{actionText}}</ion-button>
+            <ion-button (click)="onActionClick()" id="main-action" color="primary">
+                <span [hidden]="orderInProgress">{{actionText}}</span>
+                <ion-spinner [hidden]="!orderInProgress" name="dots"></ion-spinner>
+            </ion-button>
         </div>
 
         <div class="ebook-divider"></div>

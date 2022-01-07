@@ -56,16 +56,26 @@ export class StoreService {
     public destroy(): void {     
     }
 
-    public async orderBook(bookID: string) {
+    public async orderBook(bookID: string): Promise<void> {
         console.log("attempting to purchase", bookID);
         if(!this.productInfos.has(bookID)) return;
         
-        const prods = this.productInfos.get(bookID) as ProductInfo[];
-        const regionProd = this.user.region == "nigeria" ? prods[0] : prods[1];
-
-        console.log("calling store with ", regionProd)
-        const data = await this.iap.order(regionProd.productID)
-        console.log('order success : ' + JSON.stringify(data));
+        return new Promise((resolve, reject) => {
+            try {
+                const prods = this.productInfos.get(bookID) as ProductInfo[];
+                const regionProd = this.user.region == "nigeria" ? prods[0] : prods[1];
+    
+                console.log("calling store with ", regionProd)
+                this.iap.order(regionProd.productID)
+                .then((data: any) => {
+                    console.log('order in progress : ' + JSON.stringify(data));
+                    resolve(data);
+                })
+                .catch((error: any) => reject(error))
+            } catch (error) {
+               reject(error);
+            }
+        })        
     }
 
     public refresh() {
