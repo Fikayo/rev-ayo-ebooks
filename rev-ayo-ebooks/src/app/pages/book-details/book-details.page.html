@@ -46,8 +46,8 @@
 
         <div class="action-container">
             <ion-button (click)="onActionClick()" id="main-action" color="primary">
-                <span [hidden]="orderInProgress">{{actionText}}</span>
-                <ion-spinner [hidden]="!orderInProgress" name="dots"></ion-spinner>
+                <span *ngIf="!orderInProgress">{{actionText}}</span>
+                <ion-spinner *ngIf="orderInProgress" name="dots"></ion-spinner>
             </ion-button>
         </div>
 

@@ -54,7 +54,7 @@ export class UserService {
             return emptyCollection();
         }
 
-        const refreshRequired = this.db.expired(WishlistTable);
+        const refreshRequired = this.db.expired(PurchasedTable) || this.db.expired(WishlistTable);
         
         if (refreshRequired) {
             try {
@@ -117,12 +117,15 @@ export class UserService {
 
         try {
             const p1 = this.api.post(`/user/${this._user.userID}/buy?bookId=${bookID}`, {})
-            const p2 = this.db.insert(PurchasedTable, bookID);
+            const p2 = this.db.insert(PurchasedTable, {BookId: bookID});
             const p3 = this.db.fetch(BooksTable, {BookId: bookID});
             const results = await Promise.all([p1, p2, p3]);
 
-            const book: BookInfoBe = results[2];
-            this._user.collection?.purchased.push(this.parseBook(book));
+            console.log("purchase wait results", results);
+            const book: BookInfoBe = results[2][0];
+            const col = this._user.collection ?? emptyCollection();
+            col.purchased.push(this.parseBook(book));
+            this._user.collection = col;
 
             await this.removeFromWishList(bookID)
             this.updateUser();

@@ -1,12 +1,12 @@
 import { Component, NgZone, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo, BookStore } from "src/app/models/BookInfo";
 import { UserService } from 'src/app/services/user/user.service';
-import { emptyUser, User, UserCollection } from 'src/app/models/User';
+import { emptyUser, User } from 'src/app/models/User';
 import { TransitionService } from 'src/app/services/transition/transition.service';
 import { StoreService } from 'src/app/services/store/store.service';
 
@@ -50,13 +50,19 @@ export class BookDetailsPage implements OnInit {
                 next: (store: BookStore) => {
                     console.log("BOOKS UPDATED: ", store);
                     if(!store.byID || !store.byID.has(bookID)) return;
-                    const book = store.byID.get(bookID);
-                    
+
+                    const book = store.byID.get(bookID) as BookInfo;                    
                     this.zone.run(() => {                 
-                        this.book = book as BookInfo;
+                        this.book = book;
                         this.actionText = `Buy ${this.book.price}`;
                         this.suggestions = store.books;
+
+                        if (this._user.collection) {
+                            const bookPurchased = this._user.collection.purchased.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
+                            this.setPurchasedBook(bookPurchased);
+                        }
                     });
+                    
                 },
 
                 error: (err) => console.error("failed to subscribe to bookstore:", err),
@@ -72,7 +78,9 @@ export class BookDetailsPage implements OnInit {
 
                     const bookPurchased = u.collection.purchased.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
                     const bookWishful = u.collection.wishlist.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
-                    this.zone.run(() => {                            
+                    this.zone.run(() => {    
+                        this.orderInProgress = false;   
+                        console.log("setting order in progress to: ", this.orderInProgress);
                         this.setPurchasedBook(bookPurchased);
                         this.bookInWishList = bookWishful;
                     });
@@ -128,14 +136,16 @@ export class BookDetailsPage implements OnInit {
     private setPurchasedBook(purchased: boolean) {
         if (!this.book) return;
         
-        this.orderInProgress = false;
-        console.log(`${this.book.title} purchased: ${purchased}`);
-        this.bookIsPurchased = purchased;
-        if(this.bookIsPurchased) {
-            this.actionText = "Read";
-        } else {                                    
-            this.actionText = `Buy ${this.book.price}`;
-        }
+        setTimeout(() => { 
+            this.orderInProgress = false;
+            console.log(`${this.book.title} purchased: ${purchased}`);
+            this.bookIsPurchased = purchased;
+            if(this.bookIsPurchased) {
+                this.actionText = "Read";
+            } else {                                    
+                this.actionText = `Buy ${this.book.price}`;
+            }
+        },0) 
     }
 
     private async buyBook() {

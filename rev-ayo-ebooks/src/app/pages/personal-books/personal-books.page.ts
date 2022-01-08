@@ -55,7 +55,9 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
             },
             error: (err) => console.error(`failed to subscribe to user`, err)
         });
+    }
 
+    ionViewDidEnter() {  
         this.user.fetchCollection()
         .catch(err => console.error("Error fetching collection", err))
     }

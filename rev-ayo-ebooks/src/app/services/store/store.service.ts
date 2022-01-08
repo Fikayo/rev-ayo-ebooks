@@ -71,24 +71,21 @@ export class StoreService {
 
     public async orderBook(bookID: string): Promise<void> {
         console.log("attempting to purchase", bookID);
-        if(!this.productInfos.has(bookID)) return;
+        if(!this.productInfos.has(bookID)) {
+            console.debug(`can't find productInfo for book ${bookID}. Returning`);
+            return;
+        }
         
-        return new Promise((resolve, reject) => {
-            try {
-                const prods = this.productInfos.get(bookID) as ProductInfo[];
-                const regionProd = this.userRegion == "nigeria" ? prods[0] : prods[1];
-    
-                console.log("calling store with ", regionProd)
-                this.iap.order(regionProd.productID)
-                .then((data: any) => {
-                    console.log('order in progress : ' + JSON.stringify(data));
-                    resolve(data);
-                })
-                .catch((error: any) => reject(error))
-            } catch (error) {
-               reject(error);
-            }
-        })        
+        try {
+            const prods = this.productInfos.get(bookID) as ProductInfo[];
+            const regionProd = this.userRegion == "nigeria" ? prods[0] : prods[1];
+
+            console.log("calling store with ", regionProd)
+            await this.iap.order(regionProd.productID);
+            console.log('order in progress');
+        } catch (error) {
+           return Promise.reject(error);
+        }     
     }
 
     public refresh() {

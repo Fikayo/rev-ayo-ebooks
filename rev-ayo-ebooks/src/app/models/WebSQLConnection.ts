@@ -126,7 +126,7 @@ export class EbooksSQL extends WebSQLConnection {
    
     protected deleteTables(): void {        
         TableNames.forEach(t => {
-            // if (t != UserTable) return;
+            // if (t != PurchasedTable) return;
             this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`), undefined, 
                 (_, error) => console.error(`Error deleting table "${t}"`, error)
             );
