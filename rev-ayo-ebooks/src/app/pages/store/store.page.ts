@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
-import { BookInfo, BookStore } from "src/app/models/BookInfo";
+import { BookInfo, BookStore, BookstoreGroup } from "src/app/models/BookInfo";
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { TransitionService } from 'src/app/services/transition/transition.service';
@@ -13,20 +13,13 @@ import { TransitionService } from 'src/app/services/transition/transition.servic
 })
 export class StorePage implements OnInit, OnDestroy {
 
-    public popularBooks: BookInfo[] = [];
-    public featuredBooks: BookInfo[] = [];
+    public bookGroupings: BookstoreGroup[] = [];
     public otherBooks: BookInfo[] = [];
-    public searching: boolean = false;
-    public filter!: string;
-    public searchResults: BookInfo[] = [];
     
-    private allBooks: BookInfo[] = [];
-
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
-        private transtion: TransitionService,        
-        private activatedRoute: ActivatedRoute,
+        private transtion: TransitionService,
         private zone: NgZone,
         private bookstore: BookstoreService) {
         }
@@ -42,35 +35,25 @@ export class StorePage implements OnInit, OnDestroy {
         .subscribe({
             next: (store: BookStore) => {
                 this.zone.run(() => {   
-                    this.allBooks = store.books; 
-                    console.log("fetched: ", this.allBooks);
+                    console.log("fetched: ", store);
 
-                    this.popularBooks = this.allBooks;
-                    this.featuredBooks = this.allBooks;
-                    this.otherBooks = this.allBooks;
+                    const groups = store.groups;
+                    if (groups && groups.length > 0) {
+                        this.bookGroupings = groups.splice(0, groups.length - 1)
+                        this.otherBooks = groups[groups.length - 1].books;
+                    
+                        this.otherBooks = store.books;
+                    }
                 })
             },
 
             error: (err) => console.error("failed to subscribe to bookstore:", err),
         });
-
-        // this.activatedRoute.queryParams.subscribe(param => {
-        //     this.filterList(param['filter']);
-        // });
-
     }
 
     ngOnDestroy(): void {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();        
-    }
-
-    get showFeatures(): boolean {
-        return !this.searching;
-    }
-
-    get noResults(): boolean {
-        return this.searchResults.length == 0 && this.searching;
     }
 
     public openSearch() {

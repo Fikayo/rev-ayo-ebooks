@@ -1,31 +1,21 @@
-<div id="searchpage">
-    <div class="search-section">
+<ion-header>
+
+    <ion-toolbar>
         
-        <ion-icon (click)="goBack()" aria-label="Back" name="arrow-back-outline"></ion-icon>
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/"></ion-back-button>
+        </ion-buttons>
 
-        <div class="input-box" style="width: 100%">
-            <form>
-                <input #autocompleteInput
-                    type="text" 
-                    placeholder="Search Bookstore" 
-                    aria-label="Search" 
-                    (keyup)="onKeyUp($event)"/>
-                <ion-button fill="clear" size="small" color="medium" class="suffix" *ngIf="autocompleteInput.value" aria-label="Clear" type="button" (click)="autocompleteInput.value = ''">
-                    <ion-icon slot="icon-only" name="close"></ion-icon>
-                </ion-button>
-            </form>
-        </div>
+        <ion-searchbar #searchInput (ionInput)="onInput($event)"  animated placeholder="Search Bookstore"></ion-searchbar>
+          
+    </ion-toolbar>
+
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <div id="searchpage">
+       
+        <ebook-bookset [books]="autoCompleteList" [style]="'list'" [size]="'small'"></ebook-bookset>
+
     </div>
-
-    <ebook-bookset [books]="autoCompleteList" [style]="'list'"></ebook-bookset>
-    <!-- <ion-list>
-        <ion-item *ngFor="let book of autoCompleteList" (click)="selectBook(book)">
-                <img  src="{{book.cover}}">
-            <ion-label>
-                <h2>{{book.title}}</h2>
-                <h3>{{book.price}}</h3>
-            </ion-label>
-        </ion-item>        
-    </ion-list> -->
-
-</div>
+</ion-content>

@@ -156,6 +156,37 @@ export class UserService {
             
         return currentPage;
     }
+    
+    public async updateRegion(region: string): Promise<void> {  
+        console.log("entering region vhange", this._user.region, region);      
+        if(!this._user.userID) {
+            return Promise.reject("User not logged in. Aborting call");
+        }
+
+        if (region == this._user.region) {
+            return;
+        }
+
+        console.log("region update to ", region);
+        try {
+
+            const res = await this.api.post(`/user/${this._user.userID}/info`, {
+               region: region,
+            })
+
+            if (res.region != region) {
+                let msg = `Unexpected result after updating region to ${region}`;
+                console.error(msg);
+                return Promise.reject(msg);
+            }
+
+            this._user.region = region;
+            this.updateUser();
+        } catch(error) {
+            console.error(`error updating book user region to ${region}`);
+        }
+    }
+
 
     public async toggleInWishList(bookID: string): Promise<boolean> {
         if(!this._user.userID) {
@@ -176,6 +207,7 @@ export class UserService {
 
     public async isLoggedIn(): Promise<boolean> {
         if(this._user.userID) {
+            console.info("user logged in by cache memory");
             return true;
         }
 
@@ -221,6 +253,7 @@ export class UserService {
 
             this._user.userID = userID;
             this._user.region = region;
+            this.updateUser();
             return userID;
         } catch (error: any) {
             console.log("Error from login", error);
@@ -255,6 +288,7 @@ export class UserService {
 
             this._user.userID = userID;
             this._user.region = region;
+            this.updateUser();
             return userID;
         } catch (error: any) {
             console.log("Error from register", error);
@@ -263,6 +297,25 @@ export class UserService {
                 return userID;
             }
 
+            return Promise.reject(error);
+        }
+    }
+
+    public async logoutUser(): Promise<void> {
+        this.db.clearLastUpdateTime(PurchasedTable);
+        this.db.clearLastUpdateTime(WishlistTable);
+
+        try {
+            const proms = [];
+            proms.push(this.db.deleteTable(PurchasedTable));
+            proms.push(this.db.deleteTable(WishlistTable));
+            proms.push(this.db.deleteTable(UserTable));
+            
+            this._user.userID = '';
+            this._user.region = '';
+            await Promise.all(proms);
+        } catch(error) {
+            console.error(`Error logging out user`, error);
             return Promise.reject(error);
         }
     }
@@ -328,8 +381,8 @@ export class UserService {
                 const wishlist: BookInfo[] = [];
                 if (res) {
                     const promises: Promise<void>[] = [];
-                    await this.db.delete(PurchasedTable);
-                    await this.db.delete(WishlistTable);
+                    await this.db.deleteTable(PurchasedTable);
+                    await this.db.deleteTable(WishlistTable);
                     if (res.purchased) {
                         res.purchased.forEach((book: BookInfoBe) => {
                             purchased.push(this.parseBook(book));

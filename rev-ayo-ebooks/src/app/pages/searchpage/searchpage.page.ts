@@ -1,10 +1,9 @@
-import { Component, ElementRef, OnInit, EventEmitter, Output, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { Location } from '@angular/common';
-import { Observable } from 'rxjs';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo, BookStore } from "src/app/models/BookInfo";
+import { IonSearchbar } from '@ionic/angular';
 
 @Component({
     selector: 'ebook-searchpage',
@@ -13,20 +12,15 @@ import { BookInfo, BookStore } from "src/app/models/BookInfo";
   })
 export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
 
-    public filteredOptions!: Observable<string[]>;
     public allTitles: BookInfo[] = [];
     public autoCompleteList!: any[];
 
+    @ViewChild('searchInput')
+    public searchInput!: IonSearchbar;
+
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
-    @ViewChild('autocompleteInput')
-    public autocompleteInput!: ElementRef;
-
-    @Output()
-    public onSelectedOption = new EventEmitter();
-
     constructor(
-        private location: Location,
         public bookstore: BookstoreService) { }
 
     ngOnInit(): void {
@@ -46,22 +40,14 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit() {
-        this.focusOnPlaceInput();
+        if(this.searchInput) {
+            setTimeout(() => { this.searchInput.setFocus(); }, 150); 
+        }
     }
     
-    public goBack() {
-        this.location.back();
-    }
-    
-    onKeyUp(event: any){
-        this.autoCompleteSearchList(event.target.value);
-    }
-
-    private autoCompleteSearchList(input: string) {        
-        console.log("filter with: " + input);
+    public onInput(event: any){
+        const input = event.target.value;
         this.autoCompleteList = this.filterList(input);
-        console.log("filter result: ", this.autoCompleteList);
-
     }
 
     private filterList(val: string): BookInfo[] {
@@ -72,13 +58,4 @@ export class SearchPage implements OnInit, AfterViewInit, OnDestroy {
         return val ? this.allTitles.filter(s => s.title.toLowerCase().indexOf(val.toLowerCase()) != -1)
             : this.allTitles;
     }
-
-    // focus the input field and remove any unwanted text.
-    private focusOnPlaceInput() {
-        if (this.autocompleteInput && this.autocompleteInput.nativeElement) {
-            this.autocompleteInput.nativeElement.focus();
-            this.autocompleteInput.nativeElement.value = '';
-        }
-    }
-
 }

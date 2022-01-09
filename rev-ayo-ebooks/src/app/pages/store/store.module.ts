@@ -3,6 +3,7 @@ import { NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
 import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
+import { ComponentsModule } from "src/app/components/components.module";
 import { StoreRoutingModule } from "./store-routing.module";
 import { StorePage } from "./store.page";
 
@@ -11,7 +12,7 @@ import { StorePage } from "./store.page";
         IonicModule,
         CommonModule, 
         FormsModule,
-        BooksetComponentModule,
+        ComponentsModule,
         StoreRoutingModule,
     ],
     declarations: [StorePage],

@@ -1,12 +1,14 @@
 <ion-header translucent class="ion-no-border">
     <ion-toolbar>
         
-        <div id="customSearch">
+        <!-- <div id="customSearch">
             <div class="searchbutton" (click)="openSearch()" >
                 <ion-icon slot="icon-only" name="search"></ion-icon>
                 <span class="text">Search Bookstore</span>
             </div>
-        </div>
+        </div> -->
+        <ebook-searchbutton></ebook-searchbutton>
+        
     </ion-toolbar>
 
 </ion-header>
@@ -34,6 +36,7 @@
             <div class="tab-item">
                 <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" [size]="'small'"></ebook-bookset>
                 <div class="empty-list" *ngIf="myBooks == undefined || myBooks.length == 0">
+                    <div class="logo-image"></div>
                     <span class="title">Start your collection</span>
                     <span class="text">From personal development to righteous living, we have lots of books to help you grow</span>
                     <ion-button (click)="openShop()" color="primary">Shop for books</ion-button>
@@ -45,6 +48,7 @@
             <div class="tab-item">
                 <ebook-bookset [books]="wishlist" [style]="'grid'" [size]="'small'"></ebook-bookset>
                 <div class="empty-list" *ngIf="wishlist == undefined || wishlist.length == 0">
+                    <div class="logo-image"></div>
                     <span class="title">Add to your wish list</span>
                     <span class="text">Add books which you plan to buy to your wish list so you don't forget them </span>
                     <ion-button (click)="openShop()" fill="solid" color="primary">Shop for books</ion-button>

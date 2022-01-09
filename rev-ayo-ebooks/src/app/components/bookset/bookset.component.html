@@ -1,8 +1,8 @@
 
 <div class="bookset">
-    <div class="topbar">
-        <span [hidden]="!showTitle || books === undefined" class="title">{{title}}</span>
-        <span [hidden]="books !== undefined" class="title fake">{{title}}</span>
+    <div class="topbar" *ngIf="showTitle">
+        <span [@fadeBook]="showBooks" class="title">{{title}}</span>
+        <span [@fadeBook]="showFakes" class="title fake">{{title}}</span>
     </div>
 
     <div *ngIf="style!='list'" class="set {{size}} {{style}}">
@@ -14,8 +14,7 @@
             </div>
         </div>
         
-        <div [hidden]="showFakes == 'hide'" *ngFor="let book of [1,2,3]" class="book">
-        <!-- <div [@fadeBook]="hideFakes" *ngFor="let book of [1,2,3]" class="book"> -->
+        <div [@fadeBook]="showFakes" *ngFor="let book of [1,2,3]" class="book fake">
             <div style="pointer-events:none" class="cover fake"></div>
             <div class="info">
                 <span class="title fake"></span>
@@ -25,14 +24,14 @@
     </div>
 
 
-    <div class="set list" *ngIf="style=='list'">
+    <div class="set {{size}} list" *ngIf="style=='list'">
         <ion-list lines="none">
             <ion-item class="book" *ngFor="let book of books" (click)="selectBook(book)">
                 <img class="cover" src="{{book.cover}}" alt="{{book.title}}">
                 <ion-label class="info">
                     <span class="title">{{book.title}}</span>
                     <span class="price" *ngIf="showPrice" >{{book.price}}</span>
-                    <span class="meta" *ngIf="showPrice" >ISBN: {{book.ISBN}}</span>
+                    <span class="meta" *ngIf="showPrice && showId" >ISBN: {{book.ISBN}}</span>
                 </ion-label >
             </ion-item>
         </ion-list>

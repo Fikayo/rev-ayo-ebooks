@@ -57,8 +57,10 @@ export class StoreService {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
             next: (u: User) => {
-                console.log("USER UPDATED: ", u);
-                this.userRegion = u.region;                
+                console.log("STORE USER UPDATED: ", u);
+                if (u.region != this.userRegion) {
+                    this.userRegion = u.region;                
+                }
             },
             error: (err) => console.error(`failed to subscribe to user`, err)
         });

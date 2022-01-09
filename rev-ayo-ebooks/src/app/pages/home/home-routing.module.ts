@@ -14,7 +14,11 @@ const routes: Routes = [
             {
                 path: 'personal',
                 loadChildren: () => import('../personal-books/personal-books.module').then(m => m.PersonalBooksModule)
-            }
+            },
+            {
+                path: 'account',
+                loadChildren: () => import('../account/account.module').then(m => m.AccountModule)
+            },
         ],
     },
     {

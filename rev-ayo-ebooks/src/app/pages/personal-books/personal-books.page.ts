@@ -67,6 +67,6 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
     }
 
     public openSearch() {
-        this.transition.slide('/searchpage', {direction: 'left', duration: 400, slowdownfactor: -1, iosdelay: 50});
+        this.transition.fade('/searchpage', {duration: 400, slowdownfactor: -1, iosdelay: 50});
     }
 }

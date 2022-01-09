@@ -1,8 +1,13 @@
 export interface BookStore {
     books: BookInfo[];
     byID: Map<string, BookInfo>;
+    groups: BookstoreGroup[];
 }
 
+export interface BookstoreGroup {
+    title: string;
+    books: BookInfo[];
+}
 
 export interface BookInfo {
     ISBN: string;
@@ -14,6 +19,7 @@ export interface BookInfo {
     pdfPath?: string;
     price: string;
     productID: string;
+    viewGroup?: string;
 }
 
 export interface BookInfoBe {
@@ -27,6 +33,7 @@ export interface BookInfoBe {
     PriceNaira: string;
     PriceWorld: string;
     ProductId: string;
+    ViewGroup?: string;
 }
 
 export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {   
@@ -41,12 +48,13 @@ export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {
         description: b.Description,    
         cover: b.ImageSource,
         price: price,
-        productID: b.ProductId
+        productID: b.ProductId,
+        viewGroup: b.ViewGroup
     }
 
     return book;
 }
 
 export function emptyStore(): BookStore {
-    return {books: [], byID: new Map<string, BookInfo>()};
+    return {books: [], byID: new Map<string, BookInfo>(), groups: []};
 }

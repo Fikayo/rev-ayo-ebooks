@@ -53,15 +53,19 @@
         }
 
         &.list {
+            margin-top: 0px;
             .book {
                 margin: 20px 0;
-                height: initial;
+                // height: initial;
                 float: none;
+                width: auto !important;
+                height: auto !important;
+                align-items: start;
 
                 .cover {
-                    $width: 55px;
-                    width: $width;
-                    height: $width / $imgRatio;
+                    // $width: 55px;
+                    // width: $width;
+                    // height: $width / $imgRatio;
                     display: inline-flex;
                     border-radius: 5px;
                 }
@@ -70,6 +74,7 @@
                     display: inline-block;
                     margin: 0;
                     margin-left: 15px;
+                    white-space: initial;
 
                     .title {
                         font-size: initial;
@@ -92,6 +97,11 @@
                 margin-left: 0px;
             }
             
+            &.fake {
+                height: initial !important;
+                background: initial !important;
+            }
+
             .cover {
                 // width: $bookWidth;
                 // height: $bookWidth/$imgRatio;

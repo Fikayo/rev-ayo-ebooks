@@ -9,10 +9,16 @@ import { trigger, state, style, animate, transition, keyframes } from '@angular/
     styleUrls: ['./bookset.component.scss'],
     animations: [
         trigger('fadeBook', [
+            state('hide', style({opacity: 0, display: 'none'})),
             transition('void => show', animate(600, keyframes([
                 style({opacity: 0}),
                 style({opacity: 1}),
             ]))),
+            transition('show => hide', animate(600, keyframes([
+                style({opacity: 1}),
+                style({opacity: 0}),
+            ]))),
+            state('show', style({opacity: 1, display: 'block'})),
         ])
     ]
 })
@@ -25,6 +31,7 @@ export class BooksetComponent implements OnInit, AfterViewInit {
     @Input() style: string = "carousel";
     @Input() showTitle: boolean = true;
     @Input() showPrice: boolean = true;
+    @Input() showId: boolean = true;
     @Input() size: string = "xlarge";
 
     constructor(private transition: TransitionService) { }

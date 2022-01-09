@@ -16,6 +16,7 @@ export const BookTable = {
     ProductId: "ProductId",
     PriceNaira: "PriceNaira",
     PriceWorld: "PriceWorld",
+    Group: "ViewGroup",
 }
 
 const TABLES: string[] = [
@@ -53,6 +54,7 @@ const TABLES: string[] = [
         [${BookTable.ProductId}] STRING NOT NULL,
         [${BookTable.PriceNaira}] STRING,
         [${BookTable.PriceWorld}] STRING,
+        [${BookTable.Group}] STRING,
         PRIMARY KEY (${BookTable.BookId})
     );`,
 
@@ -138,7 +140,7 @@ export class EbooksSQL extends WebSQLConnection {
             this.execute(new SQLQuery(t), undefined, 
                 (_, error) => console.error(`Error creating table with query: "${t}"`, error)
             );
-        });        
+        });
     }
 
 }

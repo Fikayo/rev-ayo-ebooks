@@ -39,10 +39,14 @@ export class DatabaseService {
 
     public updateLastUpdateTime(table: string) {
         const now = new Date();
-        localStorage.setItem(`lastUpdate-${table}`,  now.toUTCString());
+        localStorage.setItem(this.getLSTableKey(table),  now.toUTCString());
         this.lastTableUpdate.set(table, now);
 
         console.info(`Updating ${table} Refresh time to `, now);
+    }
+
+    public clearLastUpdateTime(table: string) {
+        localStorage.removeItem(this.getLSTableKey(table));
     }
 
     public async fetch(table: string, conditions?: any): Promise<any> {        
@@ -146,7 +150,7 @@ export class DatabaseService {
         });
     }
 
-    public async delete(table: string, conditions?: any): Promise<void> {        
+    public async delete(table: string, conditions: any): Promise<void> {        
         let query = `DELETE FROM ${table}`;
         let condValues: any[] = [];
         if (conditions) {
@@ -167,6 +171,11 @@ export class DatabaseService {
         }
 
         return this.updatedb(new SQLQuery(query, ...condValues), true);
+    }
+
+    public async deleteTable(table: string): Promise<void>  {
+        let query = `DELETE FROM ${table};`;
+        return this.updatedb(new SQLQuery(query), true);
     }
 
     public async query(sql: string, params: any[] | undefined): Promise<any> {
@@ -237,5 +246,9 @@ export class DatabaseService {
                 }
             );
         });
+    }
+
+    private getLSTableKey(table: string): string {
+        return `lastUpdate-${table}`;
     }
 }

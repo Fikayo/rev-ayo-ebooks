@@ -27,8 +27,12 @@ export class BookstoreService {
         user.user
         .subscribe({
             next: (u: User) => {
-                console.log("USER UPDATED: ", u);
-                this.userRegion = u.region;                
+                console.log("BOOKSTORE USER UPDATED: ", u);
+                if (u.region != this.userRegion) {
+                    this.userRegion = u.region;
+                    this.allBooks.clear();
+                    this.fetchAllBooks();
+                }             
             },
             error: (err) => console.error(`failed to subscribe to user`, err)
         });
@@ -275,9 +279,16 @@ export class BookstoreService {
     }
 
     private updateBooks() {
+        const books = Array.from(this.allBooks.values());
+        const groupings = groupBy(books, b => b.viewGroup ?? "More titles");
+        const groups = Object.keys(groupings).map(g => {
+            return {title: g, books: groupings[g]}
+        });
+
         this.storeSource.next({
-            books: Array.from(this.allBooks.values()),
+            books: books,
             byID: this.allBooks,
+            groups: groups,
         });
     }
 
@@ -285,4 +296,13 @@ export class BookstoreService {
         return ParseBookDb(book, this.userRegion);
     }
 }
+
+
+const groupBy = <T, K extends keyof any>(list: T[], getKey: (item: T) => K) =>
+list.reduce((previous, currentItem) => {
+    const group = getKey(currentItem);
+    if (!previous[group]) previous[group] = [];
+    previous[group].push(currentItem);
+    return previous;
+}, {} as Record<K, T[]>);
   

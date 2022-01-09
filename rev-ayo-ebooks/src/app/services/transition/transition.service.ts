@@ -24,7 +24,7 @@ export class TransitionService {
     public slide(path: string, options: NativeTransitionOptions | undefined = undefined) {
         const transOptions = this.getOptions(options);
 
-        // this.transition.slide(transOptions);
+        this.transition.slide(transOptions);
         this.navCtrl.navigateForward([path]);
     }
 

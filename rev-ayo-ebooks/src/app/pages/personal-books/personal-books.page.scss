@@ -19,6 +19,17 @@
         * {
             margin: 25px 0;
         }
+
+        .logo-image {
+            background-image: url('../../../assets/icon/books.png');
+            background-repeat: no-repeat;
+            background-size: contain;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 100px;
+        }
     }
 
     .tab-item {
