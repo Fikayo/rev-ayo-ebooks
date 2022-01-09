@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { IonicModule } from "@ionic/angular";
-import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
+import { ComponentsModule } from "src/app/components/components.module";
 import { BookDetailsPage } from "./book-details.page";
 import { DetailsRoutingModule } from "./details-routing.module";
 
@@ -11,7 +11,7 @@ import { DetailsRoutingModule } from "./details-routing.module";
         IonicModule,
         CommonModule, 
         FormsModule,
-        BooksetComponentModule,
+        ComponentsModule,
         DetailsRoutingModule,
     ],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],

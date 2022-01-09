@@ -1,10 +1,9 @@
 import { CommonModule } from "@angular/common";
 import { NgModule } from "@angular/core";
-import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { BrowserModule } from "@angular/platform-browser";
+import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { IonicModule } from "@ionic/angular";
-import { BooksetComponentModule } from "src/app/components/bookset/bookset.module";
+import { ComponentsModule } from "src/app/components/components.module";
 import { SearchPage } from "./searchpage.page";
 
 @NgModule({
@@ -15,7 +14,7 @@ import { SearchPage } from "./searchpage.page";
         FormsModule,
         // ReactiveFormsModule,
         RouterModule.forChild([{ path: '', component: SearchPage }]),
-        BooksetComponentModule,
+        ComponentsModule,
     ],
     declarations: [SearchPage],
     // exports: [SearchpageComponent]

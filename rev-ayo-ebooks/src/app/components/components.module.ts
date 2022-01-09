@@ -5,7 +5,7 @@ import { LogoComponent } from './logo/logo.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { SearchbuttonComponent } from './searchbutton/searchbutton.component';
-import { BooksetComponentModule } from './bookset/bookset.module';
+import { BooksetComponent } from './bookset/bookset.component';
 
 
 
@@ -14,13 +14,13 @@ import { BooksetComponentModule } from './bookset/bookset.module';
     StartComponent,
     LogoComponent,
     SearchbuttonComponent,
-    BooksetComponentModule,
+    BooksetComponent,
   ],
   exports: [
     StartComponent,
     LogoComponent,    
     SearchbuttonComponent,
-    BooksetComponentModule,
+    BooksetComponent,
   ],
   imports: [
     CommonModule,
