@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { NavigationExtras } from '@angular/router';
 import { NativePageTransitions, NativeTransitionOptions } from '@awesome-cordova-plugins/native-page-transitions/ngx';
 import { NavController } from '@ionic/angular';
 import { NavigationOptions } from '@ionic/angular/providers/nav-controller';

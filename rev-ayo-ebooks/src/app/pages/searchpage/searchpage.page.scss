@@ -4,6 +4,8 @@
 #searchpage {
 
     height: 100%;
+    padding-left: $pageSidePadding;
+    padding-right: $pageSidePadding;
     padding-bottom: $pageBottomPadding;
 
     .search-section {

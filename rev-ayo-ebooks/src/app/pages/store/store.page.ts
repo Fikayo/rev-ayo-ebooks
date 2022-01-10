@@ -41,8 +41,6 @@ export class StorePage implements OnInit, OnDestroy {
                     if (groups && groups.length > 0) {
                         this.bookGroupings = groups.splice(0, groups.length - 1)
                         this.otherBooks = groups[groups.length - 1].books;
-                    
-                        this.otherBooks = store.books;
                     }
                 })
             },

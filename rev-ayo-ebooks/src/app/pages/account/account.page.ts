@@ -1,10 +1,10 @@
-import { Component, OnInit, NgZone, OnDestroy } from '@angular/core';
+import { Component, OnInit, NgZone, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { UserService } from 'src/app/services/user/user.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { User } from 'src/app/models/User';
 import { TransitionService } from 'src/app/services/transition/transition.service';
-import { ToastController } from '@ionic/angular';
+import { IonSelect, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'ebook-account',
@@ -13,8 +13,7 @@ import { ToastController } from '@ionic/angular';
 })
 export class AccountPage implements OnInit, OnDestroy {
 
-    public userRegion!: string;
-
+    public userRegion: string = '';
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
@@ -27,15 +26,21 @@ export class AccountPage implements OnInit, OnDestroy {
         this.user.user
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (u: User) => {
-                console.log("USER UPDATED: ", u);
-                this.userRegion = u.region;
+            next: (u: User) => {                
+                console.log("ACCOUNT USER UPDATED: ", u);
+               
+                this.zone.run(() => {
+                    setTimeout(() => { 
+                        this.userRegion = u.region; 
+                    },0);           
+                });
             },
             error: (err) => console.error(`failed to subscribe to user`, err)
         });
     }
  
     ngOnDestroy(): void {   
+        console.debug("account page destroyed");
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
     }

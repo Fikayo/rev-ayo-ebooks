@@ -10,8 +10,8 @@
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 9,
-      "versionName": "ebooks app bundle - improved product cycle",
+      "versionCode": 10,
+      "versionName": "1.02",
       "outputFile": "app-release.apk"
     }
   ]

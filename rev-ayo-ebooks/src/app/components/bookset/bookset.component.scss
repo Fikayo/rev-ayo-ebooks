@@ -3,6 +3,8 @@
 .bookset {
     .topbar {
         display: flex;
+        text-transform: capitalize;
+
         .title {
             font-weight: 500;
             font-size: 17px;
@@ -61,6 +63,7 @@
                 width: auto !important;
                 height: auto !important;
                 align-items: start;
+                display: flex;
 
                 .cover {
                     // $width: 55px;
