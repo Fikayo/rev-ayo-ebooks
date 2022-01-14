@@ -1,3 +1,4 @@
+export const DBAdmin: string = "DBAdmin";
 export const UserTable: string = "User";
 export const PurchasedTable: string = "Purchased";
 export const WishlistTable: string = "Wishlist";
@@ -19,6 +20,12 @@ export const BookTable = {
     PriceWorld: "PriceWorld",
     Group: "ViewGroup",
 }
+
+const DBAdminCreateQuery = 
+`CREATE TABLE IF NOT EXISTS [${DBAdmin}] (
+    [DBVersion] varchar(50) NOT NULL,
+    PRIMARY KEY (DBVersion)
+);`
 
 const TABLES: string[] = [
 
@@ -83,6 +90,7 @@ export interface Transaction {
     executeSql: (sql: string, params?: any[], successCB?: SQLCallback, errorCB?: SQLCallback) => void;
 }
 
+const EBOOKS_DB_VERSION = "1.0";
 abstract class WebSQLConnection
 {
     protected readonly dbName = "ayo.ebooks.database";
@@ -94,18 +102,7 @@ abstract class WebSQLConnection
     
     constructor() {
         this.openDB();
-        // this.deleteTables();
-        this.createTables();
     }
-
-    private openDB() {
-        this.db = (<any>window).openDatabase(this.dbName, this.version, this.displayName, this.estimatedSize);
-        console.debug("opened db, ", this.db);
-    }
-
-    protected abstract deleteTables(): void;
-
-    protected abstract createTables(): void;
 
     public execute(sqlQuery: SQLQuery, successCB?: SQLCallback, errorCB?: SQLCallback) {
         this.runTransaction((tx: Transaction) => {
@@ -120,29 +117,75 @@ abstract class WebSQLConnection
             console.error("Error during db transaction: ", e);
         }
     }
+        
+    protected openDB() {
+        this.db = (<any>window).openDatabase(this.dbName, this.version, this.displayName, this.estimatedSize);
+        console.debug("opened db, ", this.db);
+    }
+
+    protected abstract deleteTables(): void;
+
+    protected abstract createTables(): void;
 } 
 
 
 export class EbooksSQL extends WebSQLConnection {
+      
+    public initialiseDatabase(): void {
+        console.info("Intialising db on bootstrap");
+        // this.deleteTables();
+        this.execute(new SQLQuery(DBAdminCreateQuery), (_, __) => {
+            this.checkVersion();
+        }, 
+            (_, error) => console.error(`Error creating table db admin table: "${DBAdminCreateQuery}"`, error)
+        );
+    }
 
-    static loadedTestData: boolean = false;
-    static initialised: boolean = false;
-   
-    protected deleteTables(): void {        
+    protected deleteTables(): void { 
+        console.info("Deleting all tables");
         TableNames.forEach(t => {
-            // if (t != BooksTable) return;
             this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`), undefined, 
                 (_, error) => console.error(`Error deleting table "${t}"`, error)
             );
         });
+
+        localStorage.clear();
     }
 
     protected createTables(): void {
+        console.info("Creating all tables");
         TABLES.forEach(t => {
             this.execute(new SQLQuery(t), undefined, 
                 (_, error) => console.error(`Error creating table with query: "${t}"`, error)
             );
         });
+    }    
+
+    private checkVersion() {
+        this.execute(new SQLQuery(`SELECT DBVersion FROM ${DBAdmin}`), 
+            (_, results) => {
+                let existingVersion = '';
+                if (results.rows && results.rows.length > 0) {
+                    existingVersion = results.rows[0]?.DBVersion;
+                }
+
+                console.debug("Existing Db version", existingVersion, "matches", existingVersion == EBOOKS_DB_VERSION);
+                if (existingVersion != EBOOKS_DB_VERSION) {
+                    console.info("Recreating all tables");
+                    this.deleteTables();
+                    this.createTables();
+
+                    if (!existingVersion) {
+                        this.execute(new SQLQuery(`INSERT INTO ${DBAdmin} (DBVersion) VALUES (?)`, EBOOKS_DB_VERSION), undefined, 
+                        (_, error) => console.error(`Error inserting db version as '${EBOOKS_DB_VERSION}'`, error));
+                    } else {
+                        this.execute(new SQLQuery(`UPDATE ${DBAdmin} SET DBVersion=?`, EBOOKS_DB_VERSION), undefined, 
+                        (_, error) => console.error(`Error updating db version from '${existingVersion}' to '${EBOOKS_DB_VERSION}'`, error));
+                    }
+                }
+            }, 
+            (_, error) => console.error(`Error checking db version:`, error)
+        );
     }
 
 }

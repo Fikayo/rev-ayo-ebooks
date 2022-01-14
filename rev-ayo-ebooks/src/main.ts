@@ -2,6 +2,7 @@ import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
+import { EbooksSQL } from './app/models/WebSQLConnection';
 import { environment } from './environments/environment';
 
 if (environment.production) {
@@ -24,5 +25,7 @@ if (typeof window['cordova' as any] !== 'undefined') {
 
 function deviceReady() {
     console.log("device is ready");
+    const db = new EbooksSQL();
+    db.initialiseDatabase();
     bootstrap();
 }
