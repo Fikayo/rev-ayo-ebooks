@@ -14,6 +14,7 @@ export interface BookInfo {
     title: string;
     displayName: string;
     author: string;
+    aboutBook: string;
     cover: string;
     description: string;
     pdfPath?: string;
@@ -26,6 +27,7 @@ export interface BookInfoBe {
     BookId: string;
     Title: string;
     DisplayName: string;
+    AboutBook: string;
     Author: string;
     Description: string;
     ImageSource: string;
@@ -44,8 +46,9 @@ export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {
         ISBN: b.BookId,
         title: b.Title,
         displayName: b.DisplayName,
-        author: b.Author,    
-        description: b.Description,    
+        author: b.Author, 
+        aboutBook: b.AboutBook || "",   
+        description: b.Description || "",    
         cover: b.ImageSource,
         price: price,
         productID: b.ProductId,

@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { Subject } from 'rxjs';
@@ -15,7 +15,7 @@ import { StoreService } from 'src/app/services/store/store.service';
   templateUrl: './book-details.page.html',
   styleUrls: ['./book-details.page.scss']
 })
-export class BookDetailsPage implements OnInit {
+export class BookDetailsPage implements OnInit, OnDestroy {
 
     public book!: BookInfo;
     public suggestions: BookInfo[] = [];

@@ -1,0 +1,17 @@
+@import "/src/styles/_variables.scss";
+
+#about {
+
+    padding: 0 $pageSidePadding;       
+    margin-top: 20px;    
+
+    .title {        
+        text-transform: capitalize;
+    }
+
+    .content {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+}

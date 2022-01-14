@@ -11,6 +11,7 @@ export const BookTable = {
     DisplayName: "DisplayName",
     Author: "Author",
     Description: "Description",
+    AboutBook: "AboutBook",
     ImageSource: "ImageSource",
     FileSource: "FileSource",
     ProductId: "ProductId",
@@ -45,13 +46,14 @@ const TABLES: string[] = [
 
     `CREATE TABLE IF NOT EXISTS [${BooksTable}] (
         [${BookTable.BookId}] varchar(50) NOT NULL,
-        [${BookTable.Title}] STRING NOT NULL,
         [${BookTable.DisplayName}] STRING NOT NULL,
         [${BookTable.Author}] STRING NOT NULL,
-        [${BookTable.Description}] STRING NOT NULL,
+        [${BookTable.AboutBook}] STRING NOT NULL,
         [${BookTable.ImageSource}] STRING NOT NULL,
         [${BookTable.FileSource}] STRING,
         [${BookTable.ProductId}] STRING NOT NULL,
+        [${BookTable.Title}] STRING NOT NULL,
+        [${BookTable.Description}] STRING NOT NULL,
         [${BookTable.PriceNaira}] STRING,
         [${BookTable.PriceWorld}] STRING,
         [${BookTable.Group}] STRING,
@@ -128,7 +130,7 @@ export class EbooksSQL extends WebSQLConnection {
    
     protected deleteTables(): void {        
         TableNames.forEach(t => {
-            // if (t != PurchasedTable) return;
+            // if (t != BooksTable) return;
             this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`), undefined, 
                 (_, error) => console.error(`Error deleting table "${t}"`, error)
             );

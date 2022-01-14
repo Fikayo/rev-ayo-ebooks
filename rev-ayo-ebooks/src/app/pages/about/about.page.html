@@ -1,0 +1,26 @@
+<ion-header translucent class="ion-no-border">
+
+    <ion-toolbar>
+        
+        <ion-buttons slot="start">
+            <ion-back-button defaultHref="/"></ion-back-button>
+        </ion-buttons>
+
+    </ion-toolbar>    
+    
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <div id="about">
+        
+        <ion-text color="dark">
+            <h2>About <span class="title">{{bookTitle}}</span></h2>
+        </ion-text>
+
+        <div class="content">
+            <ion-text [innerHTML]="aboutBook">
+            </ion-text>
+        </div>
+
+    </div>
+</ion-content>

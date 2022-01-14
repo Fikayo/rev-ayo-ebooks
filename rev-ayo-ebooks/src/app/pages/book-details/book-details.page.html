@@ -50,8 +50,11 @@
         <div class="ebook-divider"></div>
 
         <div id="bottom">
-            <div class="about">
-                <span class="title">About this book</span>
+            <div [routerLink]="['about/' + book.ISBN]" class="about">
+                <div class="title">
+                    <span>About this book</span>
+                    <ion-icon color="primary" name="arrow-forward" class="arrow"></ion-icon>
+                </div>
                 <p>
                     {{book.description}}
                 </p>

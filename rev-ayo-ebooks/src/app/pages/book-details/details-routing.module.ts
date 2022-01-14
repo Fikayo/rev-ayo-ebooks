@@ -8,6 +8,10 @@ const routes: Routes = [
         component: BookDetailsPage,
     },
     {
+        path: 'about/:isbn',
+        loadChildren: () => import('../about/about.module').then(m => m.AboutModule)
+    },
+    {
         path: 'author',
         loadChildren: () => import('../author/author.module').then(m => m.AuthorModule)
     }
