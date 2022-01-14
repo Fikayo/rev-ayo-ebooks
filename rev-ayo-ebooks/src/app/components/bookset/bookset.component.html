@@ -2,7 +2,7 @@
 <div class="bookset">
     <div class="topbar" *ngIf="showTitle">
         <span [@fadeBook]="showBooks" class="title">{{title}}</span>
-        <span [@fadeBook]="showFakes" class="title fake">{{title}}</span>
+        <span [@fadeBook]="showFakes" class="title fake"></span>
     </div>
 
     <div *ngIf="style!='list'" class="set {{size}} {{style}}">

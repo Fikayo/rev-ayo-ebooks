@@ -8,47 +8,52 @@
 </ion-header>
 
 
-    
-<super-tabs id="personal" activeTabIndex="0" [config]="{ allowElementScroll: true, nativeSmoothScroll: true }">
-    <super-tabs-toolbar class="ion-no-border"  slot="top" color="white">
+<ion-content [fullscreen]="true" >
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
 
-        <super-tab-button>
-            <!-- <ion-icon name="library"></ion-icon> -->
-            <ion-label>Purchased</ion-label>
-        </super-tab-button>
+    <super-tabs id="personal" activeTabIndex="0" [config]="{ allowElementScroll: true, nativeSmoothScroll: true }">
+        <super-tabs-toolbar class="ion-no-border"  slot="top" color="white">
 
-        <super-tab-button>
-            <!-- <ion-icon name="bookmark"></ion-icon> -->
-            <ion-label>Wish List</ion-label>
-        </super-tab-button>
+            <super-tab-button>
+                <!-- <ion-icon name="library"></ion-icon> -->
+                <ion-label>Purchased</ion-label>
+            </super-tab-button>
 
-    </super-tabs-toolbar>
-    
-    <super-tabs-container autoScrollTop>
+            <super-tab-button>
+                <!-- <ion-icon name="bookmark"></ion-icon> -->
+                <ion-label>Wish List</ion-label>
+            </super-tab-button>
+
+        </super-tabs-toolbar>
         
-        <super-tab>
-            <div class="tab-item">
-                <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" [size]="'small'"></ebook-bookset>
-                <div class="empty-list" *ngIf="myBooks == undefined || myBooks.length == 0">
-                    <div class="logo-image"></div>
-                    <span class="title">Start your collection</span>
-                    <span class="text">From personal development to righteous living, we have lots of books to help you grow</span>
-                    <ion-button (click)="openShop()" color="primary">Shop for books</ion-button>
+        <super-tabs-container autoScrollTop>
+            
+            <super-tab>
+                <div class="tab-item">
+                    <ebook-bookset [books]="myBooks" [style]="'grid'" [showPrice]="false" [size]="'small'"></ebook-bookset>
+                    <div class="empty-list" *ngIf="myBooks == undefined || myBooks.length == 0">
+                        <div class="logo-image"></div>
+                        <span class="title">Start your collection</span>
+                        <span class="text">From personal development to righteous living, we have lots of books to help you grow</span>
+                        <ion-button (click)="openShop()" color="primary">Shop for books</ion-button>
+                    </div>
                 </div>
-            </div>
-        </super-tab>
+            </super-tab>
 
-        <super-tab>
-            <div class="tab-item">
-                <ebook-bookset [books]="wishlist" [style]="'grid'" [size]="'small'"></ebook-bookset>
-                <div class="empty-list" *ngIf="wishlist == undefined || wishlist.length == 0">
-                    <div class="logo-image"></div>
-                    <span class="title">Add to your wish list</span>
-                    <span class="text">Add books which you plan to buy to your wish list so you don't forget them </span>
-                    <ion-button (click)="openShop()" fill="solid" color="primary">Shop for books</ion-button>
+            <super-tab>
+                <div class="tab-item">
+                    <ebook-bookset [books]="wishlist" [style]="'grid'" [size]="'small'"></ebook-bookset>
+                    <div class="empty-list" *ngIf="wishlist == undefined || wishlist.length == 0">
+                        <div class="logo-image"></div>
+                        <span class="title">Add to your wish list</span>
+                        <span class="text">Add books which you plan to buy to your wish list so you don't forget them </span>
+                        <ion-button (click)="openShop()" fill="solid" color="primary">Shop for books</ion-button>
+                    </div>
                 </div>
-            </div>
-        </super-tab>
+            </super-tab>
 
-    </super-tabs-container>
-</super-tabs>
+        </super-tabs-container>
+    </super-tabs>
+</ion-content>

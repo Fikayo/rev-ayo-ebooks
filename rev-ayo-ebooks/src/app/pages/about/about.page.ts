@@ -12,7 +12,7 @@ import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 })
 export class AboutPage implements OnInit, OnDestroy {
 
-    public bookTitle!: string;
+    public book!: BookInfo;
     public aboutBook!: string;
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -32,8 +32,8 @@ export class AboutPage implements OnInit, OnDestroy {
                     if(!store.byID || !store.byID.has(bookID)) return;
                     const book = store.byID.get(bookID) as BookInfo;
 
+                    this.book = book;
                     this.aboutBook = book.aboutBook.replace(/\n/g, "<br/>");
-                    this.bookTitle = book.title;
                 },
 
                 error: (err) => console.error("failed to subscribe to bookstore:", err),

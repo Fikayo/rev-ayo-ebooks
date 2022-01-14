@@ -49,14 +49,14 @@ export class UserService {
         return this.userSource.asObservable();
     }
 
-    public async fetchCollection(): Promise<UserCollection> {
+    public async fetchCollection(refresh = false): Promise<UserCollection> {
         if(!this._user.userID) {
             return emptyCollection();
         }
 
         const refreshRequired = this.db.expired(PurchasedTable) || this.db.expired(WishlistTable);
         
-        if (refreshRequired) {
+        if (refreshRequired || refresh) {
             try {
                 const apiCol = await this.refreshCollection()
                 this.updateUser();

@@ -1,5 +1,4 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { BookInfo, BookStore, BookstoreGroup } from "src/app/models/BookInfo";
 import { takeUntil } from 'rxjs/operators';
@@ -27,9 +26,6 @@ export class StorePage implements OnInit, OnDestroy {
     ngOnInit(): void {
         console.log("store init");
 
-        this.bookstore.fetchAllBooks()
-        .catch(err => console.error("Error fetching booksore in store init", err));
-
         this.bookstore.bookstore
         .pipe(takeUntil(this.destroy$))
         .subscribe({
@@ -48,13 +44,33 @@ export class StorePage implements OnInit, OnDestroy {
             error: (err) => console.error("failed to subscribe to bookstore:", err),
         });
     }
-
+ 
     ngOnDestroy(): void {
         this.destroy$.next(true);
         this.destroy$.unsubscribe();        
     }
 
+    ionViewDidEnter() {  
+        this.bookstore.fetchAllBooks()
+        .catch(err => console.error("Error fetching booksore in store init", err));
+    }
+
     public openSearch() {
         this.transtion.fade('/searchpage', {duration: 200});
+    }
+
+    public doRefresh(event: any) {
+        console.debug("refreshing store page");
+        this.otherBooks = [];
+        this.bookGroupings = [];
+        this.bookstore.fetchAllBooks(true)
+        .then(_ => {
+            event.target.complete();            
+            console.debug("done refreshing store");
+        })
+        .catch(err => {
+            event.target.complete();
+            console.error("An error occured while refreshing store page", err);
+        });
     }
 }

@@ -28,7 +28,7 @@ export class RegisterPage implements OnInit {
     }
 
     public register(email: any | string, region: any | string) {
-        this.userEmail = email;
+        this.userEmail = email.trim();
         this.exists = false;
         this.failure = false;
 

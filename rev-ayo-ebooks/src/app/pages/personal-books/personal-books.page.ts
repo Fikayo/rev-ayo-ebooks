@@ -43,7 +43,7 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
             next: (u: User) => {
-                console.log("USER UPDATED: ", u);
+                console.log("COLLECTION USER UPDATED: ", u);
                 if(!u.collection) return;
 
                 const purchased = u.collection.purchased;
@@ -68,5 +68,18 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
 
     public openSearch() {
         this.transition.fade('/searchpage', {duration: 400, slowdownfactor: -1, iosdelay: 50});
+    }
+
+    public doRefresh(event: any) {
+        console.debug("refreshing collection page");
+        this.user.fetchCollection(true)
+        .then(_ => {
+            event.target.complete();
+            console.debug("done refreshing collection page");
+        })
+        .catch(err => {
+            event.target.complete();
+            console.error("An error occured while refreshing collection page", err);
+        });
     }
 }

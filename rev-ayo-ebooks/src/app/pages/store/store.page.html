@@ -7,12 +7,16 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" >
-<div id="bookstore">
+    <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+        <ion-refresher-content></ion-refresher-content>
+    </ion-refresher>
 
-    <div>
-        <ebook-bookset *ngFor="let group of bookGroupings" [title]="group.title" [books]="group.books"></ebook-bookset>
-        <ebook-bookset [title]="bookGroupings.length > 0 ? 'More titles' : 'All Titles'" [books]="otherBooks" [style]="'list'" [showId]="false" [size]="'medium'"></ebook-bookset>
+    <div id="bookstore">
+
+        <div>
+            <ebook-bookset *ngFor="let group of bookGroupings" [title]="group.title" [books]="group.books"></ebook-bookset>
+            <ebook-bookset [showTitle]="bookGroupings.length > 0" [title]="'More titles'" [books]="otherBooks" [style]="'list'" [showId]="false" [size]="'medium'"></ebook-bookset>
+        </div>
+        
     </div>
-    
-</div>
 </ion-content>

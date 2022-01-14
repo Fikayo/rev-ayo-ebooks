@@ -3,11 +3,13 @@
 .bookset {
     .topbar {
         display: flex;
+        margin-bottom: 10px;
         text-transform: capitalize;
 
         .title {
             font-weight: 500;
             font-size: 17px;
+            text-transform: capitalize;
         }
 
         .spacer {
@@ -28,7 +30,6 @@
         overflow: auto;
         overflow-y: hidden;
         align-items: center;
-        margin-top: 10px;
         margin-bottom: 20px;
 
         &.carousel {
@@ -55,7 +56,6 @@
         }
 
         &.list {
-            margin-top: 0px;
             .book {
                 margin: 20px 0;
                 // height: initial;
@@ -84,6 +84,10 @@
                         // position: absolute;
                         // top: 0px;
                     }
+                }
+
+                &:first-of-type {
+                    margin-top: 0;
                 }
             }
         }

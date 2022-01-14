@@ -42,12 +42,12 @@ export class BookstoreService {
         return this.storeSource.asObservable();
     }
 
-    public async fetchAllBooks(): Promise<BookInfo[]> {
+    public async fetchAllBooks(refresh = false): Promise<BookInfo[]> {
        
         const refreshRequired = this.db.expired(BooksTable);                
         console.info("fetching all books", this.allBooks);
 
-        if (refreshRequired) {
+        if (refreshRequired || refresh) {
             try {
                 const books = await this.refreshAllBooks()
                 this.updateBooks();

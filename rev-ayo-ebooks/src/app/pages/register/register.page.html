@@ -10,7 +10,7 @@
             Your email is not stored or shared with anyone including us!
         </div>
 
-        <form>
+        <form (ngSubmit)="register(email.value, region.value)">
             <ion-list>
                 <ion-item>
                     <ion-text [ngClass]="{'ion-hide': !emptyEmail}" color="danger" position="stacked">Please provide an email</ion-text>
@@ -29,7 +29,7 @@
                     </ion-select>
                 </ion-item>
 
-                <ion-button (click)="register(email.value, region.value)" expand="block" shape="round" color="secondary" class="ion-margin-top" >Register</ion-button>
+                <ion-button type="submit" expand="block" shape="round" color="secondary" class="ion-margin-top" >Register</ion-button>
             </ion-list>
         </form>
 

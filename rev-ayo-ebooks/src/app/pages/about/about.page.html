@@ -14,12 +14,31 @@
     <div id="about">
         
         <ion-text color="dark">
-            <h2>About <span class="title">{{bookTitle}}</span></h2>
+            <h2>About <span class="title">{{book.title}}</span></h2>
         </ion-text>
 
         <div class="content">
             <ion-text [innerHTML]="aboutBook">
             </ion-text>
+        </div>
+        
+        <div class="ebook-divider"></div>
+
+        <div class="metadata">
+
+            <div class="item">
+                <div class="heading">
+                    <ion-text>ISBN</ion-text>
+                </div>
+                {{book.ISBN}}
+            </div>
+
+            <div class="item">
+                <div class="heading">
+                    <ion-text>Author</ion-text>
+                </div>
+                {{book.author}}
+            </div>
         </div>
 
     </div>
