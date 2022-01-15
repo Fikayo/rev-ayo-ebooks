@@ -28,19 +28,18 @@
         </ion-buttons>
 
         <ion-title mode="ios">
-            <span class="zoom-control hidden-xs-down">
-                <button (click)="zoomOut()">
-                    <ion-icon color="medium" name="remove-circle"></ion-icon>
+            <span class="zoom-control-bar hidden-xs-down">
+                <button (click)="zoomOut()" class="zoom-control">
+                    <!-- <ion-icon color="medium" name="remove-circle"></ion-icon> -->
+                    OUT
                 </button>
                 <ion-text color="medium" class="zoom-text" (click)="zoomReset()">
-                    <span>{{ pdfZoom == 1 ? 'Full Page' : pdfZoom.toFixed(1) }}</span>
+                    <span>{{ pdfZoom == 1 ? 'ZOOM' : 'ZOOM - ' + pdfZoom.toFixed(1) }}</span>
                 </ion-text>
-                <button (click)="zoomIn()">
-                    <ion-icon color="medium" name="add-circle"></ion-icon>
+                <button (click)="zoomIn()" class="zoom-control">
+                    <!-- <ion-icon color="medium" name="add-circle"></ion-icon> -->
+                    IN
                 </button>
-                <!-- <button (click)="zoomReset()">
-                    <ion-icon color="medium" name="refresh"></ion-icon>
-                </button> -->
             </span>
         </ion-title>
 

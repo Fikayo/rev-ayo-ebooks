@@ -35,6 +35,7 @@ export class ReaderPage implements OnInit, OnDestroy {
     private domListener!: () => void;
 
     constructor(
+        private zone: NgZone,
         private activatedRoute: ActivatedRoute,
         private user: UserService,
         private bookstore: BookstoreService) {
@@ -323,13 +324,22 @@ export class ReaderPage implements OnInit, OnDestroy {
             const yDelta = Math.abs(finalY - startY);
             if(yDelta <= Y_MIN_DELTA || yDelta > Y_MAX_DELTA) return;
 
+            console.log("container scroll top", container.scrollTop);
+            console.log("container offset height", container.offsetHeight);
+            console.log("container scroll height", container.scrollHeight);
+            console.log("moving? ", (container.offsetHeight + container.scrollTop) >= container.scrollHeight ? "NEXT" : "");
+            console.log("moving? ", container.scrollTop <= 0 ? "PREV" : "");
+
+
             if(scrollUp) {
+                console.log("UP")
                 if(container.scrollTop <= 0) {
-                    this.prevPage();
+                    this.zone.run(this.prevPage.bind(this));
                 }
             } else {
+                console.log("DOWN")
                 if((container.offsetHeight + container.scrollTop) >= container.scrollHeight) {
-                    this.nextPage();
+                    this.zone.run(this.nextPage.bind(this));
                 }
             }
 
