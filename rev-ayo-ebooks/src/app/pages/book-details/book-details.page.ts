@@ -1,6 +1,6 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { ToastController, ViewWillEnter } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
@@ -15,7 +15,7 @@ import { StoreService } from 'src/app/services/store/store.service';
   templateUrl: './book-details.page.html',
   styleUrls: ['./book-details.page.scss']
 })
-export class BookDetailsPage implements OnInit, OnDestroy {
+export class BookDetailsPage implements OnInit, OnDestroy, ViewWillEnter {
 
     public book!: BookInfo;
     public suggestions: BookInfo[] = [];
@@ -55,7 +55,7 @@ export class BookDetailsPage implements OnInit, OnDestroy {
                     this.zone.run(() => {                 
                         this.book = book;
                         this.actionText = `Buy ${this.book.price}`;
-                        this.suggestions = store.books;
+                        this.suggestions = store.books.filter(b => b.ISBN != bookID);
 
                         if (this._user.collection) {
                             const bookPurchased = this._user.collection.purchased.filter((book: BookInfo) => book.ISBN == bookID).length > 0;
@@ -90,7 +90,7 @@ export class BookDetailsPage implements OnInit, OnDestroy {
         });
     }
 
-    ionViewDidEnter() {
+    ionViewWillEnter() {
         this.user.fetchCollection()
         .catch(err => console.error("Error fetching collection", err))
     }

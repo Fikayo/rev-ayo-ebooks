@@ -6,13 +6,14 @@ import { UserService } from 'src/app/services/user/user.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { User } from 'src/app/models/User';
+import { ViewWillEnter } from '@ionic/angular';
 
 @Component({
   selector: 'ebook-personal-books',
   templateUrl: './personal-books.page.html',
   styleUrls: ['./personal-books.page.scss']
 })
-export class PersonalBooksPage implements OnInit, OnDestroy {
+export class PersonalBooksPage implements OnInit, OnDestroy, ViewWillEnter {
     @ViewChild(MatTabGroup) group!: any;
     @ViewChildren(MatTab) tabs!: any;
 
@@ -57,7 +58,7 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
         });
     }
 
-    ionViewDidEnter() {
+    ionViewWillEnter() {
         this.user.fetchCollection()
         .catch(err => console.error("Error fetching collection", err))
     }

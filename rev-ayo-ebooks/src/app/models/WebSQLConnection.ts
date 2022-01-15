@@ -125,7 +125,6 @@ abstract class WebSQLConnection
     }
 } 
 
-
 export class EbooksSQL extends WebSQLConnection {
       
     public initialiseDatabase(): void {
@@ -139,7 +138,7 @@ export class EbooksSQL extends WebSQLConnection {
     }  
 
     public purgeData() {
-        this.deleteTables([DBAdmin, ...TableNames]);
+        this.deleteTables(TableNames);
     }
 
     private checkVersion() {

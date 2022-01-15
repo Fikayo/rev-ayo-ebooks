@@ -253,6 +253,9 @@ export class UserService {
 
             this._user.userID = userID;
             this._user.region = region;
+
+            await this.refreshCollection();
+            
             this.updateUser();
             return userID;
         } catch (error: any) {

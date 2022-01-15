@@ -4,13 +4,14 @@ import { BookInfo, BookStore, BookstoreGroup } from "src/app/models/BookInfo";
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { TransitionService } from 'src/app/services/transition/transition.service';
+import { ViewWillEnter } from '@ionic/angular';
 
 @Component({
   selector: 'ebook-store',
   templateUrl: './store.page.html',
   styleUrls: ['./store.page.scss']
 })
-export class StorePage implements OnInit, OnDestroy {
+export class StorePage implements OnInit, OnDestroy, ViewWillEnter {
 
     public bookGroupings: BookstoreGroup[] = [];
     public otherBooks: BookInfo[] = [];
@@ -50,7 +51,7 @@ export class StorePage implements OnInit, OnDestroy {
         this.destroy$.unsubscribe();        
     }
 
-    ionViewDidEnter() {  
+    ionViewWillEnter() {  
         this.bookstore.fetchAllBooks()
         .catch(err => console.error("Error fetching booksore in store init", err));
     }

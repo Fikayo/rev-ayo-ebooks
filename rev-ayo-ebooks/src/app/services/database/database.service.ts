@@ -24,12 +24,14 @@ export class DatabaseService {
     public expired(table: string): boolean {
         const now = new Date();
         let lastDBupdate = this.lastTableUpdate.get(table);
+        let expired = false;
         if (!lastDBupdate) {
-            lastDBupdate = new Date(now.valueOf() - DBExpiry - 10)
+            expired = true;
+        } else {
+            const duration = now.valueOf() - lastDBupdate.valueOf();
+            expired = duration > DBExpiry;
         }
-
-        const duration = now.valueOf() - lastDBupdate.valueOf();
-        const expired = duration > DBExpiry;
+       
         if (expired) {
             console.info(`Table '${table}' Expired. API Refresh required!`);
         }

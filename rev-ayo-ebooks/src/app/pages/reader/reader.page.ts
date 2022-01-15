@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, NgZone, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PDFDocumentProxy } from 'ng2-pdf-viewer';
 import { Subject } from 'rxjs';
@@ -7,14 +7,18 @@ import { BookInfo, BookStore } from 'src/app/models/BookInfo';
 import { BookstoreService } from 'src/app/services/bookstore/bookstore.service';
 import { UserService } from 'src/app/services/user/user.service';
 import { PdfViewerComponent } from 'ng2-pdf-viewer';
+import { ViewWillEnter, ViewWillLeave } from '@ionic/angular';
 
-const zoomLevels = ['auto', 'page-actual', 'page-fit', 'page-width', 0.5, 0.67, 0.75, 0.82, 0.9, 1, 1.1, 1.15, 1.25, 1.5];
+
+const MAX_SCALE = 10.0;
+const MIN_SCALE = 0.5;
+const ZOOM_LEVELS = ['auto', 'page-actual', 'page-fit', 'page-width'];
 @Component({
   selector: 'ebook-reader',
   templateUrl: './reader.page.html',
   styleUrls: ['./reader.page.scss']
 })
-export class ReaderPage implements OnInit, OnDestroy {
+export class ReaderPage implements OnInit, AfterViewInit, OnDestroy, ViewWillEnter, ViewWillLeave {
     @ViewChild(PdfViewerComponent, {static: false}) private pdfComponent!: PdfViewerComponent;   
 
     // Progress bar
@@ -31,17 +35,17 @@ export class ReaderPage implements OnInit, OnDestroy {
     private pinchZoomEnabled = false;
     private pageTurnEnabled = false;
     
+    private tabs: NodeListOf<HTMLIonTabBarElement>;
     private destroy$: Subject<boolean> = new Subject<boolean>();
-    private domListener!: () => void;
 
     constructor(
         private zone: NgZone,
         private activatedRoute: ActivatedRoute,
         private user: UserService,
         private bookstore: BookstoreService) {
-            const tabs = document.querySelectorAll('ion-tab-bar');
-            Object.keys(tabs).map((key: any) => {
-                tabs[key].style.display = 'none';
+            this.tabs = document.querySelectorAll('ion-tab-bar');
+            Object.keys(this.tabs).map((key: any) => {
+                this.tabs[key].style.display = 'none';
             });
     }
 
@@ -56,12 +60,12 @@ export class ReaderPage implements OnInit, OnDestroy {
     }
 
     zoomIn() { 
-        if(this.pdfZoom >= 10) return; 
+        if(this.pdfZoom >= MAX_SCALE) return; 
         this.pdfZoom += 0.7; 
     }
 
     zoomOut() { 
-        if(this.pdfZoom <= 0.3) return; 
+        if(this.pdfZoom <= MIN_SCALE) return; 
         this.pdfZoom -= 0.2; 
     }
 
@@ -90,17 +94,35 @@ export class ReaderPage implements OnInit, OnDestroy {
         });
     }
 
+    ngAfterViewInit() {
+        if (/iphone|ipad|ipod|android|blackberry|bb10|mini|windows\sce|palm/i.test(navigator.userAgent)) {
+            const metaEl = document.createElement('meta');
+            metaEl.setAttribute('name', 'viewport');
+            metaEl.setAttribute('content', 'width=device-width, initial-scale=1, user-scalable=no');
+            document.getElementsByTagName('head')[0].appendChild(metaEl);
+        }
+
+        if (!this.pageTurnEnabled) {
+            this.pageTurnEnabled = true;
+            this.enablePageTurn(this.pdfComponent.pdfViewerContainer.nativeElement);
+        }
+
+        if (!this.pinchZoomEnabled) {
+            this.pinchZoomEnabled = true;
+            this.enablePinchZoom(
+                this.pdfComponent.pdfViewerContainer.nativeElement,
+                this.pdfComponent.pdfViewerContainer.nativeElement.children[0]
+            );
+        }
+    }
+
     ngOnDestroy(): void {
         this.user.updateBookProgress(this.bookID, this.currentPage);
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
-
-        if(this.domListener) {
-            this.domListener();
-        }
     }
 
-    ionViewDidEnter() {  
+    ionViewWillEnter() {          
         this.bookstore.fetchBookPDFPath(this.bookID)
         .then((path) => {
             this.srcUrl = path
@@ -120,30 +142,14 @@ export class ReaderPage implements OnInit, OnDestroy {
         });
     }
 
-    ngAfterViewInit() {
-        if (/iphone|ipad|ipod|android|blackberry|bb10|mini|windows\sce|palm/i.test(navigator.userAgent)) {
-            const metaEl = document.createElement('meta');
-            metaEl.setAttribute('name', 'viewport');
-            metaEl.setAttribute('content', 'width=device-width, initial-scale=1, user-scalable=no');
-            document.getElementsByTagName('head')[0].appendChild(metaEl);
-        }
-
-        if (!this.pinchZoomEnabled) {
-            this.pinchZoomEnabled = true;
-            this.enablePinchZoom(
-                this.pdfComponent.pdfViewerContainer.nativeElement,
-                this.pdfComponent.pdfViewerContainer.nativeElement.children[0]
-            );
-        }
-
-        if (!this.pageTurnEnabled) {
-            this.pageTurnEnabled = true;
-            this.enablePageTurn(this.pdfComponent.pdfViewerContainer.nativeElement);
-        }
-    }
 
     ionViewWillLeave() {
         console.info("reader page leaving");
+        
+        Object.keys(this.tabs).map((key: any) => {
+            this.tabs[key].style.display = 'flex';
+        });
+
         this.user.updateBookProgress(this.bookID, this.currentPage);
     }
 
@@ -167,10 +173,8 @@ export class ReaderPage implements OnInit, OnDestroy {
 
     private enablePinchZoom(container: HTMLDivElement, viewer: HTMLDivElement) {
         const MAX_PINCH_SCALE_VALUE = 3;
-        const MAX_SCALE = 10.0;
         const MIN_PINCH_SCALE_DELTA = 0.01;
         const MIN_PINCH_SCALE_VALUE = 0.25;
-        const MIN_SCALE = 0.1;
         let scaledXOffset: number;
         let scaledYOffset: number;
         let originalXOffset: number;
@@ -238,7 +242,7 @@ export class ReaderPage implements OnInit, OnDestroy {
             
             pinchScale = scale;            
             viewer.style.transform = `scale(${pinchScale})`;
-        });//, { passive: false });
+        });
 
         document.addEventListener('touchend', (e) => {
             if (originalDistance <= 0) { return; }
@@ -250,32 +254,20 @@ export class ReaderPage implements OnInit, OnDestroy {
             (<any>viewer.style)['transform-origin'] = null;
         
             // Scroll to correct position after zoom
-            // this.zone.run(() => {
-            //     setTimeout(() => {
-            //         // container.scroll(
-            //         //     scaledXOffset * pinchScale - originalXOffset,
-            //         //     scaledYOffset * pinchScale - originalYOffset + viewer.offsetTop,
-            //         // );
-            //         container.scrollLeft = scaledXOffset * pinchScale - originalXOffset;
-            //         container.scrollTop = scaledYOffset * pinchScale - originalYOffset + viewer.offsetTop;
-            //     }, 100);
-            // });
-
-            console.debug("new pos",  scaledXOffset * pinchScale - originalXOffset,
-            scaledYOffset * pinchScale - originalYOffset + viewer.offsetTop);
+            const finalX = scaledXOffset * pinchScale - originalXOffset;
+            const finalY = scaledYOffset * pinchScale + originalYOffset + viewer.offsetTop + (300 * this.pdfZoom);
+            this.zone.run(() => {
+                setTimeout(() => {                    
+                    container.scroll(finalX, finalY);
+                    container.scrollBy(0, (300 * this.pdfZoom));
+                }, 0);
+            });
         
             originalDistance = 0;
             pinchScale = 1;
         });
     }
-      
-    @HostListener('scroll') onScrollHost(e: Event): void {
-        console.log("console.log random scroller");
-      }
 
-    onWindowScroll(e:any) {
-        console.log("all hail scrolling");
-    }
     private enablePageTurn(container: HTMLDivElement) {
         if(!container) return;
 
@@ -290,16 +282,18 @@ export class ReaderPage implements OnInit, OnDestroy {
 
         document.addEventListener('touchstart', (event: any) => {
             if (event.touches.length != 1) {
+                scrollDetected = false;
+                scrollStarted = false;
                 return;
             }
 
             startX = event.touches[0].pageX;
             startY = event.touches[0].pageY;
-            scrollDetected = true;        
+            scrollDetected = true;    
         });
 
         document.addEventListener('touchmove', (event: any) => {
-            if(!scrollDetected) return;
+            if(!scrollDetected || event.touches.length != 1) return;
 
             const curX = event.touches[0].pageX;
             const curY = event.touches[0].pageY;
@@ -324,30 +318,22 @@ export class ReaderPage implements OnInit, OnDestroy {
             const yDelta = Math.abs(finalY - startY);
             if(yDelta <= Y_MIN_DELTA || yDelta > Y_MAX_DELTA) return;
 
-            console.log("container scroll top", container.scrollTop);
-            console.log("container offset height", container.offsetHeight);
-            console.log("container scroll height", container.scrollHeight);
-            console.log("moving? ", (container.offsetHeight + container.scrollTop) >= container.scrollHeight ? "NEXT" : "");
-            console.log("moving? ", container.scrollTop <= 0 ? "PREV" : "");
-
-
             if(scrollUp) {
-                console.log("UP")
                 if(container.scrollTop <= 0) {
                     this.zone.run(this.prevPage.bind(this));
                 }
             } else {
-                console.log("DOWN")
                 if((container.offsetHeight + container.scrollTop) >= container.scrollHeight) {
                     this.zone.run(this.nextPage.bind(this));
                 }
             }
 
-            scrollDetected = scrollStarted = false;
-            startX = startY = 0;
+            scrollDetected = false;
+            scrollStarted = false;
+            startX = 0;
+            startY = 0;
         });
-    }
-      
+    }   
 }
 
 function getMidpoint(x1: number, y1: number, x2: number, y2: number): number[] {
