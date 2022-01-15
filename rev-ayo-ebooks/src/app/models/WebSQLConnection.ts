@@ -143,7 +143,7 @@ export class EbooksSQL extends WebSQLConnection {
     }
 
     private checkVersion() {
-        this.execute(new SQLQuery(`SELECT DBVersion FROM ${DBAdmin}`), 
+        this.execute(new SQLQuery(`SELECT * FROM ${DBAdmin}`), 
             (_, results) => {
                 let existingVersion = '';
                 let existingTables = '';
