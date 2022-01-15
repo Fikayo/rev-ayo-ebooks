@@ -18,11 +18,9 @@ import { StoreService } from './services/store/store.service';
     imports: [ 
         SuperTabsModule.forRoot(),
         IonicModule.forRoot(), 
-
         HttpClientModule,
         BrowserAnimationsModule,
         EbookRoutingModule,
-        // ReactiveFormsModule,
     ],
     
     schemas: [CUSTOM_ELEMENTS_SCHEMA],

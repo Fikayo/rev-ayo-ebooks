@@ -90,6 +90,11 @@ export class BookDetailsPage implements OnInit, OnDestroy {
         });
     }
 
+    ionViewDidEnter() {
+        this.user.fetchCollection()
+        .catch(err => console.error("Error fetching collection", err))
+    }
+
     ngOnDestroy(): void {   
         console.log("book details destroyed");
         this.destroy$.next(true);
