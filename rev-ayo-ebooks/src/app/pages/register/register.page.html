@@ -29,7 +29,10 @@
                     </ion-select>
                 </ion-item>
 
-                <ion-button type="submit" expand="block" shape="round" color="secondary" class="ion-margin-top" >Register</ion-button>
+                <ion-button type="submit" expand="block" shape="round" color="secondary" class="ion-margin-top" [disabled]='inProgress'>
+                    <span *ngIf="!inProgress">Register</span>
+                    <ion-spinner *ngIf="inProgress" name="dots"></ion-spinner>
+                </ion-button>
             </ion-list>
         </form>
 

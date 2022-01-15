@@ -54,45 +54,8 @@ export class WelcomePage implements OnInit, OnDestroy {
         ) {    
     }
 
-    ngOnInit(): void {          
-        console.info("Welcome page initialised");
-        this.platform.ready()
-        .then(() => {
-            console.info("platform ready");
-            this.init();
-        })
-        .catch(e => {
-            console.error("Platform could not get ready", e);
-        })
-    }
-
-    ngOnDestroy(): void {
-        console.debug("destroying welcome page");
-        this.store.destroy();
-        this.destroy$.next(true);
-        this.destroy$.unsubscribe();        
-    }
-
-    public get allowEntry(): string {
-        return this.entryAllowed ? 'show' : 'hide';
-    }
-
-    public get showSpinner(): string {
-        return this.entryAllowed || this.storeError ? 'hide' : 'show';
-    }
-
-    public get showError(): string {
-        return this.storeError ? 'show' : 'hide';
-    }
-
-    public tryAgain() {
-        this.storeError = false;
-        this.store.refresh();
-    }
-
-    private init() {        
-        this.store.initStore();
-        this.store.ready.asObservable()
+    ngOnInit(): void {
+        this.store.ready()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
             next: (pReady: boolean) => {
@@ -111,8 +74,43 @@ export class WelcomePage implements OnInit, OnDestroy {
                 }
             }
         }); 
+    }
 
-        this.storeInitWatchdog();
+    ngOnDestroy(): void {
+        console.debug("destroying welcome page");
+        this.store.destroy();
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();        
+    }
+
+    ionViewDidEnter() {  
+        console.info("Welcome page initialised");
+        this.platform.ready()
+        .then(() => {
+            console.info("platform ready");            
+            this.store.initStore();
+            this.storeInitWatchdog();
+        })
+        .catch(e => {
+            console.error("Platform could not get ready", e);
+        })
+    }
+
+    public get allowEntry(): string {
+        return this.entryAllowed ? 'show' : 'hide';
+    }
+
+    public get showSpinner(): string {
+        return this.entryAllowed || this.storeError ? 'hide' : 'show';
+    }
+
+    public get showError(): string {
+        return this.storeError ? 'show' : 'hide';
+    }
+
+    public tryAgain() {
+        this.storeError = false;
+        this.store.refresh();
     }
 
     private checkLogin() {

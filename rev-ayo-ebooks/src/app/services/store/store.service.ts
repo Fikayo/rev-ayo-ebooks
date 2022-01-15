@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IAPProduct, IAPProducts, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { takeUntil } from 'rxjs/operators';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { BookstoreService } from '../bookstore/bookstore.service';
 import { ProductInfo } from "../../models/ProductInfo";
 import { UserService } from '../user/user.service';
@@ -13,7 +13,7 @@ import { User } from 'src/app/models/User';
 })
 export class StoreService {
     private readonly productInfos: Map<string, ProductInfo[]> = new Map();
-    private paymentReady = new BehaviorSubject(false);
+    private appstoreReady = new BehaviorSubject(false);
     
     private userRegion: string = '';
     private destroy$: Subject<boolean> = new Subject<boolean>();
@@ -25,12 +25,18 @@ export class StoreService {
         private iap: InAppPurchase2) { 
     }
 
-    public get ready(): BehaviorSubject<boolean> {
-        return this.paymentReady;
+    public ready(): Observable<boolean> {
+        return this.appstoreReady.asObservable();
     }
 
     public initStore() {
-        console.info("initialising store service");
+        console.debug("initialising store service");
+        if(this.appstoreReady.getValue()) {
+            console.debug("store already ready");
+            this.appstoreReady.next(true);
+            return;
+        }
+
         this.bookstore.fetchProdutinfo()
         .then((info: ProductInfo[]) => {
             console.log("fetched product info", info);
@@ -100,7 +106,7 @@ export class StoreService {
         const storeEvents = this.iap.when('') as any;
         if (storeEvents.error && storeEvents.error == "cordova_not_available") {
             console.error("Cordova likely not avaiable - try on a device. Error: ", storeEvents);
-            this.paymentReady.next(true);
+            this.appstoreReady.next(true);
             return;
         }
 
@@ -167,7 +173,7 @@ export class StoreService {
                 
         console.info('Store Products: ', storeProducts);
         if (productsExist) {
-            this.paymentReady.next(true);
+            this.appstoreReady.next(true);
         } else {
             console.log("no ready products exist yet");
         }

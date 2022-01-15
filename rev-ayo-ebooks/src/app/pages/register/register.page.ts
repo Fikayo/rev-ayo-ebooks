@@ -14,6 +14,7 @@ export class RegisterPage implements OnInit {
     public failure: boolean = false;
     public emptyEmail: boolean = false;
     public emptyRegion: boolean = false;
+    public inProgress: boolean = false;
 
     constructor(
         private transition: TransitionService,
@@ -45,10 +46,13 @@ export class RegisterPage implements OnInit {
 
         this.emptyEmail = false;
         this.emptyRegion = false;
-        console.log("register email, region:", email, region)
+        this.inProgress = true;
+
+        console.debug("register email, region:", email, region)
         this.user.registerUser(email, region)
         .then(id => {
             console.log("Register successful. Id:", id);
+            this.inProgress = false;
             this.transition.fade('books/store');
         })
         .catch(err => {

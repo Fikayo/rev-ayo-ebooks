@@ -57,7 +57,7 @@ export class PersonalBooksPage implements OnInit, OnDestroy {
         });
     }
 
-    ionViewDidEnter() {  
+    ionViewDidEnter() {
         this.user.fetchCollection()
         .catch(err => console.error("Error fetching collection", err))
     }

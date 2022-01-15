@@ -12,13 +12,17 @@
         <form (ngSubmit)="login(email.value)">
             <ion-list>
                 <ion-item>
+                    <ion-text [ngClass]="{'ion-hide': !emptyEmail}" color="danger" position="stacked">Please provide an email</ion-text>
                     <ion-text [ngClass]="{'ion-hide': !failure}" color="danger" position="stacked">An uexpected error occured. Please try again after a few moments.</ion-text>
                     <ion-text [ngClass]="{'ion-hide': !notFound}" color="danger" position="stacked">Email {{userEmail}} was not found. Please check the spelling and try again</ion-text>
                     <ion-label position="stacked">Email</ion-label>
                     <ion-input type="email" id="email" name="email" #email></ion-input>
                 </ion-item>
 
-                <ion-button type="submit" expand="block" shape="round" color="success" class="ion-margin-top" >Login</ion-button>
+                <ion-button type="submit" expand="block" shape="round" color="success" class="ion-margin-top" [disabled]='inProgress'>
+                    <span *ngIf="!inProgress">Login</span>
+                    <ion-spinner *ngIf="inProgress" name="dots"></ion-spinner>
+                </ion-button>
             </ion-list>
         </form>
 

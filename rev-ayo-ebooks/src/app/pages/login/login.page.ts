@@ -12,6 +12,8 @@ export class LoginPage implements OnInit {
     public userEmail: string = "";
     public notFound: boolean = false;
     public failure: boolean = false;
+    public emptyEmail: boolean = false;
+    public inProgress: boolean = false;
 
     constructor(
         private transition: TransitionService,
@@ -26,13 +28,22 @@ export class LoginPage implements OnInit {
     }
 
     public login(email: any | string) {
+        if(!email) {
+            this.emptyEmail = true;
+            return;
+        }
+
         this.userEmail = email;
         this.notFound = false;
+        this.emptyEmail = false;
         this.failure = false;
-        console.log("login email:", email)
+        this.inProgress = true;
+
+        console.debug("login email:", email)
         this.user.loginUser(email)
         .then(id => {
             console.log("Sign in successful. Id:", id);
+            this.inProgress = false;
             this.transition.fade('books/store');
         })
         .catch(err => {
