@@ -1,45 +1,56 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import { IAPProduct } from '@ionic-native/in-app-purchase-2/ngx';
-import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BooksTable } from 'src/app/models/WebSQLConnection';
 import { ApiService } from '../api/api.service';
 import { DatabaseService } from '../database/database.service';
 import { BookInfo, BookInfoBe, BookStore, emptyStore, ParseBookDb } from '../../models/BookInfo';
 import { ProductInfo, ProductInfoBe } from '../../models/ProductInfo';
-import { UserService } from '../user/user.service';
-import { User } from 'src/app/models/User';
+import { StoreRegionService } from '../store-region.service';
+import { RegionIsNGN, StoreRegion } from 'src/app/models/Region';
 
 @Injectable({
   providedIn: 'root'
 })
-export class BookstoreService {
+export class BookstoreService implements OnDestroy {
 
-    private userRegion: string = '';
+    private storeRegion: StoreRegion = StoreRegion.UNKNOWN;
     private allBooks: Map<string, BookInfo> = new Map();
     private readonly storeSource: BehaviorSubject<BookStore>;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private api: ApiService,
         private db: DatabaseService,
-        user: UserService) {
-        
+        private regionService: StoreRegionService) {        
         this.storeSource = new BehaviorSubject<BookStore>(emptyStore());
-        user.user
+        this.init();
+    }
+    
+    public get bookstore(): Observable<BookStore> {
+        return this.storeSource.asObservable();
+    }
+
+    private init(): void { 
+        this.regionService.region()        
+        .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (u: User) => {
-                console.log("BOOKSTORE USER UPDATED: ", u);
-                if (u.region != this.userRegion) {
-                    this.userRegion = u.region;
+            next: (sr) => {
+                if (sr && sr != StoreRegion.UNKNOWN) {
+                    this.storeRegion = sr;
                     this.allBooks.clear();
                     this.fetchAllBooks();
-                }             
+                }
             },
-            error: (err) => console.error(`failed to subscribe to user`, err)
+            
+            error: (err) => console.error(`failed to subscribe to region service`, err)
         });
     }
 
-    public get bookstore(): Observable<BookStore> {
-        return this.storeSource.asObservable();
+    public ngOnDestroy(): void {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     public async fetchAllBooks(refresh = false): Promise<BookInfo[]> {
@@ -157,11 +168,11 @@ export class BookstoreService {
         }
     }
 
-    public async updateProduct(bookID: string, product: IAPProduct): Promise<boolean> { 
+    public async updateProduct(bookID: string, product: IAPProduct, storeRegion: StoreRegion): Promise<boolean> { 
         const sub = new Subject<boolean>();
 
         const prodID = product.id.slice(0, -6);
-        const isNaira = product.id.toLowerCase().indexOf("naira") != -1;
+        const isNaira = RegionIsNGN(storeRegion);
         const region = isNaira ? "nigeria" : "world";
         const price = product.price;
        
@@ -177,7 +188,7 @@ export class BookstoreService {
         }
 
         try {
-            console.log(`updating product ${prodID} to`, {prodID, price, region});
+            console.debug(`updating product ${prodID} to`, {prodID, price, region});
             const res = await this.api.post(`/product/${prodID}`, {
                 productId: prodID,
                 bookId: bookID,
@@ -293,7 +304,7 @@ export class BookstoreService {
     }
 
     private parseBook(book: BookInfoBe): BookInfo {
-        return ParseBookDb(book, this.userRegion);
+        return ParseBookDb(book, this.storeRegion);
     }
 }
 

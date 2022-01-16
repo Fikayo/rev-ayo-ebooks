@@ -6,6 +6,8 @@ export const BookProgressTable: string = "BookProgress";
 export const BooksTable: string = "Books";
 const TableNames: string[] = [UserTable, PurchasedTable, WishlistTable, BookProgressTable, BooksTable];
 
+const EBOOKS_DB_VERSION = "1.01";
+
 export const BookTable = {
     BookId: "BookId",
     Title: "Title",
@@ -32,7 +34,7 @@ const TABLES: string[] = [
 
     `CREATE TABLE IF NOT EXISTS [${UserTable}] (
         [UserId] varchar(50) NOT NULL UNIQUE,
-        [Region] varchar(20) NOT NULL,
+        [Region] varchar(20),
         PRIMARY KEY (UserId)
     );`,
     
@@ -91,7 +93,6 @@ export interface Transaction {
     executeSql: (sql: string, params?: any[], successCB?: SQLCallback, errorCB?: SQLCallback) => void;
 }
 
-const EBOOKS_DB_VERSION = "1.0";
 abstract class WebSQLConnection
 {
     protected readonly dbName = "ayo.ebooks.database";
@@ -105,13 +106,21 @@ abstract class WebSQLConnection
         this.openDB();
     }
 
-    public execute(sqlQuery: SQLQuery, successCB?: SQLCallback, errorCB?: SQLCallback) {
-        this.runTransaction((tx: Transaction) => {
-            tx.executeSql(sqlQuery.sql, sqlQuery.params, successCB, errorCB);
-        });
+    public async execute(sqlQuery: SQLQuery): Promise<any> {
+        return new Promise((resolve, reject) => {
+            this.runTransactionCB((tx: Transaction) => {
+                tx.executeSql(sqlQuery.sql, sqlQuery.params, 
+                    (tx: any, result: any) => {
+                        resolve(result);
+                    }, 
+                    (tx: any, error: any) => {
+                        reject(error);
+                    });
+            });
+        })
     }
 
-    public runTransaction(func: (tx: Transaction) => void) {
+    private runTransactionCB(func: (tx: Transaction) => void) {
         try {
             this.db.transaction(func);
         } catch(e) {
@@ -127,71 +136,92 @@ abstract class WebSQLConnection
 
 export class EbooksSQL extends WebSQLConnection {
       
-    public initialiseDatabase(): void {
+    public async initialiseDatabase(): Promise<void> {
         console.debug("Intialising db on bootstrap");
         
-        this.execute(new SQLQuery(DBAdminCreateQuery), (_, __) => {
-            this.checkVersion();
-        }, 
-            (_, error) => console.error(`Error creating table db admin table: "${DBAdminCreateQuery}"`, error)
-        );
+        try {
+            await this.execute(new SQLQuery(DBAdminCreateQuery));  
+            await this.checkVersion();          
+        } catch (error) {
+            console.error("Error during db initialisation", error);
+            return Promise.reject(error);            
+        }
     }  
 
     public purgeData() {
         this.deleteTables(TableNames);
     }
 
-    private checkVersion() {
-        this.execute(new SQLQuery(`SELECT * FROM ${DBAdmin}`), 
-            (_, results) => {
-                let existingVersion = '';
-                let existingTables = '';
-                if (results.rows && results.rows.length > 0) {
-                    existingVersion = results.rows[0]?.DBVersion;
-                    existingTables = results.rows[0]?.TableNames;
+    private async checkVersion(): Promise<void>{
+        let existingVersion = '';
+        let existingTables = '';
+        try {
+            const results = await this.execute(new SQLQuery(`SELECT * FROM ${DBAdmin}`));
+            if (results.rows && results.rows.length > 0) {
+                existingVersion = results.rows[0]?.DBVersion;
+                existingTables = results.rows[0]?.TableNames;
+            }
+        } catch(error) {
+            console.error(`Failed to fetch DBAdmin row`, error);
+            return Promise.reject(error);
+        }
+
+        try {
+            console.debug("Existing Db version", existingVersion, "matches", existingVersion == EBOOKS_DB_VERSION);
+            if (existingVersion != EBOOKS_DB_VERSION) {
+                console.debug("Recreating all tables");
+                if(existingTables) {
+                    const tableNames = existingTables.split(",");
+                    await this.deleteTables(tableNames);
                 }
 
-                console.debug("Existing Db version", existingVersion, "matches", existingVersion == EBOOKS_DB_VERSION);
-                if (existingVersion != EBOOKS_DB_VERSION) {
-                    console.debug("Recreating all tables");
-                    if(existingTables) {
-                        const tableNames = existingTables.split(",");
-                        this.deleteTables(tableNames);
-                    }
-
-                    this.createTables();
-                    const newTables = TableNames.join(",");
-                    if (!existingVersion) {
-                        this.execute(new SQLQuery(`INSERT INTO ${DBAdmin} (DBVersion, TableNames) VALUES (?, ?)`, EBOOKS_DB_VERSION, newTables), undefined, 
-                        (_, error) => console.error(`Error inserting db version as '${EBOOKS_DB_VERSION}'`, error));
-                    } else {
-                        this.execute(new SQLQuery(`UPDATE ${DBAdmin} SET DBVersion=?, TableNames=?`, EBOOKS_DB_VERSION, newTables), undefined, 
-                        (_, error) => console.error(`Error updating db version from '${existingVersion}' to '${EBOOKS_DB_VERSION}'`, error));
-                    }
+                const promises: Promise<any>[] = [];
+                promises.push(this.createTables());
+                const newTables = TableNames.join(",");
+                if (!existingVersion) {
+                    promises.push(this.execute(new SQLQuery(`INSERT INTO ${DBAdmin} (DBVersion, TableNames) VALUES (?, ?)`, EBOOKS_DB_VERSION, newTables)));
+                } else {
+                    promises.push(this.execute(new SQLQuery(`UPDATE ${DBAdmin} SET DBVersion=?, TableNames=?`, EBOOKS_DB_VERSION, newTables)));
                 }
-            }, 
-            (_, error) => console.error(`Error checking db version:`, error)
-        );
+
+                await Promise.all(promises);
+            }
+        } catch(error) {
+            console.error(`Failed to Insert/Update DB version from ${existingVersion} to ${EBOOKS_DB_VERSION}`, error);
+            return Promise.reject(error);
+        }
     }
 
-    private deleteTables(tableNames: string[]): void { 
+    private async deleteTables(tableNames: string[]): Promise<void> { 
         console.debug("Deleting tables", tableNames);
-        tableNames.forEach(t => {
-            this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`), undefined, 
-                (_, error) => console.error(`Error deleting table "${t}"`, error)
-            );
-        });
+        try {
+            const promises: Promise<any>[] = [];
+            tableNames.forEach(t => {
+                promises.push(this.execute(new SQLQuery(`DROP TABLE IF EXISTS [${t}]`)));
+            });
+            
+            await Promise.all(promises);
+        } catch (error) {
+            console.error("Error while deleting tables", error);
+            return Promise.reject(error);
+        }
 
         localStorage.clear();
     }
 
-    private createTables(): void {
+    private async createTables(): Promise<void> {
         console.debug("Creating all tables");
-        TABLES.forEach(t => {
-            this.execute(new SQLQuery(t), undefined, 
-                (_, error) => console.error(`Error creating table with query: "${t}"`, error)
-            );
-        });
+        try {
+            const promises: Promise<any>[] = [];
+            TABLES.forEach(t => {
+                promises.push(this.execute(new SQLQuery(t)));
+            });
+            
+            await Promise.all(promises);
+        } catch (error) {
+            console.error("Error while creating tables", error);
+            return Promise.reject(error);
+        }
     }  
 
 }

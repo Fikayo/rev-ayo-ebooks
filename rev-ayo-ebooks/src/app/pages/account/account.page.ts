@@ -5,6 +5,8 @@ import { takeUntil } from 'rxjs/operators';
 import { User } from 'src/app/models/User';
 import { TransitionService } from 'src/app/services/transition/transition.service';
 import { IonSelect, ToastController } from '@ionic/angular';
+import { StoreRegionService } from 'src/app/services/store-region.service';
+import { StoreRegion } from 'src/app/models/Region';
 
 @Component({
   selector: 'ebook-account',
@@ -13,25 +15,24 @@ import { IonSelect, ToastController } from '@ionic/angular';
 })
 export class AccountPage implements OnInit, OnDestroy {
 
-    public userRegion: string = '';
+    public storeRegion: StoreRegion = StoreRegion.UNKNOWN;
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private transition: TransitionService,
         private toastCtrl: ToastController,
         private user: UserService,
+        private regionService: StoreRegionService,
         private zone: NgZone) { }
 
     ngOnInit(): void {
-        this.user.user
+        this.regionService.region()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-            next: (u: User) => {                
-                console.log("ACCOUNT USER UPDATED: ", u);
-               
+            next: (sr) => {
                 this.zone.run(() => {
                     setTimeout(() => { 
-                        this.userRegion = u.region; 
+                        this.storeRegion = sr
                     },0);           
                 });
             },
@@ -45,15 +46,6 @@ export class AccountPage implements OnInit, OnDestroy {
         this.destroy$.unsubscribe();
     }
     
-    public regionChange(newRegion: any) {
-        console.info("region changing to ", newRegion);
-        this.user.updateRegion(newRegion)
-        .catch(e => {
-            console.error("Failed to update region", e);
-            this.showToast("Failed to update region");
-        })
-    }
-
     public logout() {
         this.user.logoutUser()
         .then(() => {
@@ -65,7 +57,6 @@ export class AccountPage implements OnInit, OnDestroy {
     }
 
     private async showToast(message: string) {
-		console.info("showing toast message: " + message);
 		const toast = await this.toastCtrl.create({
 			message: message,
 			duration: 3000

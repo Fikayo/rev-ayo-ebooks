@@ -78,7 +78,6 @@ export class WelcomePage implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         console.debug("destroying welcome page");
-        this.store.destroy();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();        
     }

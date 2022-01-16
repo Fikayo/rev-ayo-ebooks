@@ -1,28 +1,26 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { IAPProduct, IAPProducts, InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
-import { takeUntil } from 'rxjs/operators';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { BookstoreService } from '../bookstore/bookstore.service';
 import { ProductInfo } from "../../models/ProductInfo";
 import { UserService } from '../user/user.service';
-import { flatten } from '@angular/compiler';
-import { User } from 'src/app/models/User';
+import { CurrencyToRegion, StoreRegion } from 'src/app/models/Region';
+import { StoreRegionService } from '../store-region.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class StoreService {
-    private readonly productInfos: Map<string, ProductInfo[]> = new Map();
+export class StoreService implements OnDestroy {
+    private readonly productInfos: Map<string, ProductInfo> = new Map();
     private appstoreReady = new BehaviorSubject(false);
-    
-    private userRegion: string = '';
+    private storeRegion: StoreRegion = StoreRegion.UNKNOWN;
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private user: UserService,
-        private bookstore: BookstoreService,
-        
-        private iap: InAppPurchase2) { 
+        private bookstore: BookstoreService, 
+        private regionService: StoreRegionService,       
+        private iap: InAppPurchase2) {
     }
 
     public ready(): Observable<boolean> {
@@ -30,67 +28,42 @@ export class StoreService {
     }
 
     public initStore() {
-        console.debug("initialising store service");
         if(this.appstoreReady.getValue()) {
-            console.debug("store already ready");
             this.appstoreReady.next(true);
             return;
         }
 
+        console.debug("initialising store service");
         this.bookstore.fetchProdutinfo()
-        .then((info: ProductInfo[]) => {
-            console.log("fetched product info", info);
+        .then((infos: ProductInfo[]) => {
+            console.log("fetched product info", infos);
             this.productInfos.clear();
-            info.forEach(p => {
-                const naira: ProductInfo = {
-                    ISBN: p.ISBN,
-                    productID: this.getNairaProductId(p.productID)
-                }
-
-                const world: ProductInfo = {
-                    ISBN: p.ISBN,
-                    productID: this.getWorldProductId(p.productID)
-                }
-
-                this.productInfos.set(p.ISBN, [naira, world]);
+            infos.forEach(p => {
+                this.productInfos.set(p.ISBN, {ISBN: p.ISBN, productID: `${p.productID}_world`});
             });
 
             this.prepareStore();
         })
         .catch((err) => console.error("Failed to fetch product info from backend", err));
-
-        this.user.user
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-            next: (u: User) => {
-                console.log("STORE USER UPDATED: ", u);
-                if (u.region != this.userRegion) {
-                    this.userRegion = u.region;                
-                }
-            },
-            error: (err) => console.error(`failed to subscribe to user`, err)
-        });
     }
 
-    public destroy(): void {   
+    public ngOnDestroy(): void {   
         this.destroy$.next(true);
         this.destroy$.unsubscribe();         
     }
 
     public async orderBook(bookID: string): Promise<void> {
-        console.log("attempting to purchase", bookID);
+        console.debug("attempting to purchase", bookID);
         if(!this.productInfos.has(bookID)) {
             console.debug(`can't find productInfo for book ${bookID}. Returning`);
             return;
         }
         
         try {
-            const prods = this.productInfos.get(bookID) as ProductInfo[];
-            const regionProd = this.userRegion == "nigeria" ? prods[0] : prods[1];
-
-            console.log("calling store with ", regionProd)
-            await this.iap.order(regionProd.productID);
-            console.log('order in progress');
+            const prod = this.productInfos.get(bookID) as ProductInfo;
+            console.debug("calling store with ", prod)
+            await this.iap.order(prod.productID);
+            console.debug('order in progress');
         } catch (error) {
            return Promise.reject(error);
         }     
@@ -102,18 +75,16 @@ export class StoreService {
     }
 
     private prepareStore() {
-        console.info("preparing store", this.productInfos);
         const storeEvents = this.iap.when('') as any;
         if (storeEvents.error && storeEvents.error == "cordova_not_available") {
             console.error("Cordova likely not avaiable - try on a device. Error: ", storeEvents);
             this.appstoreReady.next(true);
+            this.regionService.updateStoreRegion(StoreRegion.WORLD);
             return;
         }
 
         this.iap.verbosity = this.iap.DEBUG;
-        const allproducts: ProductInfo[] = flatten(Array.from(this.productInfos.values()));
-        allproducts.forEach(p => {
-            console.log("registering product ", p);
+        this.productInfos.forEach(p => {
             this.registerProduct(p);
             this.registerHandlers(p);
         });
@@ -122,16 +93,11 @@ export class StoreService {
             console.error('STORE ERROR ' + error.code + ': ' + error.message);
         });
         
-        this.iap.ready((data: any) => {            
-            console.info("Store ready data", data);
-            console.info("Store ready by callback - products", this.iap.products);
-            const prod = this.iap.get('test_id_1_naira')
-            console.log("gotten p", prod);
-            this.tryStoreReady(this.iap.products);
+        this.iap.ready(() => {
+            this.onStoreReady(this.iap.products);
         });
 
         this.refresh();
-        this.tryStoreReady(this.iap.products);
     }
 
     private registerProduct(p: ProductInfo) { 
@@ -151,44 +117,33 @@ export class StoreService {
         this.iap.when(p.productID).finished(this.productFinished.bind(this));
     }
 
-    private tryStoreReady(storeProducts: IAPProducts) {
-        console.log("checking if store is ready");
+    private onStoreReady(storeProducts: IAPProducts) {
         if (!storeProducts) return;
 
-        let productsExist = false;
         storeProducts.forEach((p: IAPProduct) => {
             if (p.price == null) {
                 console.debug("skipping product with null price", JSON.stringify(p), p);
                 return;
             }
 
-            console.log("updating ready store product", p);
+            const region = this.updateStoreRegion(p.currency);
             let isbn: string = p.alias ?? "";
-            this.bookstore.updateProduct(isbn, p)
-            .catch((err) => console.error("Failed to update product", p, err))
-
-            productsExist = true
-            console.log("PRODUCTS EXIST!!");
+            this.bookstore.updateProduct(isbn, p, region)
+            .catch((err) => console.error("Failed to update product", p, err));
         });
-                
-        console.info('Store Products: ', storeProducts);
-        if (productsExist) {
-            this.appstoreReady.next(true);
-        } else {
-            console.log("no ready products exist yet");
-        }
+
+        console.debug('Store Products: ', storeProducts);
+        this.appstoreReady.next(true);
     }
 
-    private getNairaProductId(prodID: string): string {
-        return `${prodID}_naira`;
-    }
-
-    private getWorldProductId(prodID: string): string {
-        return `${prodID}_world`;
+    private updateStoreRegion(currency: string): StoreRegion {
+        this.storeRegion = CurrencyToRegion(currency);
+        this.regionService.updateStoreRegion(this.storeRegion);
+        return this.storeRegion;
     }
 
     private productApproved(product: IAPProduct) {
-        console.log("product approved", product);
+        console.debug("product approved", product);
 
         // Ensure to download book if needed
         let isbn: any = product.alias;
@@ -198,7 +153,7 @@ export class StoreService {
     }
 
     private productCancelled(product: IAPProduct) {
-        console.log("product cancelled", product);
+        console.debug("product cancelled", product);
     }
     
     private productError(error: any) {
@@ -212,17 +167,17 @@ export class StoreService {
         }
 
         const isbn = product.alias ?? "";
-        this.bookstore.updateProduct(isbn, product)
+        this.bookstore.updateProduct(isbn, product, this.storeRegion)
         .then(() => console.log("product updated", product))
         .catch((err) => console.error("Failed to update product", err));
     }
     
     private productVerified(product: IAPProduct) {
-        console.log("product verified", product);
+        console.debug("product verified", product);
         product.finish();
     }
 
     private productFinished(product: IAPProduct) {
-        console.log("product finished", product);
+        console.debug("product finished", product);
     }
 }

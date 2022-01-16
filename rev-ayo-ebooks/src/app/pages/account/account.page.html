@@ -21,14 +21,11 @@
         <ion-list>
            
             <ion-item>
+
                 <ion-label>
                     <p>Region</p>
-                    <ion-text color="primary"><small>This will affect the price of items shown to you.</small></ion-text>
                 </ion-label>
-                <ion-select ngModel (ngModelChange)="regionChange(region.value)" value="{{userRegion}}" interface="action-sheet" #region>
-                    <ion-select-option value="nigeria">Nigeria</ion-select-option>
-                    <ion-select-option value="world">Rest of the World</ion-select-option>
-                </ion-select>
+                <ion-text color="medium" class="region-label">{{storeRegion}}</ion-text>
                
             </ion-item>
 

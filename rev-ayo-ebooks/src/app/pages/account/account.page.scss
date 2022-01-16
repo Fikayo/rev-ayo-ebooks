@@ -2,8 +2,10 @@
 
 #account {
 
-    padding: 0 $pageSidePadding;
-
-       
+    padding: 0 $pageSidePadding;       
     margin-top: 20px;
+
+    .region-label {
+        text-transform: capitalize;
+    }
 }

@@ -1,10 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Observable, of, Subject, throwError } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { BooksTable, PurchasedTable, UserTable , WishlistTable,  } from 'src/app/models/WebSQLConnection';
 import { BookInfo, BookInfoBe, ParseBookDb } from "../../models/BookInfo";
 import { emptyCollection, emptyUser, User, UserCollection } from '../../models/User';
 import { DatabaseService } from '../database/database.service';
 import { ApiService } from '../api/api.service';
+import { StoreRegionService } from '../store-region.service';
+import { StoreRegion } from 'src/app/models/Region';
 
 const ALLOW_FAKE_LOGIN = false
 const TESTEMAIL = "test@email.com"
@@ -12,41 +15,59 @@ const TESTEMAIL = "test@email.com"
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
+export class UserService implements OnDestroy {
 
+    private storeRegion: StoreRegion = StoreRegion.UNKNOWN;
     private readonly _user: User;
     private readonly userSource: BehaviorSubject<User>;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private api: ApiService,
-        private db: DatabaseService) {
+        private db: DatabaseService,
+        private regionService: StoreRegionService) {
             this._user = emptyUser();
             this.userSource = new BehaviorSubject(this._user);
-
-            this.loginIfloggedOut()
-            .then(user => {
-                if (!user || !user.userID) {                    
-                    console.log("user not logged in");
-                    
-                    this.loginUser(TESTEMAIL)
-                    .then(id => this._user.userID = id);
-    
-                    return;
-                }
-    
-                console.log("user logged in");
-                this._user.userID = user.userID;
-                this._user.region = user.region;
-                this.updateUser();
-            })
-            .catch(error => {
-                console.error(`Error logging in`, error);
-            });
+            this.init();
     }
-
 
     public get user(): Observable<User> {
         return this.userSource.asObservable();
+    }
+
+    private init(): void {        
+        this.loginIfloggedOut()
+        .then(user => {
+            if (!user || !user.userID) {                    
+                console.log("user not logged in");
+                return;
+            }
+
+            console.log("user logged in");
+            this._user.userID = user.userID;
+            this.updateUser();
+        })
+        .catch(error => {
+            console.error(`Error logging in`, error);
+        });
+
+        this.regionService.region()        
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+            next: (sr) => {
+                if(sr && sr != StoreRegion.UNKNOWN) {
+                    this.storeRegion = sr;
+                    this.db.update(UserTable, {Region: sr.toString()});
+                }
+            },
+            
+            error: (err) => console.error(`failed to subscribe to region service`, err)
+        });
+    }
+
+    public ngOnDestroy(): void {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     public async fetchCollection(refresh = false): Promise<UserCollection> {
@@ -157,37 +178,6 @@ export class UserService {
         return currentPage;
     }
     
-    public async updateRegion(region: string): Promise<void> {  
-        console.log("entering region vhange", this._user.region, region);      
-        if(!this._user.userID) {
-            return Promise.reject("User not logged in. Aborting call");
-        }
-
-        if (region == this._user.region) {
-            return;
-        }
-
-        console.log("region update to ", region);
-        try {
-
-            const res = await this.api.post(`/user/${this._user.userID}/info`, {
-               region: region,
-            })
-
-            if (res.region != region) {
-                let msg = `Unexpected result after updating region to ${region}`;
-                console.error(msg);
-                return Promise.reject(msg);
-            }
-
-            this._user.region = region;
-            this.updateUser();
-        } catch(error) {
-            console.error(`error updating book user region to ${region}`);
-        }
-    }
-
-
     public async toggleInWishList(bookID: string): Promise<boolean> {
         if(!this._user.userID) {
             throw Error("User not logged in. Aborting call");
@@ -227,7 +217,6 @@ export class UserService {
 
             console.log("user logged in");
             this._user.userID = user.userID;
-            this._user.region = user.region;
             this.updateUser();
             return true;
         } catch(error) {
@@ -242,17 +231,14 @@ export class UserService {
         });
 
         let userID: string = '';
-        let region: string = '';
         try {
             console.debug("loginUser data", res);
             if (res) {
                 userID = res.UserId;
-                region = res.Region;
-                await this.db.insert(UserTable, {UserId: userID, Region: region});
+                await this.db.insert(UserTable, {UserId: userID});
             }
 
             this._user.userID = userID;
-            this._user.region = region;
 
             await this.refreshCollection();
             
@@ -269,10 +255,9 @@ export class UserService {
         }
     }
 
-    public async registerUser(email: string, region: string): Promise<string> {
+    public async registerUser(email: string): Promise<string> {
         const res = await this.api.post(`/user/register`, {
-            email: email,
-            region: region
+            email: email
         });
 
         let userID: string = '';
@@ -286,11 +271,10 @@ export class UserService {
                 }
 
                 userID = res.UserId;
-                await this.db.insert(UserTable, {UserId: userID, Region: region});
+                await this.db.insert(UserTable, {UserId: userID});
             }
 
             this._user.userID = userID;
-            this._user.region = region;
             this.updateUser();
             return userID;
         } catch (error: any) {
@@ -315,7 +299,6 @@ export class UserService {
             proms.push(this.db.deleteTable(UserTable));
             
             this._user.userID = '';
-            this._user.region = '';
             await Promise.all(proms);
         } catch(error) {
             console.error(`Error logging out user`, error);
@@ -426,21 +409,22 @@ export class UserService {
     }
 
     private async loginIfloggedOut(): Promise<User> {
-        const sub = new Subject<string>();
         const res = await this.db.fetch(UserTable);
         console.debug("trying to log in data", res);
         
-        let user: User = {userID: '', region: ''};
+        let user: User = emptyUser();
         if (res) {
            user.userID = res[0].UserId;
-           user.region = res[0].Region;
+           const region = (res[0].Region as string).toUpperCase();
+           this.storeRegion = StoreRegion[<keyof typeof StoreRegion>region];
+           this.regionService.updateStoreRegion(this.storeRegion);
         }
 
         return user;
     }
     
     private parseBook(book: BookInfoBe): BookInfo {
-        return ParseBookDb(book, this._user.region);
+        return ParseBookDb(book, this.storeRegion);
     }
 
     private updateUser() {
