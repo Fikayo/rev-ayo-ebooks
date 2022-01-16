@@ -55,7 +55,7 @@ export class DatabaseService {
         let query = `SELECT * FROM ${table}`;
         let condValues: string[] = [];
         if (conditions) {
-            query += " WHERE "
+            query += " WHERE ";
             const columns = Object.keys(conditions);
             condValues = Object.values(conditions);
             const conds: string[] = [];
@@ -63,7 +63,7 @@ export class DatabaseService {
                 conds.push(`${col}=?`);
             });
         
-            query += conds.join(" AND ")
+            query += conds.join(" AND ");
         }
 
         // try {
@@ -82,27 +82,22 @@ export class DatabaseService {
         //     console.error(`Error fetching data from local db: query: ${query}`, error);
         //     return Promise.reject(error);
         // }
-        return new Promise((resolve, reject) => {
-            this.sql.execute(new SQLQuery(query, ...condValues),
-                (_, results: any) => {
-                    console.debug(`DB fetch ${query} results`, results);
-                    let data: any | undefined;
-                    if (results.rows && results.rows.length > 0) {
-                        data = [];
-                        for (const b of results.rows) {
-                            data.push(b);
-                        }
-                    }
-
-                    resolve(data);
-                },
-
-                (_, error) => {
-                    console.error(`Error fetching data from local db: query: ${query}`, error);
-                    reject(error) ;
+        try {
+            const results = await this.sql.execute(new SQLQuery(query, ...condValues));
+            console.debug(`DB fetch ${query} results`, results);
+            let data: any | undefined;
+            if (results.rows && results.rows.length > 0) {
+                data = [];
+                for (const b of results.rows) {
+                    data.push(b);
                 }
-            );
-        });
+            }
+
+            return data;
+        } catch (error) {
+            console.error(`Error fetching data from local db: query: ${query}`, error);
+            return Promise.reject(error);
+        }
     }
 
     public async insert(table: string, data: any): Promise<void> {
@@ -116,23 +111,31 @@ export class DatabaseService {
         await this.updatedb(query);
     }
 
-    public async update(table: string, data: any, conditions: any, ignoreAffectedRows = false): Promise<void> {
+    public async update(table: string, data: any, conditions?: any, ignoreAffectedRows = false): Promise<void> {
         const columns = Object.keys(data);
         const values = Object.values(data);
         const pairs: any[] = [];
         columns.forEach(c => {
             pairs.push(`${c}=?`);
-        })
-
-        
-        const condColumns = Object.keys(conditions);
-        const condValues = Object.values(conditions);
-        const conds: string[] = [];
-        condColumns.forEach(col => {
-            conds.push(`${col}=?`);
         });
 
-        let query = new SQLQuery(`UPDATE ${table} SET ${pairs.join(",")} WHERE ${conds.join(" AND ")};`, ...values, ...condValues);
+        let sql = `UPDATE ${table} SET ${pairs.join(",")}`
+        
+        let condValues: string[] = [];
+        if(conditions) {
+            sql += " WHERE "
+
+            const condColumns = Object.keys(conditions);
+            condValues = Object.values(conditions);
+            const conds: string[] = [];
+            condColumns.forEach(col => {
+                conds.push(`${col}=?`);
+            });
+
+            sql += conds.join(" AND ");
+        }
+
+        let query = new SQLQuery(sql, ...values, ...condValues);
 
         // console.debug(`UPDATE QUERY: ${query.sql}, ${query.params}`, query);
         // console.debug(`UPDATE QUERY data and conds: `, data, conditions);
@@ -182,19 +185,14 @@ export class DatabaseService {
 
     public async query(sql: string, params: any[] | undefined): Promise<any> {
         let query = new SQLQuery(sql, params);
-        return new Promise((resolve, reject) => {            
-            this.sql.execute(query, 
-                (_, results: any) => {  
-                    console.debug(`direct query ${query} results`, results);                 
-                    resolve(results);
-                },
-
-                (_, error) => {
-                    console.error(`Error while performing query: ${query}: `, error, query);
-                    reject(error);
-                }
-            );
-        });
+        try {            
+            const results = await this.sql.execute(query);
+            console.debug(`direct query ${query} results`, results);
+            return results;
+        } catch (error) {
+            console.error(`Error while performing query: ${query}: `, error, query);
+            return Promise.reject(error);
+        }
     }
 
     private fetchLastUpdateTime(): Map<string, Date> {
@@ -228,26 +226,18 @@ export class DatabaseService {
         //     console.error(`Error while updating table: ${query}: `, error);
         //     return Promise.reject(error);
         // }
-        return new Promise((resolve, reject) => {            
-            this.sql.execute(query, 
-                (_, results: any) => {
-                    console.debug(`updatedb ${query} results`, results, "ignore affected rows", ignoreAffectedRows);
-                    if (ignoreAffectedRows) resolve();
-                    
-                    if (results.rowsAffected <= 0) {
-                        reject('no rows updated');
-                        return;                  
-                    } 
-
-                    resolve();
-                },
-
-                (_, error) => {
-                    console.error(`Error while updating table: ${query}: `, error);
-                    reject(error);
-                }
-            );
-        });
+        try {
+            const results = await this.sql.execute(query);
+            console.debug(`updatedb ${query} results`, results, "ignore affected rows", ignoreAffectedRows);
+            if (ignoreAffectedRows) return;
+            
+            if (results.rowsAffected <= 0) {
+                return Promise.reject('no rows updated');
+            } 
+        } catch (error) {
+            console.error(`Error while updating table: ${query}: `, error);
+            return Promise.reject(error);
+        }
     }
 
     private getLSTableKey(table: string): string {

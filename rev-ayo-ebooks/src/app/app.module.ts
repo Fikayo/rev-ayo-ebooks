@@ -9,6 +9,8 @@ import { SuperTabsModule } from '@ionic-super-tabs/angular';
 import { NativePageTransitions } from '@awesome-cordova-plugins/native-page-transitions/ngx';
 import { InAppPurchase2 } from '@ionic-native/in-app-purchase-2/ngx';
 import { StoreService } from './services/store/store.service';
+import { UserService } from './services/user/user.service';
+import { BookstoreService } from './services/bookstore/bookstore.service';
 
 @NgModule({
     declarations: [

@@ -13,13 +13,12 @@ export class RegisterPage implements OnInit {
     public exists: boolean = false;
     public failure: boolean = false;
     public emptyEmail: boolean = false;
-    public emptyRegion: boolean = false;
     public inProgress: boolean = false;
 
     constructor(
         private transition: TransitionService,
         private user: UserService) {
-        }
+    }
 
     ngOnInit(): void {
     }
@@ -28,7 +27,7 @@ export class RegisterPage implements OnInit {
         this.transition.fade('/login');
     }
 
-    public register(email: any | string, region: any | string) {
+    public register(email: any | string) {
         this.userEmail = email.trim();
         this.exists = false;
         this.failure = false;
@@ -38,18 +37,11 @@ export class RegisterPage implements OnInit {
             return;
         }
 
-        
-        if(!region) {
-            this.emptyRegion = true;
-            return;
-        }
-
         this.emptyEmail = false;
-        this.emptyRegion = false;
         this.inProgress = true;
 
-        console.debug("register email, region:", email, region)
-        this.user.registerUser(email, region)
+        console.debug("register email, region:", email)
+        this.user.registerUser(email)
         .then(id => {
             console.log("Register successful. Id:", id);
             this.inProgress = false;

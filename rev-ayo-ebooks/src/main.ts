@@ -23,9 +23,9 @@ if (typeof window['cordova' as any] !== 'undefined') {
 }
 
 
-function deviceReady() {
+async function deviceReady() {
     console.log("device is ready");
     const db = new EbooksSQL();
-    db.initialiseDatabase();
+    await db.initialiseDatabase();
     bootstrap();
 }

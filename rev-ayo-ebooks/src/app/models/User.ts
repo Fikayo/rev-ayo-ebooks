@@ -1,10 +1,8 @@
-import { empty } from "rxjs";
 import { BookInfo } from "./BookInfo";
 
 
 export interface User {
     userID: string;
-    region: string;
     collection?: UserCollection;
 }
 
@@ -14,7 +12,7 @@ export interface UserCollection {
 }
 
 export function emptyUser(): User {
-    return {userID: '', region: ''};
+    return {userID: ''};
 }
 
 export function emptyCollection(): UserCollection {

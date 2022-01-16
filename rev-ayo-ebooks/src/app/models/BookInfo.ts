@@ -1,3 +1,5 @@
+import { RegionIsNGN, StoreRegion } from "./Region";
+
 export interface BookStore {
     books: BookInfo[];
     byID: Map<string, BookInfo>;
@@ -38,10 +40,9 @@ export interface BookInfoBe {
     ViewGroup?: string;
 }
 
-export function ParseBookDb(b: BookInfoBe, userRegion: string): BookInfo {   
-    
-    // const price = userRegion == "nigeria" ? `₦${b.PriceNaira}` : `$${b.PriceWorld}`;
-    const price = userRegion == "nigeria" ? `${b.PriceNaira}` : `${b.PriceWorld}`;
+export function ParseBookDb(b: BookInfoBe, storeRegion: StoreRegion): BookInfo {   
+
+    const price = RegionIsNGN(storeRegion) ? `${b.PriceNaira}` : `${b.PriceWorld}`;
     const book: BookInfo = {
         ISBN: b.BookId,
         title: b.Title,
